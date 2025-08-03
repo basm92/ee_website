@@ -1,0 +1,11 @@
+.qodo
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.hidden_notes.txt
+/.quarto/
+*/.quarto/
+*/_presentation/
+*/__pycache__/
+__pycache__/
