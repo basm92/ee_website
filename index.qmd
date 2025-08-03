@@ -22,3 +22,7 @@ Welcome to the Empirical Economics (Utrecht University) website. On this website
   - Vincent
   - Mads
   
+## Credits
+
+The lecture slides are partially based on earlier lectures by Wolter Hassink and owe a lot to discussions and brainstorms with various colleagues. 
+  
