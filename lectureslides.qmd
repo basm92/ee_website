@@ -1,0 +1,14 @@
+---
+title: "Lecture Slides"
+---
+
+The lecture slides can be found below. 
+
+- [Lecture 1](lectures/lecture1/lecture1.qmd)
+- [Lecture 2](lectures/lecture2/lecture2.qmd)
+- [Lecture 3](lectures/lecture3/lecture3.qmd)
+- [Lecture 4](lectures/lecture4/lecture4.qmd)
+- [Lecture 5](lectures/lecture5/lecture5.qmd)
+- [Lecture 6](lectures/lecture6/lecture6.qmd)
+- [Lecture 7](lectures/lecture7/lecture7.qmd)
+- [Lecture 8](lectures/lecture8/lecture8.qmd)

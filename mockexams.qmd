@@ -1,0 +1,13 @@
+---
+title: "Mock Exam"
+---
+
+## Mid-term
+
+- Questions
+- Answers
+
+## End-term
+
+- Questions
+- Answers

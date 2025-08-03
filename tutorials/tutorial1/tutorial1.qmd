@@ -1,0 +1,590 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 1: Statistics and Probability"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial - Statistics and Probability'
+resources:
+  - demo.pdf
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+# Introduction
+
+## Set-Up
+
+Empirical Economics has **lectures** and **tutorials**
+
+Both are important for the exam:
+
+- Lectures feature theoretical material
+- Tutorials recapitulate theoretical material
+
+These tutorials also feature **exercises**, sometimes with **code** (R/Python/Stata). Make sure to bring your laptop. 
+
+Exercises help you understand the sometimes abstract theoretical materials. Exercise answers will be available on Brightspace after the last tutorials in a week. 
+
+- Code and coding exercises will allow you to practice with the material and obtain practical programming experience
+
+- In total, we have **8** tutorials, one each week
+
+## Contact Points
+
+Course coordinator:
+
+- Bas Machielsen ([a.h.machielsen@uu.nl](mailto:a.h.machielsen@uu.nl]))
+
+Tutorial teachers:
+
+- Teacher 1: [x](mailto:x@uu.nl)
+- Teacher 2: [x](mailto:y@uu.nl)
+- Teacher 3: [z](mailto:z@uu.nl)
+
+Further information about course organization: See course manual (Brightspace)
+
+## This Week
+
+We set up Python/Stata/R.
+
+We focus on downloading and importing datasets.
+
+We focus on **statistics and probability**. Both "on pen and paper" and "with the help of your laptop". 
+
+- These are important building blocks for the linear model (week 3)
+- Which in turn is an important building block for more complicated models later on in the course
+
+# Setting Up
+
+## Setting Up Python/Stata/R
+
+:::{.panel-tabset}
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+This guide will walk you through installing a powerful and popular setup for Python programming. We'll use **Miniconda** to manage our Python environment and **Visual Studio Code (VS Code)** as our code editor.
+
+- Miniconda makes managing Python packages (like `pandas` for data or `matplotlib` for plots) incredibly easy and avoids conflicts. We'll use **Miniconda**, a lightweight version of Anaconda.
+- VSCode is a free, modern, and highly customizable code editor that works beautifully with Python.
+
+Follow the steps for your operating system to set up your environment.
+
+**On Windows**
+
+**Step 1: Install Miniconda (Python)**
+
+1.  Go to the Miniconda download page: [https://docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html)
+2.  Download the **latest Python 3.x Windows 64-bit installer** (it will be a `.exe` file).
+3.  Run the installer. When prompted, we recommend these settings:
+    *   Install for: **"Just Me"** (the default).
+    *   Destination Folder: Leave as the default.
+    *   Advanced Options: **Leave "Add Miniconda3 to my PATH" unchecked.** The recommended option is to use Miniconda from the "Anaconda Prompt."
+
+**Step 2: Install Visual Studio Code (VS Code)**
+
+1.  Go to the VS Code download page: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+2.  Click the big blue **"Download for Windows"** button.
+3.  Run the installer. Accept the license agreement and click `Next` on all screens. We recommend keeping the default settings, especially **"Add to PATH"**, which should be checked by default.
+
+**On macOS**
+
+**Step 1: Install Miniconda (Python)**
+
+1.  Go to the Miniconda download page: [https://docs.conda.io/en/latest/miniconda.html](https://docs.conda.io/en/latest/miniconda.html)
+2.  Download the installer for your Mac's chip:
+    *   **Apple M1/M2/M3:** Download the **"macOS Apple M1 64-bit pkg"** installer.
+    *   **Intel Chip:** Download the **"macOS Intel x86 64-bit pkg"** installer.
+3.  Run the installer (`.pkg` file). Click `Continue` and `Agree` through the prompts, using the default settings. It will install for the current user.
+
+**Step 2: Install Visual Studio Code (VS Code)**
+
+1.  Go to the VS Code download page: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+2.  Click the **"Download Mac Universal"** button.
+3.  This will download a `.zip` file. Unzip it to get the `Visual Studio Code.app`.
+4.  **Drag `Visual Studio Code.app` into your `Applications` folder.** This makes it easy to find and launch.
+
+**Step 3: Setting up VS Code for Python**
+
+Now that everything is installed, let's connect them.
+
+1.  **Open VS Code.**
+2.  **Install the Python Extension:**
+    *   Click on the **Extensions** icon on the left-hand sidebar (it looks like four squares).
+    *   In the search bar, type `Python`.
+    *   Find the one by **Microsoft** and click the **Install** button.
+
+3.  **Select your Conda Python Interpreter:**
+    *   Open the Command Palette by pressing **`Ctrl+Shift+P`** (on Windows) or **`Cmd+Shift+P`** (on Mac).
+    *   Type `Python: Select Interpreter` and press Enter.
+    *   A list of available Python versions will appear. Choose the one that says **'base': conda**. It should point to your Miniconda installation.
+
+You are now set up! VS Code knows where to find your Conda Python installation.
+
+**Step 4: Your First Project - Reading a Dataset**
+
+Let's perform our first real-world task: opening a project folder and reading data from a file.
+
+First, create a place for your project on your computer (e.g., in `Documents` or on your `Desktop`).
+
+1.  Create a new folder named `MyFirstProject`.
+2.  Inside `MyFirstProject`, create a **new text file** and name it `main.py`.
+3.  Inside `MyFirstProject`, create another **new folder** named `data`.
+4.  Inside the `data` folder, create a **new text file** named `students.csv`. Open it with a basic text editor (like Notepad or TextEdit) and paste the following content:
+
+```csv
+StudentID,Name,Score
+101,Alice,88
+102,Bob,92
+103,Charlie,75
+104,Diana,95
+```
+
+Your folder structure should look like this:
+
+```
+MyFirstProject/
+├── main.py
+└── data/
+    └── students.csv
+```
+
+**Step 5: Open the Project in VS Code**
+
+**This is a key step!** Don't just open the `.py` file. Open the entire folder.
+
+1.  In VS Code, go to **File > Open Folder...**.
+2.  Navigate to and select your `MyFirstProject` folder. Click **"Open"** (or "Select Folder").
+3.  The VS Code sidebar will now show your project files (`main.py` and the `data` folder).
+
+**Step 6: Install a Package and Write the Code**
+
+We need the `pandas` library to read the `.csv` file. Let's install it.
+
+1.  In VS Code, open a new terminal by going to **Terminal > New Terminal**.
+2.  A terminal will appear at the bottom of the screen. You should see `(base)` at the start of the prompt, indicating your Conda environment is active.
+3.  Type the following command and press Enter:
+    ```
+    conda install pandas
+    ```
+    Type `y` and press Enter if it asks you to proceed.
+
+Now, click on `main.py` in the sidebar to open it and paste this code:
+
+```python
+# 1. Import the pandas library, which is a powerful tool for data analysis.
+# We give it the nickname 'pd' to make it easier to use.
+import pandas as pd
+
+# 2. Define the path to our dataset.
+# Because we opened the 'MyFirstProject' folder, we can use a relative path.
+# This means "look inside the 'data' folder for the 'students.csv' file".
+file_path = 'data/students.csv'
+
+# 3. Use pandas to read the CSV file into a data structure called a DataFrame.
+print("Reading the dataset...")
+student_data = pd.read_csv(file_path)
+
+# 4. Print the first 5 rows of the data to see if it loaded correctly.
+print("Here is the top of the dataset:")
+print(student_data.head())
+
+# 5. Print a success message!
+print("\nSuccessfully imported and displayed the dataset!")
+```
+
+**Step 8: Run Your Python Script!**
+
+Look for the **Play button** (a white triangle) in the top-right corner of the VS Code window. Click it.
+
+The **Terminal** at the bottom will spring to life and you will see the output:
+
+```
+Reading the dataset...
+Here is the top of the dataset:
+   StudentID     Name  Score
+0        101    Alice     88
+1        102      Bob     92
+2        103  Charlie     75
+3        104    Diana     95
+
+Successfully imported and displayed the dataset!
+```
+
+**Congratulations!** You are ready to start coding.
+
+:::
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+This guide will help you install the standard toolkit for statistical computing and data science: **R** and **RStudio**. You must install R **first**, then install RStudio. RStudio needs R to function.
+
+Follow the steps for your operating system.
+
+**On Windows**
+
+**Step 1: Install R (The Language)**
+
+1.  Go to the official R download site, CRAN (the Comprehensive R Archive Network): [https://cran.r-project.org/bin/windows/base/](https://cran.r-project.org/bin/windows/base/)
+2.  Click the big link at the top that says **"Download R-x.x.x for Windows"**.
+3.  Run the installer (`.exe` file).
+4.  Use the default settings for all steps. Simply click `Next` through the installation wizard.
+
+**Step 2: Install RStudio (The Dashboard)**
+
+1.  Go to the RStudio Desktop download page: [https://posit.co/download/rstudio-desktop/](https://posit.co/download/rstudio-desktop/)
+2.  The website should automatically detect you're on Windows. Click the **"DOWNLOAD RSTUDIO DESKTOP FOR WINDOWS"** button.
+3.  Run the installer. Again, use the default settings by clicking `Next` until it's finished.
+
+**On macOS**
+
+**Step 1: Install R (The Language)**
+
+1.  Go to the CRAN download page for macOS: [https://cran.r-project.org/bin/macosx/](https://cran.r-project.org/bin/macosx/)
+2.  Choose the correct package for your Mac's chip:
+    *   **Apple M1/M2/M3 (Apple Silicon):** Download the package labeled **R-x.x.x.pkg (arm64)**.
+    *   **Intel Chip:** Download the package labeled **R-x.x.x.pkg (x86_64)**.
+3.  Run the installer (`.pkg` file). Click `Continue` and `Agree` through the prompts, using the default settings.
+
+**Step 2: Install RStudio (The Dashboard)**
+
+1.  Go to the RStudio Desktop download page: [https://posit.co/download/rstudio-desktop/](https://posit.co/download/rstudio-desktop/)
+2.  The website should detect you're on a Mac. Click the **"DOWNLOAD RSTUDIO DESKTOP FOR MACOS"** button.
+3.  This will download a `.dmg` file. Open it.
+4.  A window will appear. **Drag the RStudio icon into your Applications folder.**
+
+Open RStudio. You'll see four main panes (some may be combined at first):
+
+1.  **Source Editor (Top-Left):** This is where you write and save your R scripts (`.R` files).
+2.  **Console (Bottom-Left):** This is where you can type R commands directly and where the output from your scripts will appear.
+3.  **Environment/History (Top-Right):** `Environment` shows all the objects (like datasets) you've created. `History` shows your past commands.
+4.  **Files/Plots/Packages (Bottom-Right):** `Files` shows the files in your project folder. `Plots` is where your graphs will appear. `Packages` lets you manage your installed R packages.
+
+Using **RStudio Projects** is the best way to keep your work organized. A project keeps all your files, scripts, and data together.
+
+**Step 3: Create an RStudio Project**
+
+1.  In RStudio, go to **File > New Project...**.
+2.  Choose **New Directory**.
+3.  Choose **New Project**.
+4.  For "Directory name", type `MyFirstRProject`.
+5.  For "Create project as subdirectory of", click **Browse...** and choose a location like your `Desktop` or `Documents` folder.
+6.  Click **Create Project**.
+
+RStudio will now restart and open your new project. Notice the **Files** pane (bottom-right) now shows the contents of your `MyFirstRProject` folder.
+
+**Step 4: Create Your Folder and Data File**
+
+Let's create the same structure as our Python example.
+
+1.  In the **Files** pane (bottom-right), click the **New Folder** button and name it `data`.
+2.  Now, create the data file. On your computer (outside of RStudio), navigate into your new `MyFirstRProject` folder, then into the `data` folder.
+3.  Create a **new text file** named `students.csv`. Open it with a basic text editor (like Notepad or TextEdit) and paste the following content:
+
+```csv
+StudentID,Name,Score
+101,Alice,88
+102,Bob,92
+103,Charlie,75
+104,Diana,95
+```
+
+Your folder structure is now:
+
+```
+MyFirstRProject/
+├── MyFirstRProject.Rproj  (RStudio creates this for you)
+└── data/
+    └── students.csv
+```
+
+**Step 5: Create an R Script and Write the Code**
+
+1.  In RStudio, go to **File > New File > R Script**. A blank script will open in the Source editor.
+2.  Save the file by clicking the floppy disk icon or pressing `Ctrl+S` (Windows) / `Cmd+S` (Mac). Name it `main.R`.
+
+Now, paste this code into your `main.R` script:
+
+```r
+# 1. Define the path to our dataset.
+# Because we are using an RStudio Project, we can use a relative path.
+# This means "look inside the 'data' folder for the 'students.csv' file".
+file_path <- "data/students.csv"
+
+# 2. Use R's built-in function to read the CSV file.
+# The data is stored in an object called a "data frame".
+print("Reading the dataset...")
+student_data <- read.csv(file_path)
+
+# 3. Print the first 6 rows of the data to see if it loaded correctly.
+# The head() function is great for peeking at your data.
+print("Here is the top of the dataset:")
+print(head(student_data))
+
+# 4. Print a success message!
+print("Successfully imported and displayed the dataset!")
+```
+
+**Step 6: Run Your R Script!**
+
+There are two easy ways to run your code:
+
+1.  **Run the whole script (recommended):** Click the **Source** button at the top of your script editor. This will execute the entire file from top to bottom.
+
+2.  **Run line-by-line:** Place your cursor on a line and press **`Ctrl+Enter`** (on Windows) or **`Cmd+Enter`** (on Mac). This is great for debugging.
+
+The output will appear in the **Console** (bottom-left):
+
+```
+[1] "Reading the dataset..."
+[1] "Here is the top of the dataset:"
+  StudentID    Name Score
+1       101   Alice    88
+2       102     Bob    92
+3       103 Charlie    75
+4       104   Diana    95
+[1] "Successfully imported and displayed the dataset!"
+```
+
+**Congratulations!** You have installed R and RStudio, and are ready for data analysis. 
+
+:::
+
+### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+This guide covers getting started with Stata for data analysis. Stata is commercial software, so you must have a license from UU.
+
+**Step 1: Installation (Windows & macOS)**:
+
+Obtain Software: Get the Stata installer and your license file (stata.lic) from your university's software portal or IT department.
+
+Install Stata: Run the installer, accepting the terms and choosing the Stata version you are licensed for (e.g., Stata/SE). Use all default settings.
+
+**Step 2: Setup & First Script**:
+
+Create Project Folder: On your computer, create a folder named MyStataProject. Inside it, create a sub-folder named data and place your students.csv file inside.
+
+Set Working Directory: This is a crucial step. In Stata, go to File > Change Working Directory... and select your MyStataProject folder.
+
+Create and Run a Do-file:
+
+Open the Do-file Editor (click the notepad-with-pencil icon).
+
+Save the empty file as main.do in your project folder.
+
+Add these commands:
+
+```{stata}
+#| eval: false
+#| echo: true
+
+* Import data from the data sub-folder
+import delimited "data/students.csv", clear
+
+* Get summary statistics and view first 5 rows
+summarize
+list in 1/5
+```
+
+Click the Execute (do) button in the Do-file Editor's toolbar. The output will appear in the main Results window.
+
+**Congratulations!** You are ready to perform statistical analysis in Stata. 
+
+:::
+
+:::
+
+
+
+# Exercises
+
+## Events, Intersections, and Unions
+
+Imagine you are drawing a single card from a standard 52-card deck. Let's define two events:
+
+- **Event A:** The card drawn is a 'King'.
+- **Event B:** The card drawn is a 'Heart'.
+
+Calculate the following probabilities:
+
+1.  $P(A)$: The probability of drawing a King.
+2.  $P(B)$: The probability of drawing a Heart.
+3.  $P(A \cap B)$: The probability of drawing a King AND a Heart (i.e., the King of Hearts).
+4.  $P(A \cup B)$: The probability of drawing a King OR a Heart. Use the formula for the union of two events.
+
+## Conditional Probability
+
+Using the same card-drawing experiment:
+
+1.  Calculate $P(A|B)$: The probability that the card is a King, *given* that you know it is a Heart.
+2.  Calculate $P(B|A)$: The probability that the card is a Heart, *given* that you know it is a King.
+3.  Are events A and B independent? Justify your answer using the definition of independence ($P(A \cap B) = P(A)P(B)$).
+
+## Simulating an Experiment
+
+Let's verify the theoretical results from the card-drawing experiment empirically. We will simulate drawing a card a large number of times and see if the frequencies match the probabilities.
+
+1. Create a list or array representing the 52 cards. A simple way is a list of strings, e.g., `['2H', '3H', ..., 'KH', 'AH', '2D', ...]`.
+2. Write a Python/R/Stata script to "draw" a card from the deck 100,000 times (with replacement).
+3. Count how many times: 
+  - A 'King' was drawn (Event A).
+  - A 'Heart' was drawn (Event B).
+  - The 'King of Hearts' was drawn (Event $A \cap B$).
+  - A 'King' or a 'Heart' was drawn (Event $A \cup B$).
+  
+4.  **Calculate Frequencies:** Divide the counts by the total number of simulations (100,000) to get the empirical probabilities. Compare these to your theoretical answers in Exercise 1.1.
+
+## PMF, Expected Value, and Variance
+
+An online store has determined that the number of items a customer buys in a single visit, $X$, is a discrete random variable with the following Probability Mass Function (PMF):
+
+| $x$ (items) | 0 | 1 | 2 | 3 |
+| :--- | :--- | :--- | :--- | :--- |
+| **P(X=x)** | 0.1 | 0.5 | 0.3 | 0.1 |
+
+1.  Verify that this is a valid PMF.
+2.  Calculate the expected number of items a customer will buy, $E[X]$.
+3.  Calculate the variance of the number of items, $Var(X)$.
+4.  What is the probability that a customer buys more than one item?
+
+## The Bernoulli Distribution in Theory and Programming
+
+A loan has a probability of default of $p=0.05$. Let $X$ be a Bernoulli random variable where $X=1$ if the loan defaults and $X=0$ if it does not.
+
+(a) Using the formulas from the lecture for a Bernoulli distribution, calculate the expected value $E[X]$ and the variance $Var(X)$.
+
+(b) Use `numpy`, `scipy.stats` or `rbinom()` to simulate 1,000,000 such loans.
+- Calculate the sample mean and sample variance of your simulation.
+- Compare your simulated results to the theoretical values. They should be very close.
+
+
+## Standardization and Z-scores
+
+Suppose the annual returns of a stock portfolio are normally distributed with a mean of 12% and a standard deviation of 20%. Let $R$ be the random variable for the portfolio's return. So, $R \sim N(0.12, 0.20^2)$.
+
+1.  What is the Z-score for a return of 32%? What does this Z-score signify?
+2.  What is the Z-score for a return of -8%?
+3.  What portfolio return corresponds to a Z-score of 1.5?
+
+
+##  Calculating Probabilities and Quantiles
+
+Continuing with the portfolio from the previous exercise ($R \sim N(0.12, 0.20^2)$):
+
+Use `scipy.stats.norm` in Python or `pnorm` in R to answer the following questions:
+
+1.  What is the probability that the portfolio's return is negative ($P(R < 0)$)?
+2.  What is the probability that the return is greater than 25% ($P(R > 0.25)$)?
+3.  What is the probability that the return is between 0% and 15% ($P(0 < R < 0.15)$)?
+4.  Find the 5th percentile of the return distribution. This is the value below which 5% of returns fall (often used in Value-at-Risk calculations).
+
+- *(Hint: you may need `norm.cdf` and `norm.ppf` from `scipy.stats`)*
+
+## Linear Combinations of Normal Variables in Python
+
+You manage a portfolio consisting of two assets, Asset A and Asset B. Their annual returns are *independent* and normally distributed:
+
+- Return of Asset A: $R_A \sim N(0.10, 0.15^2)$
+- Return of Asset B: $R_B \sim N(0.06, 0.10^2)$
+
+You create a portfolio where you invest 60% in Asset A and 40% in Asset B. The portfolio return is $R_P = 0.6 R_A + 0.4 R_B$.
+
+(a) Based on the rules for linear combinations of normal random variables, what are the expected value $E[R_P]$ and variance $Var(R_P)$ of the portfolio? What is the full distribution of $R_P$?
+
+(b) Simulate 100,000 returns for $R_A$ and $R_B$. 
+- Calculate the portfolio return $R_P$ for each of the 100,000 simulations. 
+- Calculate the sample mean and sample variance of your simulated $R_P$.
+- Compare your simulated results to your theoretical calculations from part 1.
+- **Bonus:** Plot a histogram of your simulated $R_P$ to visually confirm it looks normally distributed.
+
+## Rules of Expectation and Variance
+
+Let $X$ and $Y$ be two random variables. You are given the following information:
+
+- $E[X] = 10$, $Var(X) = 4$
+- $E[Y] = 5$, $Var(Y) = 9$
+- $Cov(X, Y) = -2$
+
+Calculate the following:
+
+1.  $E[X + Y]$
+2.  $Var(X + Y)$
+3.  $E[3X - 2Y]$
+4.  $Var(3X - 2Y)$
+5.  Recalculate $Var(X+Y)$ assuming $X$ and $Y$ were independent. How does it differ from your answer in part 2?
+
+## Interpreting Conditional Expectation
+
+A researcher is studying the relationship between years of education ($E$) and annual income ($I$). They model income as a random variable conditional on education.
+
+The researcher finds that the conditional expectation of income given education is:
+$E[I | E=e] = 15000 + 4000e$
+
+(a) What is the expected income for a person with 12 years of education?
+(b) What is the expected income for a person with 16 years of education (a college degree)?
+(c) The researcher writes down the term $E[I|E]$. Is this a single number or a random variable? Explain your reasoning.
+
+
+## Univariate Statistics
+
+Import a dataset with (hourly) wages, `WAGE1.DTA` (see Brightspace), and calculate the expected value, variance and standard deviation of the `wage` variable. 
+
+Solutions: 
+
+::: panel-tabset
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+library(haven)
+dataset <- read_dta("../datafiles/WAGE1.DTA")
+mean(dataset$wage)
+var(dataset$wage)
+sd(dataset$wage)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pandas as pd
+import numpy as np
+dataset = pd.read_stata("../datafiles/WAGE1.DTA")
+np.mean(dataset['wage'])
+np.var(dataset['wage'])
+np.std(dataset['wage'])
+```
+
+### Stata
+
+Hey
+
+:::

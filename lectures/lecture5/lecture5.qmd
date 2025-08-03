@@ -1,0 +1,1041 @@
+---
+title: "Empirical Economics"
+subtitle: "Lecture 5: Panel Data"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 5 - Panel Data'
+resources:
+  - demo.pdf
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+# Outline
+
+## Course Overview
+
+- Statistics and Probability - Basic Concepts
+- Statistics and Probability - Hypothesis Testing
+- The Linear Regression Model
+- Time Series Data
+- Panel Data (FE) and Control Variables
+- Binary Outcome Data
+- Potential Outcomes and Difference-in-differences
+- Hands-on Econometrics in Practice
+
+## What do we do today?
+
+- We have seen _cross sectional_ and _time series_ data
+
+- This lecture, we will talk about methods used when we can _combine_ features of cross-sectional and time-series data
+
+- We will introduce two workhorse econometrics models, the Fixed Effects (FE) model, and the Random Effects (RE) model
+
+- We discuss a special case of panel data in the form of _event studies_. 
+
+# Introduction
+
+## What is Panel Data?
+
+- A panel dataset (or longitudinal dataset) follows the **same** set of individuals over **multiple** time periods.
+
+- Structure: 
+  - **$N$**: The number of individuals or entities (e.g., people, firms, countries, schools).
+  - **$T$**: The number of time periods (e.g., years, quarters, days).
+
+- The total number of observations is $N \times T$ (for a balanced panel).
+
+:::{.callout-tip title="Examples: Panel Data"}
+**PSID (Panel Study of Income Dynamics):** Tracks thousands of families and their descendants over many years.
+
+**Compustat:** Financial data for thousands of public firms over many years.
+
+:::
+
+## Structure of Panel Data{#sec-structure}
+
+- Imagine tracking the GDP and foreign investment for 3 countries over 4 years.
+
+:::{style="font-size: 1.5em;"}
+
+| Country (i) | Year (t) | GDP ($y_{it}$) | Investment ($X_{it}$) |
+|:-----------:|:--------:|:--------------:|:---------------------:|
+|     USA     |   2019   |      21.4      |         0.25          |
+|     USA     |   2020   |      20.9      |         0.16          |
+|     USA     |   2021   |      23.0      |         0.36          |
+|     USA     |   2022   |      25.4      |         0.13          |
+|   Germany   |   2019   |      3.8       |         0.14          |
+|   Germany   |   2020   |      3.8       |         0.13          |
+|   ...       |   ...    |      ...       |          ...          |
+|    Japan    |   ...    |      ...       |          ...          |
+
+:::
+
+- Here, $N=3$ and $T=4$.
+- The data has both a **cross-sectional** dimension (comparing USA, Germany, Japan in one year) and a **time-series** dimension (tracking the USA from 2019-2022).
+
+
+## Advantages of Panel Data
+
+- **Controlling for Unobserved Heterogeneity:**
+    - This is the biggest advantage! We can control for factors that are unobserved and constant over time for each individual (e.g., intrinsic ability, corporate culture, national institutions).
+    - This helps us mitigate omitted variable bias.
+
+- **Increased Degrees of Freedom:**
+    - Panel datasets are often much larger than pure cross-sectional or time-series datasets.
+    - More data leads to more precise estimates (lower standard errors).
+
+- **Analyzing Dynamics:**
+    - We can study how variables change over time and the speed of adjustment.
+    - For example, how long does it take for a change in policy to affect unemployment? You can't answer this with a single cross-section.
+
+
+## Notation for Panel Data Models
+
+- A standard panel data regression model is written as:
+
+:::{.callout-note title="Definition: Panel Regression Model"}
+
+$$ y_{it} = \beta_0 + \beta_1 X_{1,it} + ... + \beta_k X_{k,it} + u_{it} $$
+
+Where:
+
+  - $i = 1, ..., N$ indexes the individual or entity.
+  - $t = 1, ..., T$ indexes the time period.
+  - $y_{it}$: The dependent variable for individual $i$ at time $t$.
+  - $X_{k,it}$: The $k^{th}$ independent variable for individual $i$ at time $t$.
+  - $\beta_k$: The coefficient for variable $X_k$.
+  - $u_{it}$: The error term for individual $i$ at time $t$.
+
+:::
+
+- The key is what we assume about the error term, $u_{it}$.
+
+# The Pooled OLS Model
+
+## The Pooled OLS Model
+
+- The simplest approach is to ignore the panel structure entirely.
+
+:::{.callout-note title="Definition: Pooled OLS Model"}
+  $$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+:::
+- **Method:**
+  - Stack all $N \times T$ observations together.
+  - Run a single OLS regression as if it were one large cross-section.
+
+- **Key Assumption:**
+  - The error term $u_{it}$ is uncorrelated with the regressors $X_{it}$.
+  - This implicitly assumes that there are **no unobserved individual-specific or time-specific effects** that are correlated with our $X$ variables. 
+  - This assumption is almost always violated in practice! It ignores the very heterogeneity that panel data is designed to address, leading to biased estimates.
+
+## Unobserved Heterogeneity
+
+- The error term $u_{it}$ in a panel model is often thought to have multiple parts:
+
+  $$ u_{it} = \alpha_i + \lambda_t + \epsilon_{it} $$
+
+- $\alpha_i$: **Individual-specific effect**. This is an unobserved factor that is constant over time for a given individual $i$, but varies across individuals.
+- $\lambda_t$: **Time effect**. This is an unobserved factor that is constant for all individuals at a given time $t$, but varies over time.
+- $\epsilon_{it}$: The idiosyncratic error term that varies across both $i$ and $t$.
+- The core challenge of panel data is how to deal with $\alpha_i$ and $\lambda_t$.
+
+## Unobserved Heterogeneity Examples
+
+:::{.callout-tip title="Example: Unobserved Heterogeneity"}
+
+$\alpha_i$:  An individual's innate ability, a firm's management quality, a country's cultural norms. All of these affect a particular individual, firm, or country $i$ in a way that is constant over time.
+
+$\lambda_t$: A global financial crisis, a major policy change, a technological shock. All of these affect an entire cross-section at particular point in time $t$.
+
+:::
+
+# The Fixed Effects Estimator
+
+## Fixed Effects
+
+- **Core Idea:** Treat the individual-specific effects, $\alpha_i$, as **parameters to be estimated**. Each individual gets their own intercept.
+
+:::{.callout-note title="Definition: Fixed Effects Model"}
+
+$$ y_{it} = (\beta_0 + \alpha_i) + \beta_1 X_{it} + \epsilon_{it} $$
+or more simply:
+$$ y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it} $$
+(Here, the $\alpha_i$ represent the individual-specific intercepts)
+
+:::
+
+- The term "fixed effects" implies that we are making no assumptions about the distribution of the $\alpha_i$ or their correlation with $X_{it}$. We allow them to be correlated with the regressors.
+
+## The "Within" Estimator for FE
+
+- It is easy to estimate a fixed effects model: it is actually OLS estimation on transformed data
+- This fact allows us to estimate the FE model without explicitly estimating $N$ different intercepts? 
+- The goal is to eliminate the fixed effect $\alpha_i$ in $Y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
+
+## Within Transformation
+
+:::{.callout-note title="Definition: Within Transformation"}
+
+**Step 1:** For each individual $i$, calculate the time-average of their variables:
+$$ \bar{y}_i = \frac{1}{T} \sum_{t=1}^{T} y_{it} \quad \text{and} \quad \bar{X}_i = \frac{1}{T} \sum_{t=1}^{T} X_{it} $$
+
+**Step 2:** Subtract the individual-specific average from the original model:
+$$ y_{it} - \bar{y}_i = \beta_1 (X_{it} - \bar{X}_i) + (\epsilon_{it} - \bar{\epsilon}_i) $$
+The fixed effect $\alpha_i$ is time-constant, so $\alpha_i - \bar{\alpha}_i = \alpha_i - \alpha_i = 0$. It drops out!
+
+**Step 3:** Run OLS on the "de-meaned" data:
+$$ (y_{it} - \bar{y}_i) \text{ on } (X_{it} - \bar{X}_i) $$
+This gives a consistent estimate of $\beta_1$.
+:::
+
+
+## Least Squares Dummy Variable Model
+
+- An alternative, but **equivalent**, way to get FE estimates is the LSDV model.
+
+:::{.callout-note title="LSDV Model"}
+
+Create a dummy (0/1) variable for each individual $i$ (except for one, to avoid the dummy variable trap).
+
+Run a single OLS regression including these $N-1$ dummy variables.
+
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + d_1\alpha_1 + d_2\alpha_2 + ... + d_{N-1}\alpha_{N-1} + \epsilon_{it} $$
+
+The estimated coefficient $\beta_1$ from the LSDV model is **identical** to the one from the "Within" estimator.
+
+:::
+
+- The coefficients on the dummies ($\alpha_i$) are the estimated fixed effects.
+- LSDV is impractical for panels with very large $N$ (e.g., thousands of individuals) due to computational burden. The "Within" estimator is more efficient.
+
+## Interpretation of FE Coefficients
+
+:::{.callout-tip title="Interpretation of Fixed Effects models"}
+
+In a Fixed Effects model, the coefficient $\beta_1$ measures:
+
+The average change in $y$ for a one-unit increase in $X$ **within** a given individual over time.
+
+:::
+
+- The FE estimator uses only the variation *within* each individual (firm/country/etc.) to estimate the coefficients.
+- It effectively ignores variation *between* individuals. You are comparing individual A at time 1 to individual A at time 2, not to individual B.
+
+## Visualization Fixed Effects
+
+```{r}
+#| echo: false
+#| fig.align: 'center'
+#| fig.width: 7
+#| fig.height: 6
+
+# Load required packages
+library(ggplot2)
+library(dplyr)
+library(lmtest)
+library(plm)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Parameters
+n_countries <- 3
+n_years <- 20
+countries <- c("Country A", "Country B", "Country C")
+
+# Create panel data
+panel_data <- expand.grid(country = countries, year = 1:n_years) %>%
+  mutate(
+    # Common slope (0.5) but different intercepts by country
+    intercept = case_when(
+      country == "Country A" ~ 1,
+      country == "Country B" ~ 3,
+      country == "Country C" ~ 5
+    ),
+    x = runif(n(), 0, 10),
+    epsilon = rnorm(n(), 0, 0.5),
+    y = intercept + 0.5 * x + epsilon
+  )
+
+# Estimate fixed effects model
+fe_model <- plm(y ~ x, data = panel_data, index = c("country", "year"), model = "within")
+
+# Create visualization
+ggplot(panel_data, aes(x = x, y = y, color = country)) +
+  geom_point(alpha = 0.7) +  # Plot actual points
+  geom_abline(aes(intercept = 1, slope = 0.5), color = "#F8766D", linetype = "solid", size = 1) +  # Country A line
+  geom_abline(aes(intercept = 3, slope = 0.5), color = "#00BA38", linetype = "solid", size = 1) +  # Country B line
+  geom_abline(aes(intercept = 5, slope = 0.5), color = "#619CFF", linetype = "solid", size = 1) +  # Country C line
+  labs(title = "Fixed Effects Regression Visualization",
+       subtitle = "Same slope (0.5) but different intercepts by country",
+       x = "Independent Variable (x)",
+       y = "Dependent Variable (y)",
+       color = "Country") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF"))
+
+```
+
+
+## Pros and Cons of the Fixed Effects Model
+
+- **Pros:**
+    - **Controls for all time-invariant omitted variables**, whether observed or unobserved. This is its most powerful feature. If you are worried that unobserved `ability` is correlated with both `education` (your X) and `wage` (your Y), FE solves this problem because `ability` is constant for an individual.
+    - It is consistent even if the unobserved effect $\alpha_i$ is correlated with the regressors $X_{it}$.
+
+- **Cons:**
+    - **Cannot estimate the effect of time-invariant variables.** The "Within" transformation wipes them out. 
+    - For example, you cannot estimate the effect of `gender` or `race` on wages using a standard FE model, because these variables do not change over time for an individual.
+    - May be less efficient than the Random Effects model if its stricter assumptions hold.
+    
+## Fixed Effects in Software
+
+- Arguably, the fixed effects model is one of the most often-used models in modern econometrics.
+
+- Standard statistical software such as `lm()` in R or `sm.OLS()` in Python can implement FE using the LSDV method, but this is often tedious. 
+
+- The `fixest` (R) and `pyfixest` (Python) package provide a very easy way to estimate FE proceding from a dataset that looks like the one on [Slide @sec-structure]. 
+
+- This is how that works in practice: 
+
+:::panel-tabset
+
+### R
+
+```{r}
+#| eval: false
+#| echo: true
+library(fixest)
+model <- feols(y ~ x1 + x2 | fe1 + fe2, data = dataset) 
+# fixed effects separated from ind. vars. by |
+summary(model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| eval: false
+import pyfixest as pf
+
+fit = pf.feols(fml="y ~ x1 + x2 | fe1 + fe2", data=data)
+# fixed effects separated from the ind. vars. by | 
+fit.summary()
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+xtset country year *\In order: $i$ variable, $t$ variable
+xtreg y x1 x2, fe1 fe2 *\fixed effects separated by a comma
+```
+
+:::
+
+# The Random Effects Estimator
+
+## The Random Effects (RE) Model
+
+- **Core Idea:** Instead of treating $\alpha_i$ as a fixed parameter for each individual, we treat it as a **random variable** that is part of the composite error term.
+
+:::{.callout-note title="Definition: Random Effects"}
+
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+
+Where the composite error term is:
+$$ u_{it} = \alpha_i + \epsilon_{it} $$
+
+- $\alpha_i$ is the random individual-specific error component.
+- $\epsilon_{it}$ is the idiosyncratic error.
+
+:::
+
+- The RE model is a compromise between Pooled OLS and Fixed Effects.
+
+## Random Effects Specification
+
+- The Random Effects Estimator can also be written as follows:
+
+  $$
+    y_{it} - \theta \bar{y_i}  = \beta_1( x_{1it} -\theta\overline{x_{1i}}) +\dots + \beta_k(x_{kit} - \theta\overline{x_{ki}}) + (u_{it} -\theta \bar{u}_i)
+  $$
+
+
+- $\bar{y_i} = (1/T) \sum_t y_{it}$ (the mean of $y$ for individual $i$). Similar for $\overline{x_{ji}}$.
+- $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T_i \sigma^2_\alpha + \sigma^2_\epsilon)}}$, with $\sigma^2_{.}$ denoting the variance of the $\epsilon$ and $\alpha$ terms respectively. 
+- $T_i$ is the no. of observations for individual $i.$ If balanced, $T_i = T$.
+
+
+## The Key Assumption for Random Effects
+
+- For the RE model to be valid (i.e., provide consistent estimates), we must assume:
+
+$$ E(\alpha_i | X_{it}) = 0 $$
+
+- **In English:** The unobserved individual-specific effects ($\alpha_i$) are **uncorrelated** with the explanatory variables ($X_{it}$) for all time periods.
+
+- This is a much stronger assumption than in the FE model.
+  - **Example where it might be violated:** In a wage regression, if unobserved `ability` ($\alpha_i$) is correlated with `education` ($X_{it}$), the RE assumption is violated, and the RE estimator will be biased.
+  - **Example where it might hold:** In an experiment where treatment ($X_{it}$) is randomly assigned, the assumption would hold by design.
+
+## Estimation of RE Models (GLS)
+
+- Estimating the RE model can "almost" be done using Pooled OLS. 
+  - If we run Pooled OLS on the data, assuming the RE model, the estimates of $\beta$ will be unbiased (if the key assumption holds), but they will be **inefficient**.
+
+- The composite error term $u_{it} = \alpha_i + \epsilon_{it}$ creates serial correlation within each individual. 
+  - The error for individual $i$ at time $t$ is correlated with their error at time $t+1$ because they share the same $\alpha_i$:
+  
+  $$\rho(u_{it}, u_{is}) \neq 0 \quad \text{for } t \neq s$$
+
+- **Solution:** Generalized Least Squares (GLS).
+    - GLS is a method that transforms the data to account for this specific error structure, producing efficient estimates.
+    - In practice, we use **Feasible GLS (FGLS)** because we have to estimate the components of the error correlation first. This is what statistical software does automatically.
+
+## Interpretation of RE Coefficients
+
+- The RE estimator uses a weighted average of the "within" and "between" variation in the data.
+
+:::{.callout-tip title="Interpretation of RE Estimates"}
+
+The coefficient $\beta_1$ from an RE model is interpreted as:
+
+The estimated change in $y$ for a one-unit increase in $X$, assuming the unobserved individual effects $\alpha_i$ are uncorrelated with $X$.
+
+:::
+
+- It's a more general interpretation than the FE coefficient.
+- The reliability of this interpretation hinges entirely on the key RE assumption holding true.
+
+## Pros and Cons of the Random Effects Model
+
+- **Pros:**
+    - **Can estimate the effects of time-invariant variables** (e.g., gender, race, industry), because it does not wipe them out.
+    - **More efficient** (i.e., has smaller standard errors) than the FE model, *if* the key assumption ($E(\alpha_i | X_{it}) = 0$) is met. It uses both "within" and "between" variation.
+
+- **Cons:**
+    - **Estimates are biased and inconsistent if the key assumption is violated.** This is the critical weakness. If the unobserved effects are correlated with your regressors, the RE model suffers from omitted variable bias.
+
+## Comparing FE and RE: The Hausman Test
+
+- So, which model should we use? FE or RE? The **Hausman Test** helps us decide.
+
+- **Intuition:**
+    - The FE estimator is **always consistent**, whether the unobserved effects $\alpha_i$ are correlated with $X$ or not.
+    - The RE estimator is **consistent AND efficient** if $\alpha_i$ and $X$ are uncorrelated, but **inconsistent** if they are correlated.
+
+- **The Test:** We compare the coefficient estimates from FE and RE.
+    - If the coefficients are "close" to each other, it suggests the RE assumption holds, and we should use the more efficient RE model.
+    - If the coefficients are "far apart" and statistically different, it suggests the RE assumption is violated. We must use the consistent FE model.
+
+
+## Hausman Test Statistic
+
+- The test is based on the difference between the coefficient vectors from the two models: $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$.
+
+- The Hausman statistic, $H$, is a measure of the squared distance between the two vectors of coefficients, weighted by the precision (1/variance) of this difference. 
+  - It is constructed so that large, systematic differences between the coefficients lead to a large test statistic.
+
+- Under the null hypothesis ($H_0$), the test statistic follows a Chi-squared distribution with $k$ degrees of freedom, where $k$ is the number of time-varying regressors in the model.
+
+$$ H \sim \chi^2(k) $$
+
+## $\chi^2$ Test Visualization
+
+- The $\chi^2$ distribution is one-sided.
+  - A significance level $\alpha$ gives you a critical value on the basis of which a test can be rejected. 
+  - Alternatively, the $p$-value can be calculated according to the cdf. 
+  
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 10
+#| fig-height: 4
+# Load required packages
+library(ggplot2)
+
+# Set degrees of freedom for the Chi-squared distribution
+df <- 5
+
+# Generate Chi-squared distribution data
+x <- seq(0, 20, length.out = 1000)
+chi_sq_density <- dchisq(x, df)
+
+# Create a data frame for plotting
+plot_data <- data.frame(x = x, density = chi_sq_density)
+
+# Generate a random critical value (greater than median for demonstration)
+set.seed(123)  # For reproducibility
+critical_value <- runif(1, qchisq(0.5, df), qchisq(0.99, df))
+
+# Calculate the p-value (right-tailed test)
+p_value <- pchisq(critical_value, df, lower.tail = FALSE)
+
+# Find the y-position for the critical value label (just above the line)
+label_y <- dchisq(critical_value, df) * 1.1
+
+# Find the x-position for the p-value label (in the middle of the tail area)
+p_label_x <- critical_value + (max(x) - critical_value)/2
+p_label_y <- max(chi_sq_density)/4  # Position in the empty space
+
+# Plot the Chi-squared distribution
+p <- ggplot(plot_data, aes(x = x, y = density)) +
+  geom_line(color = "blue", linewidth = 1) +
+  geom_area(data = subset(plot_data, x > critical_value), 
+            aes(y = density), fill = "red", alpha = 0.3) +
+  geom_vline(xintercept = critical_value, color = "darkgreen", linetype = "dashed") +
+  
+  # Critical value label positioned at the line
+  geom_text(aes(x = critical_value, y = label_y, 
+                label = paste("Critical value =", round(critical_value, 2))),
+            hjust = -0.1, vjust = 0, color = "darkgreen") +
+  
+  # p-value label positioned in the tail area
+  geom_text(aes(x = p_label_x, y = p_label_y, 
+                label = paste("p-value =", round(p_value, 4))),
+            color = "darkred") +
+  
+  labs(title = paste("Chi-squared Distribution with", df, "Degrees of Freedom"),
+       x = "Value", y = "Density") +
+  theme_minimal()
+
+p
+```
+
+## The Hausman Test: Application
+
+:::{.callout-note title="Hausman Test: Procedure"}
+- $H_0$: The Random Effects model is the appropriate model. (The difference in coefficients between FE and RE is not systematic, i.e., $E(\alpha_i | X_{it}) = 0$).
+
+- $H_A$: The Fixed Effects model is the appropriate model. (The difference in coefficients is systematic, i.e., $E(\alpha_i | X_{it}) \neq 0$).
+
+- Statistical software calculates a test statistic (Chi-squared) and a p-value.
+    - **If p-value < 0.05 (or your chosen significance level):** Reject the null hypothesis. The models are significantly different. Conclude that the RE assumption is likely violated. **Use the Fixed Effects model.**
+    - **If p-value >= 0.05:** Fail to reject the null hypothesis. You do not have evidence that the RE assumption is violated. **Use the more efficient Random Effects model.**
+
+:::
+
+# The First Difference Estimator
+
+## The First Difference Model
+
+- There is another way to eliminate the fixed effect $\alpha_i$. Instead of de-meaning, we difference the data across time periods.
+
+:::{.callout-note title="First Differences: Procedure"}
+**Original Model at time t:** $y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
+
+**Model at time t-1:** $y_{i,t-1} = \alpha_i + \beta_1 X_{i,t-1} + \epsilon_{i,t-1}$
+
+**Subtracting the two:**
+  $$
+    (y_{it} - y_{i,t-1}) = \beta_1 (X_{it} - X_{i,t-1}) + (\epsilon_{it} - \epsilon_{i,t-1})
+  $$
+$$\Delta y_{it} = \beta_1 \Delta X_{it} + \Delta \epsilon_{it}$$
+
+The fixed effect $\alpha_i$ is eliminated. We can estimate $\beta_1$ by running OLS on the differenced data.
+
+:::
+
+
+
+## FD vs. FE: The Case of Random Walk Errors
+
+- The standard Fixed Effects (FE) estimator is the most efficient linear unbiased estimator when the idiosyncratic errors, $\epsilon_{it}$, are serially uncorrelated.
+  - But what happens if they are not?
+
+:::{.callout-tip title="Panel Data Model with a Random Walk Error"}
+- Consider the case where the error term follows a **random walk**: 
+
+$$ y_{it} = \beta_1 X_{it} + \alpha_i + \epsilon_{it} $$
+
+- Let's assume the error term $\epsilon_{it}$ is not i.i.d., but instead follows a random walk process. This means today's error is equal to yesterday's error plus a new, well-behaved shock, $\nu_{it}$.
+
+$$ \epsilon_{it} = \epsilon_{i,t-1} + \nu_{it} $$
+
+- Here, $\nu_{it}$ is a "white noise" error, meaning it is not serially correlated. The random walk structure means that $\epsilon_{it}$ is highly serially correlated.
+:::
+
+## Impact on the FE Estimator
+
+- The FE estimator transforms the model by de-meaning the data.
+- The resulting error term is:
+
+  $$
+    \tilde{\epsilon}_{it} = \epsilon_{it} - \bar{\epsilon}_i
+  $$
+
+- If the original error $\epsilon_{it}$ has a random walk structure, this transformed error $\tilde{\epsilon}_{it}$ will **still be serially correlated**. 
+- While the FE estimator remains consistent, it is no longer efficient, and standard errors will be biased unless we use robust (clustered) standard errors.
+
+## Impact on the FD Estimator
+
+- The First Differences (FD) estimator transforms the model by differencing the data.
+- The new error term is the difference of the original errors:
+
+  $$
+    \Delta \epsilon_{it} = \epsilon_{it} - \epsilon_{i,t-1}
+  $$
+
+- Now, let's substitute our random walk assumption into this equation:
+
+  $$
+    \Delta \epsilon_{it} = (\epsilon_{i,t-1} + \nu_{it}) - \epsilon_{i,t-1}
+  $$
+
+- This simplifies perfectly to $\Delta \epsilon_{it} = \nu_{it}$. 
+
+## Conclusion 
+
+- The FD transformation has converted the highly serially correlated random walk error ($\epsilon_{it}$) into a non-serially correlated error ($\nu_{it}$).
+
+- Because OLS on the transformed data is most efficient when the errors are not serially correlated, the **FD estimator will be more efficient than the FE estimator** under the specific condition of random walk errors. 
+  - This makes FD a powerful alternative, especially for panels with a long time dimension (large T) where such error dynamics are more plausible.
+
+- **Comparison with FE:**
+  - If $T=2$, FD and FE give identical results.
+  - For $T>2$, they are different. FE is more efficient if the original errors ($\epsilon_{it}$) are not serially correlated.
+  - FD can be better if the errors follow a random walk. FD is a popular choice for robustness checks.
+
+## Practical Considerations & Summary
+
+- In practice, researchers opt almost always for the FE model.
+  - However, if you want to be robust, you can follow this workflow: 
+
+:::{.callout-tip title="Workflow for Panel Models"}
+
+1.  Start by considering your research question. Are you interested in time-invariant variables? If yes, FE is not an option for those variables.
+2.  Run both FE and RE models.
+3.  Perform the Hausman test.
+4.  **If Hausman test rejects H0 (p < 0.05):** Use FE. The correlation between unobserved effects and your regressors is a significant problem that FE solves.
+5.  **If Hausman test fails to reject H0 (p >= 0.05):** You can justify using the more efficient Random Effects model.
+6.  Consider Pooled OLS only if you have a strong theoretical reason to believe there is no unobserved heterogeneity (very rare).
+7.  Consider the First Differences model as a robustness check.
+
+:::
+
+# Event Studies
+
+## What is an Event Study?
+
+- A special case of the panel data model is an _event study_
+
+- To measure the economic impact of a specific, identifiable **event** on an outcome of interest.
+
+:::{.callout-tip title="Example: Event Studies"}
+
+- **The "Event" could be:**
+  - A company-specific event: Merger announcement, CEO change, earnings surprise.
+  - A policy change: A new tax law, a change in minimum wage.
+  - A natural event: A major hurricane, a pandemic.
+
+- **The "Outcome" is often:**
+  - A firm's stock price (most common in finance).
+  - A firm's accounting performance (sales, profits).
+  - A macroeconomic variable (unemployment, inflation).
+
+:::
+
+- The central challenge is to determine what the outcome *would have been* if the event had not occurred.
+
+## Panel Event Study Model With Controls
+
+- The canonical event study model uses firm and time fixed effects and replaces the single interaction term with a series of dummies for time *relative to the event*.
+
+:::{.callout-note title="Definition: Panel Event Study Model (with Control Subjects)"}
+$$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it} $$
+
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all time-invariant differences between firms.
+-   $\lambda_t$: **Time Fixed Effects**. These absorb all shocks or trends common to all firms in a given year `t`. 
+-   $D_{it}^k$: A dummy variable equal to 1 if firm `i` in year `t` is `k` periods away from its event date. `k` is the **relative time** or **event time**.
+-   **$\delta_k$ are the key coefficients.** They measure the average change in the outcome for treated firms `k` periods away from the event, relative to the control group.
+
+:::
+
+## Example Dataset
+
+- A dataset for an event study would look as follows: 
+  - *Note: For simplicity, only dummy columns for $k = -2, -1, 0, 1$ are included - a full model would include dummies for all relevant pre/post periods (e.g., $k \leq 3$ and $k \geq 2$).*
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------: | :---------: | :---------: |
+| 1 (Control)   |    2021    |         NA         |              NA               |       2.0        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2022    |         NA         |              NA               |       2.1        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2023    |         NA         |              NA               |       2.2        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2024    |         NA         |              NA               |       2.3        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2025    |         NA         |              NA               |       2.4        |      0       |      0       |      0      |      0      |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      **1**   |      0       |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |      **1**   |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |      0       |     **1**   |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |      0       |      0      |     **1**   |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      **1**   |      0       |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |      **1**   |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |      0       |     **1**   |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |      0       |      0      |     **1**   |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |      0       |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      **1**   |      0       |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |      **1**   |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |      0       |     **1**   |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |      0       |      0      |     **1**   |
+
+## Interpretation of the Results
+
+- After running the regression, you will get a set of coefficients `δ_k` which are typically plotted on a graph:
+- **Testing Pre-Trends (`k < 0`):** The coefficients `δ_{-K}, ..., δ_{-2}` test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.
+- **The Effect at Impact (`k = 0`):** `δ_0` shows the immediate effect of the treatment in the event period itself.
+- **Dynamic Post-Treatment Effects (`k > 0`):** `δ_1, δ_2, ..., δ_L` show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+
+## Event Study Visualization
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# --- 1. Create a Sample Results Data Frame ---
+# In a real analysis, this data frame would be the output of your regression model
+# (e.g., from a model run with the 'fixest' or 'lfe' package).
+# The coefficients represent the difference-in-differences estimates (Treated - Control).
+
+results_df <- data.frame(
+  event_time = -5:5,
+  # We manually create plausible estimates for demonstration purposes
+  estimate = c(
+    0.05, -0.02, 0.08, 0.01, # Pre-event coeffs, should be near zero (parallel trends)
+    0.00,                     # The reference period (k=-1), coefficient is 0
+    1.20,                     # Sharp impact on event day
+    1.55,                     # Effect increases
+    1.30,                     # Effect begins to decay
+    0.90,
+    0.65,
+    0.40
+  ),
+  # Standard errors are typically estimated by the regression model
+  std_error = c(
+    0.18, 0.15, 0.16, 0.14,
+    0.00,
+    0.20,
+    0.22,
+    0.21,
+    0.23,
+    0.25,
+    0.28
+  )
+)
+
+# Calculate 95% confidence intervals
+# 1.96 is the z-score for a 95% CI
+z_score <- 1.96
+results_df <- results_df %>%
+  mutate(
+    conf_low = estimate - z_score * std_error,
+    conf_high = estimate + z_score * std_error
+  )
+
+# Set the reference period (k=-1) confidence interval to zero as well
+results_df[results_df$event_time == -1, c("conf_low", "conf_high")] <- 0
+
+# Print the final data frame to be plotted
+#print("Data frame with estimated coefficients and confidence intervals:")
+#print(results_df)
+
+
+# --- 2. Plot the Results using ggplot2 ---
+
+event_study_plot <- ggplot(
+  data = results_df, 
+  aes(x = event_time, y = estimate)
+) +
+  # Add a horizontal line at y=0 to represent no effect
+  geom_hline(
+    yintercept = 0, 
+    linetype = "dashed", 
+    color = "red",
+    linewidth = 0.8
+  ) +
+  # Add a vertical line to separate pre- and post-treatment periods
+  geom_vline(
+    xintercept = -0.5, 
+    linetype = "dashed", 
+    color = "gray40"
+  ) +
+  # Add the confidence interval as a shaded ribbon
+  geom_ribbon(
+    aes(ymin = conf_low, ymax = conf_high),
+    alpha = 0.2, # Transparency of the ribbon
+    fill = "steelblue"
+  ) +
+  # Add a line connecting the point estimates
+  geom_line(
+    color = "steelblue",
+    linewidth = 1
+  ) +
+  # Add points for the estimates
+  geom_point(
+    color = "steelblue",
+    size = 3
+  ) +
+  # --- Customize labels and scales ---
+  labs(
+    title = "Event Study: Effect of Treatment with a Control Group",
+    subtitle = "The coefficient represents the difference-in-differences estimate (Treated vs. Control)",
+    x = "Event Time (k, relative to treatment)",
+    y = "Estimated Coefficient (δ_k)"
+  ) +
+  # Ensure all event time periods are shown on the x-axis
+  scale_x_continuous(breaks = seq(min(results_df$event_time), max(results_df$event_time), by = 1)) +
+  # Use a clean, publication-ready theme
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 12),
+    panel.grid.minor = element_blank()
+  )
+
+# Display the plot
+event_study_plot
+```
+
+## What Happens Without a Control Group?
+
+- Imagine you removed the control firm (Firm 1) from the dataset. 
+  - Now, in the year 2023, the only firms you have are Firm 2 (which just got treated, k=0) and Firms 3 & 4 (which are pre-treatment, k=-1).
+
+- The regression would see that Firm 2's outcome went up in 2023. But it has no way to know:
+  - Was it because of the treatment ($\delta_0$)?
+  - Or was 2023 just a great year for everyone ($\lambda_{2023}$)?
+
+- Without the control group, the effect of being in the year 2023 ($\lambda_{2023}$) is perfectly collinear with the effect of being treated in 2023 ($\delta_0$).
+- The model cannot distinguish between them, and the regression will fail or produce meaningless results.
+
+
+# Event Studies Without Control Subjects
+
+## Event Study Without Control Subjects
+
+- There are, however, also event studies that do not need control firms. 
+
+- These tend to make use of an **estimation window:** a "clean" period **before** the event.
+
+- This is used to establish a baseline or "normal" behavior for the outcome variable. Typically, ~120 to ~250 days before the event window.
+
+- The period immediately surrounding (or after) the event date where we expect to see an impact. For example, from 5 days before to 5 days after the announcement ([-5, +5]).
+
+## Specification 
+
+:::{.callout-note title="Definition: Event Study (Without Control Group)"}
+
+- The model you can estimate with only treated units is:
+
+  $$
+    y_{it} = \alpha_i + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it}
+  $$
+
+-   $y_{it}$: The outcome for firm `i` at time `t`.
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all stable, time-invariant differences between the treated firms.
+-   $D_{it}^k$: A dummy variable = 1 if firm `i` in year `t` is `k` periods away from its event date.
+-   **$\delta_k$ are the key coefficients.** They measure the average outcome for a firm `k` periods from its event, *relative to the outcome in the omitted baseline period* (usually `k=-1`).
+
+- There are no $\lambda_t$ (time fixed effects). You cannot include them. 
+  - If you did, the model could not be estimated because your event-time dummies ($D^k$) would be perfectly predicted by the combination of firm and time fixed effects.
+
+:::
+
+
+## Example Required Dataset (No Control Group)
+
+- Let's use the same staggered adoption scenario as before, but we'll **remove the control firm (Firm 1)**.
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` (Baseline) | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------------------: | :---------: | :---------: |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      1       |            0             |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |            1             |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |            0             |      1      |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |            0             |      0      |      1      |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      1       |            0             |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |            1             |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |            0             |      1      |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |            0             |      0      |      1      |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |            0             |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      1       |            0             |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |            1             |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |            0             |      1      |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |            0             |      0      |      1      |
+
+## Crucial Caveat: The Problem with This Approach
+
+- Estimating this model means your results for $\delta_k$ are highly susceptible to bias from confounding factors.
+
+- **The coefficient $\delta_k$ now measures the sum of two things:**
+  - The true causal effect of the treatment at relative time `k`.
+  - **Any and all other unobserved shocks or trends that happened to occur at relative time `k`**.
+
+:::{.callout-tip title="Example: Confounding Factor"}
+Let's say a major economic boom started in 2023.
+
+- For Firm 2, its outcome `y` jumps in 2023. The model will attribute this entire jump to the treatment ($\delta_0$) because it has no control group to learn that *all* firms (even untreated ones) would have seen a jump in 2023.
+- Your estimate of the treatment effect will be severely biased upwards.
+:::
+
+## The Core Idea: Abnormal Returns
+
+- An event study with control firms works by isolating the "abnormal" part of an outcome's movement.
+
+:::{.callout-note title="Definition: Abnormal Return"}
+
+$$ \text{Abnormal Return}_{it} = \text{Actual Return}_{it} - \text{Normal Return}_{it} $$
+
+- **Actual Return ($R_{it}$):** The observed outcome for firm $i$ on day $t$. This is the raw data.
+- **Normal Return ($E[R_{it}]$):** The expected return for firm $i$ on day $t$, **conditional on the event not happening**. This is our counterfactual.
+:::
+
+- We need a model to estimate the Normal Return.
+
+## Estimating "Normal" Returns
+
+- The Normal Return is estimated using data from the **estimation window**.
+
+:::{.callout-tip title="Examples of Normal Return Models"}
+**Constant Mean Return Model:**  Assumes the normal return is just the firm's average return during the estimation period: $E[R_{it}] = \bar{R}_i$
+
+**Market Model:** Assumes the firm's return is related to the overall market return (e.g., S&P 500).
+
+- We run an OLS regression (one for each firm) using data **only from the estimation window**: $R_{it} = \alpha_i + \beta_i R_{mt} + e_{it}$
+- Here, $R_{mt}$ is the return on the market index. We get estimates for $\hat{\alpha}_i$ and $\hat{\beta}_i$.
+- The Normal Return for any day $t$ in the **event window** is then predicted as: $\widehat{E[R_{it}]} = \hat{\alpha}_i + \hat{\beta}_i R_{mt}$. 
+
+:::
+
+## Calculating Abnormal Returns (AR)
+
+- Once we have our estimate of the Normal Return, we can calculate the Abnormal Return (AR) for each firm $i$ on each day $t$ in the **event window**.
+
+$$ AR_{it} = R_{it} - (\hat{\alpha}_i + \hat{\beta}_i R_{mt}) $$
+
+- $AR_{it} > 0$ suggests positive news or impact.
+- $AR_{it} < 0$ suggests negative news or impact.
+- $AR_{it} \approx 0$ suggests no impact.
+
+## Aggregating Abnormal Returns (CAR)
+
+- We are usually interested in the overall effect, not just one firm on one day. We are interested in two things:
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**1. Average Abnormal Return (AAR):** Average the abnormal returns across all $N$ firms for a single day $t$ in the event window.
+    $$
+      AAR_t = \frac{1}{N} \sum_{i=1}^{N} AR_{it}
+    $$
+    
+  - This gives us the average effect on a specific day relative to the event (e.g., the effect on day t=+1).
+  
+:::
+
+## Aggregating Abnormal Returns (CAR) (Cont.)
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**2. Cumulative Average Abnormal Return (CAAR or CAR):** Sum the AARs over a period of time within the event window (from $t_1$ to $t_2$).
+  $$
+    CAR(t_1, t_2) = \sum_{t=t_1}^{t_2} AAR_t
+  $$
+    
+  - This tells us the total cumulative impact of the event over a specific window. For example, $CAR(-1, +1)$ measures the total effect from the day before to the day after the event.
+
+:::
+  
+## Visualizing Event Study Results
+
+- The standard way to present results is a plot of the Average Abnormal Return (AAR) over the event window.
+
+```{python}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+from event_study import *
+# 1. Simulate the data using the market model
+simulated_data = simulate_finance_event_data()
+
+# 2. Estimate the model using the standard AR/AAR finance methodology
+estimation_results = estimate_abnormal_returns(simulated_data)
+
+# 3. Plot the results
+plot_event_study(estimation_results)
+
+```
+
+## Hypothesis Testing
+
+- Standard $t$-statistics from regression estimates can be used to test hypotheses on AAR's on particular days. 
+- We might also be interested in hypothesis testing of CAR's.
+  - Is the observed CAR just random noise, or is there a real effect?
+  - The null hypothesis is typically $H_0: CAR(t_1, t_2) = 0$.
+  - Standard errors are calculated based on the variance of the returns in the estimation window.
+  - If the t-statistic is large enough (and p-value is small), we conclude the event had a statistically significant impact.
+
+## Assumptions and Caveats in Event Studies
+
+- Event studies without a control group have various caveats and assumptions:
+
+  - **Efficient Markets (for stock studies):** The model assumes prices react quickly and rationally to new information.
+  - **No Confounding Events:** The event window must be "clean" of other major, contemporaneous events that could also affect the outcome.
+  - **Correct Event Date:** The analysis is sensitive to using the right date of the information release.
+  - **Model Specification:** The results can depend on the model chosen for normal returns (e.g., Market Model vs. Fama-French 3-Factor Model).
+  - **Stable Estimation Window:** The relationship between the firm and the market (the $\beta$) must be stable between the estimation and event windows.
+
+# Summary
+
+## What did we do?
+
+- **Introduced panel data**:
+  - Panel data tracks the same individuals (e.g., firms, people) over time. It highlighted its main advantage: the ability to control for unobserved, time-invariant factors (like firm culture or individual ability) that could otherwise cause omitted variable bias.
+
+- **Explained the two main panel data models**:
+  - Fixed Effects (FE) and Random Effects (RE). The lecture described how the FE model controls for unobserved factors by using only "within-individual" variation, while the RE model assumes these factors are random and uncorrelated with the explanatory variables.
+
+- **Introduced a method for choosing**: 
+  - The Hausman test helps determine whether the unobserved individual effects are correlated with the regressors. A significant result suggests using the FE model to avoid bias, while a non-significant result allows for the more efficient RE model.
+
+## What did we do? (Cont.)
+
+- **Introduced an alternative method**: 
+  - The First Difference (FD) estimator. The lecture explained that by differencing data over time, the FD model also removes fixed effects and is particularly useful and more efficient than FE when errors are highly serially correlated (e.g., follow a random walk).
+
+- **Introduced event studies**: 
+  - We detailed the "event study" methodology as a powerful application of panel data. It explained how event studies measure the impact of a specific event (like a policy change or merger) on an outcome by analyzing the periods before and after the event.
+
+- **Contrasted two types of event studies**:
+  - We first showed the modern panel event study which requires a control group and uses firm and time fixed effects to isolate the event's causal impact. 
+  - We then explained the classic finance approach used without a control group, which relies on calculating "abnormal returns" against a predicted "normal" outcome.
+
+# The End
+

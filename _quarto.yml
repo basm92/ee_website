@@ -1,0 +1,26 @@
+project:
+  type: website
+
+website:
+  title: "Empirical Economics"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - lectureslides.qmd
+      - tutorialslides.qmd
+      - tutorialanswers.qmd
+      - mockexams.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: style.css
+    toc: true
+
+render:
+  - "*.qmd"
+  - "!/lectures/*"
+  - "!/tutorials/*"
+
+

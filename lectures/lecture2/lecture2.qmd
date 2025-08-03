@@ -1,0 +1,864 @@
+---
+title: "Empirical Economics"
+subtitle: "Lecture 2: Probability and Statistics"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 2 - Probability and Statistics'
+resources:
+  - demo.pdf
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+
+# Helper to create data
+create_norm_data <- function(mean = 0, sd = 1) {
+  x <- seq(mean - 4 * sd, mean + 4 * sd, length.out = 400)
+  y <- dnorm(x, mean, sd)
+  data.frame(x, y)
+}
+# Helper function to plot the distribution with shaded rejection regions
+plot_test <- function(norm_data, crit_vals, title) {
+  
+  # Create data for shading each tail INDEPENDENTLY
+  shade_left_tail <- subset(norm_data, x < crit_vals[1])
+  shade_right_tail <- subset(norm_data, x > crit_vals[2])
+
+  ggplot(norm_data, aes(x = x, y = y)) +
+    geom_line(color = "black", size = 1) +
+    # Plot the left tail area (if it exists)
+    geom_area(data = shade_left_tail, aes(y = y), fill = "firebrick", alpha = 0.5) +
+    # Plot the right tail area (if it exists)
+    geom_area(data = shade_right_tail, aes(y = y), fill = "firebrick", alpha = 0.5) +
+    labs(
+      title = title,
+      x = "Test Statistic (e.g., Z-score)",
+      y = ""
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      panel.grid = element_blank()
+    )
+}
+```
+
+# Outline
+
+## Course Overview
+
+- Statistics and Probability - Basic Concepts
+- Statistics and Probability - Hypothesis Testing
+- The Linear Regression Model
+- Time Series Data
+- Panel Data (FE) and Control Variables
+- Binary Outcome Data
+- Potential Outcomes and Difference-in-differences
+- Hands-on Econometrics in Practice
+
+## What do we do today?
+
+- First two/three lectures devoted to Probability & Statistics
+
+- Lecture 1: 
+  - How do we model the processes that might have generated our data?
+  - Probability
+
+- **Lecture 2**:
+  - How do we summarize and describe data, and try to uncover what process may have generated it?
+  - Statistics
+  
+- Remaining lectures:
+  - How do we uncover patterns between variables?
+  - Econometrics
+
+# Inferential Statistics
+
+## Population vs. Sample
+
+:::{style="font-size: 0.8em;"}
+- In the previous lecture, we have seen concepts like expected values, $E[X]$ or $\mu_X$, and variances $\sigma^2$. 
+- These are parameters that belong to a _population_: the entire group of individuals, objects, or data points that we are interested in studying.
+- In reality, we usually only have a _sample_, a subset of the population from which we actually collect data, at our disposal. 
+  - It's often impossible or too expensive to collect data on the entire population. We use samples to make inferences about the population.
+
+:::
+
+:::{.callout-tip title="Example Populations and Samples"}
+
+- Populations: 
+  - All households in the United States.
+  - All firms listed on the New York Stock Exchange.
+  
+- Samples:
+  - A survey of 2,000 U.S. households.
+  - The stock prices of 50 firms from the NYSE.
+  
+:::
+
+## Parameters vs. Statistics
+
+- The core idea of inference is to use a **sample statistic** to learn about a **population parameter**.
+
+:::{.callout-note title="Definition: Parameter"}
+A parameter is a numerical characteristic of a **population**. These are typically unknown and what we want to estimate. They are considered fixed values.
+:::
+
+:::{.callout-tip title="Example: Parameters"}
+The population mean ($\mu$), population variance ($\sigma^2$), population correlation ($\rho$).
+:::
+
+## Statistics
+
+- The core idea of inference is to use a **sample statistic** to learn about a **population parameter**.
+
+:::{.callout-note title="Definition: Statistic"}
+A numerical characteristic of a **sample**. We calculate statistics from our data. **A statistic is a random variable**, as its value depends on the particular sample drawn.
+:::
+
+:::{.callout-tip title="Example: Statistics"}
+Sample mean ($\bar{x}$), sample variance ($s^2$), sample correlation ($r$).
+:::
+
+# The Concept of a Sampling Distribution
+
+## Simple Random Sampling
+
+- In statistics, we usually want to compute a statistic and derive its distribution to say something about a corresponding parameter in the population. To do so, we need to assume things about the way our data is sampled.
+
+- **Simple Random Sampling** (SRS) is the most basic sampling method.
+
+:::{.callout-note title="Defintion: Simple Random Sampling"}
+
+A sample of size $n$ where every possible sample of that size has an equal chance of being selected, and every individual in the population has an equal chance of being included.
+
+:::
+
+- SRS is the ideal. Statistical methods (like the ones we're learning) are built on the assumption of random sampling. 
+- If a sample is not drawn randomly, our inferences may be biased and incorrect.
+
+
+## The Distribution of a Statistic
+
+- This is a crucial, but sometimes tricky, concept.
+
+:::{.callout-tip title="Thought Experiment"}
+1.  There is a population with an unknown mean $\mu$.
+2.  We take a random sample of size $n$ (e.g., n=100) and calculate its sample mean, $\bar{x}_1$.
+3.  We take a *different* random sample of size $n$ and get a different sample mean, $\bar{x}_2$.
+4.  We repeat this process 10,000 times, getting $\bar{x}_1$, $\bar{x}_2$, $\dots$, $\bar{x}_{10000}$.
+:::
+
+- The **Sampling Distribution** of the a statistic (in this case the sample mean) is the probability distribution of all these possible $\bar{x}$ values. It's the distribution of a statistic, not of the original data.
+
+## Sampling Distribution Simulation
+
+::: panel-tabset
+
+### R
+
+```{r}
+#| echo: true
+#| message: false
+#| code-fold: true
+#| out-width: 600px
+#| fig-align: 'center'
+
+set.seed(42)
+population_mean <- 50
+population_sd <- 10
+sample_size <- 100
+num_samples <- 10000
+
+sample_means <- replicate(num_samples, mean(rnorm(sample_size, mean = population_mean, sd = population_sd)))
+
+hist(sample_means, 
+     breaks = 50,
+     main = "Distribution of Sample Means",
+     xlab = "Sample Mean",
+     ylab = "Frequency",
+     col = "lightblue",
+     border = "black")
+abline(v = population_mean, col = "red", lty = 2, lwd = 2)
+grid()
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| message: false
+#| code-fold: true
+#| out-width: 600px
+#| fig-align: 'center'
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+population_mean, population_std, sample_size, num_samples = 50, 10, 100, 10000
+sample_means = [np.mean(np.random.normal(loc=population_mean, scale=population_std, size=sample_size)) for _ in range(num_samples)]
+
+plt.figure(figsize=(10, 6))
+plt.hist(sample_means, bins=50, edgecolor='black', alpha=0.7)
+plt.axvline(x=population_mean, color='red', linestyle='--', linewidth=2)
+plt.title('Distribution of Sample Means')
+plt.xlabel('Sample Mean')
+plt.ylabel('Frequency')
+plt.grid(True, alpha=0.3)
+plt.show()
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| code-fold: true
+#| echo: true
+
+clear all
+set seed 42
+set obs 10000
+
+* Parameters
+scalar population_mean = 50
+scalar population_sd = 10
+scalar sample_size = 100
+
+* Generate sample means
+gen sample_mean = .
+quietly {
+    forvalues i = 1/10000 {
+        drawnorm x, n(`=sample_size') mean(`=population_mean') sd(`=population_sd') clear
+        summarize x
+        replace sample_mean = r(mean) in `i'
+    }
+}
+
+* Plot histogram
+histogram sample_mean, ///
+    bin(50) ///
+    title("Distribution of Sample Means") ///
+    xtitle("Sample Mean") ///
+    ytitle("Frequency") ///
+    fcolor("lightblue") ///
+    addplot(pci 0 0 `=population_mean' `=population_mean', lcolor(red) lpattern(dash))
+```
+
+:::
+
+## Sampling Distribution Visualization
+
+- On the left: the distribution of $X$ in the population
+- On the right: the distribution of $\bar{X}$
+
+```{r sampling_dist_plot, fig.align='center'}
+# Simulate it
+pop <- rnorm(100000, mean = 50, sd = 10) # a "population"
+sample_means <- replicate(5000, mean(sample(pop, size = 30))) # 5000 sample means
+
+p1 <- ggplot(data.frame(x=pop), aes(x)) + geom_density(fill="red", alpha=0.4) + labs(title="1. Population Distribution (mu=50)")
+p2 <- ggplot(data.frame(x=sample_means), aes(x)) + geom_density(fill="blue", alpha=0.4) + labs(title="2. Sampling Distribution of xbar (n=30)", subtitle="Notice it's centered at mu and less spread out")
+
+grid.arrange(p1, p2, ncol=2)
+```
+
+
+## Sampling Distribution Example
+
+:::{.callout-tip title="Numerical Example Sampling Distribution"}
+
+Imagine a tiny population that contains only four numbers. These are all the values that exist in our entire population.
+
+```{r define-population}
+# Our entire population consists of just four numbers
+population <- c(2, 4, 6, 10)
+
+# Let's calculate the TRUE population mean (mu). This is a parameter.
+true_population_mean <- mean(population)
+
+print(paste("The population is:", paste(population, collapse = ", ")))
+print(paste("The true population mean (mu) is:", true_population_mean))
+```
+
+The true mean of our population is **5.5**. In a real research problem, this is the value we want to estimate, but we don't know it.
+
+Now, let's list every single possible sample of size $n = 2$ that we can draw from this population *without replacement*.
+
+The number of combinations is "4 choose 2", which is 6. We can use R to list them all.
+
+```{r list-samples}
+#| echo: false
+# Use the combn() function to get all unique combinations of size 2
+all_possible_samples <- combn(population, 2)
+print("All 6 possible samples of size n=2:")
+print(all_possible_samples)
+```
+
+:::
+
+## Sampling Distribution Example (Cont.)
+
+:::{.callout-tip title="Numerical Example Sampling Distribution (Cont.)"}
+
+For each of the 6 possible samples, we will now calculate its sample mean ($\bar{x}$).
+
+```{r calculate-means}
+# Use the apply() function to calculate the mean of each column (each sample)
+sample_means <- apply(all_possible_samples, 2, mean)
+
+# Print the resulting sample means
+print("The mean of each of the 6 possible samples:")
+print(sample_means)
+```
+
+The list of all possible sample means we just calculated (`r sample_means`) **is the sampling distribution of the sample mean**. This gives the distribution of all possible values the sample mean can take for a sample of size $n=2$ from our population. Since we assume SRS, each outcome is equally likely. 
+
+Let's organize it into a frequency table and visualize it.
+
+```{r create-distribution}
+# Create a frequency table of the sample means
+sampling_distribution_table <- as.data.frame(table(sample_means))
+colnames(sampling_distribution_table) <- c("Sample_Mean", "Frequency")
+
+print("The Sampling Distribution (as a frequency table):")
+print(sampling_distribution_table)
+```
+
+:::
+
+## Visualization the Sampling Distribution 
+
+- We can again visualize this distribution with a histogram.
+
+```{r plot-distribution}
+#| fig-align: 'center'
+#| out-width: 600px
+#| out-height: 300px
+# Create a data frame for ggplot
+plot_data <- data.frame(means = sample_means)
+
+# Plot the sampling distribution
+ggplot(plot_data, aes(x = means)) +
+  geom_histogram(binwidth = 1, color = "black", fill = "skyblue", alpha = 0.7) +
+  labs(
+    title = "The Exact Sampling Distribution of the Sample Mean (n=2)",
+    x = "Sample Mean (x bar)",
+    y = "Frequency"
+  ) +
+  # Add a vertical line for the true population mean
+  geom_vline(
+    aes(xintercept = true_population_mean), 
+    color = "red", 
+    linetype = "dashed", 
+    linewidth = 1.5
+  ) +
+  # Add a label for the line
+  annotate(
+    "text", 
+    x = true_population_mean + 0.8, 
+    y = 1.5, 
+    label = paste("True Pop. Mean (mu) =", true_population_mean), 
+    color = "red"
+  ) +
+  theme_minimal()
+```
+
+- The explicit PMF of the sampling distribution is the normalized version of this histogram: $P(\bar{X}=3)=\frac{1}{6}, P(\bar{X}=4)=\frac{1}{6}, \dots, P(\bar{X}=8)=\frac{1}{6}$. 
+
+# The Central Limit Theorem (CLT)
+
+## The Central Limit Theorem
+
+- The **Central Limit Theorem (CLT)** states:
+
+:::{.callout-note title="Theorem: Central Limit Theorem"}
+If you take a sufficiently large random sample ($n \geq 30$ is a common rule of thumb) from a population distributed with mean $\mu$ and standard deviation $\sigma$, the sampling distribution of the sample mean $\bar{x}$ will be approximately normally distributed, *regardless of the original population's distribution*.
+
+Furthermore, the mean of this sampling distribution will be the population mean $\mu$, and its standard deviation (called the **standard error**) will be $\sigma / \sqrt n$.
+
+$$\bar{X} \approx N\left(\mu, \frac{\sigma^2}{n}\right)$$
+:::
+
+## Why Is The CLT Important?
+
+- **The implications of the CLT are profound:**
+
+- **We can use the normal distribution for inference on the mean even if the underlying data is not normal.** Many economic variables (like income) are highly skewed, but the CLT lets us work with their sample means.
+
+- **It provides a precise formula for the variance of the sample mean ($\sigma^2/n$).** This shows that as our sample size $n$ increases, the sample mean $\bar{x}$ becomes a more precise estimator of the population mean $\mu$ (its sampling distribution gets narrower).
+
+- The CLT is the foundation that allows us to build confidence intervals and conduct hypothesis tests for the mean. And later, also for estimators that are functions of the mean. 
+
+## Example of the CLT
+
+:::{.callout-tip title="Example: Poisson-distributed RV's"}
+Let $X_1, \dots, X_n$ be independent, identically distributed (i.i.d.) random variables following a Poisson distribution with parameter $\lambda$, i.e., $X_i \sim \text{Poisson}(\lambda)$. The Poisson distribution has mean $E[X_i]=\lambda$ and Variance $\text{Var}(X_i)=\lambda$. 
+
+By the CLT, $\frac{1}{n} \sum_{i=1}^n X_i = \bar{X}_n \sim N(\lambda, \frac{\lambda}{n})$.
+
+Suppose that $\lambda=5$ and $N=100$, then $\bar{X}_n \sim N(5,\frac{5}{100})=N(5,0.05).$ In the simulation below, where we plot 10000 simulations of $\bar{X}_n$, we should find that the empirical mean is 5 and the empirical variance is 0.05. 
+
+::: panel-tabset
+
+### R
+
+```{r}
+#| code-fold: true
+#| echo: true
+
+set.seed(123)  # For reproducibility
+lambda <- 5    # Poisson parameter
+n <- 100       # Sample size
+n_sim <- 10000 # Number of simulations
+
+# Simulate 10,000 sample means (each from n=100 Poisson(5) samples)
+x_bars <- replicate(n_sim, mean(rpois(n, lambda)))
+
+# Compute empirical mean and variance of x_bars
+empirical_mean <- mean(x_bars)
+empirical_var <- var(x_bars)
+
+cat("Empirical Mean:", empirical_mean, "Empirical Var:", empirical_var)
+```
+
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+
+# Set random seed for reproducibility
+np.random.seed(123)
+
+# Parameters
+lambda_ = 5     # Poisson parameter
+n = 100         # Sample size
+n_sim = 10000   # Number of simulations
+
+# Simulate 10,000 sample means (each from n=100 Poisson(5) samples)
+x_bars = np.array([np.random.poisson(lambda_, n).mean() for _ in range(n_sim)])
+
+# Empirical mean and variance
+empirical_mean = np.mean(x_bars)
+empirical_var = np.var(x_bars, ddof=1)  # ddof=1 for unbiased estimator
+
+# Print results
+print(f"Empirical Mean: {empirical_mean:.6f}, Empirical Var: {empirical_var:.6f}")
+```
+
+
+### Stata
+
+```{stata}
+#| code-fold: true
+#| echo: true
+#| eval: false
+
+clear
+set seed 123
+set obs 10000
+
+local lambda = 5
+local n = 100
+local n_sim = 10000
+
+// Generate 10,000 sample means
+gen x_bar = .
+forvalues i = 1/`n_sim' {
+    qui drawnorm x, n(`n') means(`lambda') sds(sqrt(`lambda')) clear
+    qui replace x_bar = r(mean) in `i'
+}
+
+// Calculate empirical mean and variance
+sum x_bar
+di "Empirical Mean: " r(mean) ", Empirical Var: " r(Var)
+```
+
+:::
+
+:::
+
+# Estimation and Inference
+
+## Point Estimators
+
+:::{.callout-note title="Definitions: Estimator, Estimate, Point Estimate"}
+
+An **estimator** is a rule (a formula) for calculating an estimate of a population parameter based on sample data. The value it produces is called an **estimate**.
+
+A **point Estimator** is a formula that produces a single value/number as the estimate.
+
+:::
+
+- **Common Point Estimators:**
+  - The sample mean $\bar{x}$ is a point estimator for the population mean $\mu$.
+  - The sample proportion $\hat{p}$ is a point estimator for the population proportion $p$.
+  - The sample variance $s^2$ is a point estimator for the population variance $\sigma^2$.
+
+## Desirable Properties of Estimators
+
+- How do we know if an estimator is "good"? We look for three properties (conceptually):
+
+:::{.callout-note title="Definition: Unbiasedness"}
+An estimator is unbiased if its expected value is equal to the true population parameter. $E[\theta]=\theta$.
+
+*Analogy:* On average, the shots hit the center of the target. There's no systematic over- or under-estimation.
+:::
+
+:::{.callout-note title="Definition: Consistency"}
+An estimator is consistent if, as the sample size $n$ approaches infinity, the value of the estimator converges to the true parameter value.
+
+*Analogy:* The more information you get, the closer you get to the truth.
+:::
+
+## Desirable Properties of Estimators (Cont.)
+
+- How do we know if an estimator is "good"? We look for three properties (conceptually):
+
+:::{.callout-note title="Definition: Consistency"}
+Among all unbiased estimators, the most efficient one is the one with the smallest variance.
+
+*Analogy:* The shots are tightly clustered around the center. It's a precise estimator.
+:::
+
+
+## Hypothesis Testing
+
+- **Hypothesis Testing** is a formal procedure for checking whether our sample data provides convincing evidence against a preconceived claim about the population.
+
+:::{.callout-tip title="The Logic: Proof by Contradiction"}
+
+1.  We start by assuming something is true about the population (the **Null Hypothesis**).
+2.  We then look at our sample data.
+3.  We ask: "If the null hypothesis were true, how likely is it that we would get sample data like this?"
+4.  If our sample data is very unlikely under the null hypothesis, we reject our initial assumption in favor of an alternative.
+
+:::
+
+## Null and Alternative Hypotheses
+
+- Every hypothesis test has two competing hypotheses:
+
+- **Null Hypothesis ($H_0$)**: The claim being tested. It's the "status quo" or "no effect" hypothesis. It always contains an equality sign ($=$, $\leq$, or $\geq$).
+
+:::{.callout-tip title="Examples: Null Hypothesis $H_0$"}
+The new drug has no effect on blood pressure ($\mu_{change} = 0$).
+
+The mean income in a region is $50,000$ ($\mu = 50000$).
+:::
+
+## Alternative Hypothesis
+
+- **Alternative Hypothesis ($H_A$ or $H_1$)**: The claim we are trying to find evidence *for*. It's what we conclude if we reject the null hypothesis. It never contains an equality sign ($\neq$, $<$, or $>$).
+
+:::{.callout-tip title="Examples: Null Hypothesis $H_A$"}
+The new drug does have an effect ($\mu_{change} \neq 0$).
+
+The mean income is not $50,000$ ($\mu \neq 50000$).
+:::
+
+## Test Statistics and $p$-values (Conceptual)
+
+- How do we decide whether our data is "unlikely"?
+
+- **Test Statistic**: A value calculated from sample data that measures how far our sample statistic (e.g., $\bar{x}$) is from the parameter value claimed by the null hypothesis ($\mu_0$). It's often standardized, like a Z-score.
+
+:::{.callout-note title="Definition: Test Statistic (Informal)"}
+$$
+\text{Test Statistic} = \frac{\text{Sample Statistic} - \text{Null Hypothesis Value}}{\text{Standard Error}}
+$$
+
+:::
+
+## $p$-values
+
+:::{.callout-note title="Definition: $p$-value"}
+The $p$-value is the probability of observing a test statistic as extreme (or more extreme) than the one calculated, *assuming the null hypothesis is true*.
+:::
+
+- **Small P-Value (e.g., < 0.05):** The observed data is very unlikely if $H_0$ were true. We **reject $H_0$**. The evidence supports $H_A$.
+- **Large P-Value (e.g., > 0.05):** The observed data is plausible if $H_0$ were true. We **fail to reject $H_0$**. There is not enough evidence to support $H_A$.
+
+## A Crucial Ingredient: The Standard Error
+
+- How do we measure if a sample result is "surprising"? We use the **Standard Error (SE)**.
+
+:::{.callout-note title="Definition: Standard Error"}
+The Standard Error of a statistic (like the sample mean) is the standard deviation of its sampling distribution. In simpler terms, it measures the typical or average distance between the sample statistic and the true population parameter.
+:::
+
+- The SE tells us how much we expect e.g. a sample mean ($\bar{x}$) to naturally vary from the true population mean ($\mu$).
+  - A small SE means our sample means will be tightly clustered around the true mean.
+  - A large SE means they will be more spread out.
+
+
+## One-Sided vs. Two-Sided Hypotheses
+
+- Two-Sided Hypotheses tests are the most common type of test.
+
+- Is the population parameter **different from** a specific value? (We don't care if it's higher or lower, just that it's not the same).
+  -   **Null Hypothesis:** $H_0: \mu = \mu_0$
+  -   **Alternative Hypothesis:** $H_A: \mu \neq \mu_0$
+  - We are looking for an extreme result in **either direction**.
+
+- The significance level ($\alpha$, e.g., 0.05) is split between the two tails of the distribution.
+
+:::{.callout-note title="Definition: Significance level"}
+The significance level, denoted as $\alpha$, is the probability we are willing to incur of rejecting the null hypothesis when it is actually true.
+:::
+
+## Rejection Region Two-Sided Test
+
+- We are looking for an extreme result in **either direction**.
+- The significance level ($\alpha$, e.g., 0.05) is split between the two tails of the distribution.
+
+```{r two-sided-plot, out.width=200}
+# Data and critical values for a two-sided test
+norm_dat <- create_norm_data()
+alpha <- 0.05
+crit_lower <- qnorm(alpha / 2)
+crit_upper <- qnorm(1 - alpha / 2)
+
+# Plot
+p <- plot_test(norm_dat, c(crit_lower, crit_upper), "Two-Sided Rejection Region")
+p + annotate("text", x = -2.5, y = 0.1, label = paste("Reject H0, alpha/2 =", alpha/2), color="firebrick") +
+    annotate("text", x = 2.5, y = 0.1, label = paste("Reject H0, alpha/2 =", alpha/2), color="firebrick")
+```
+
+## One-Sided Hypothesis Testing (Right-Tailed)
+
+- **The Question:** Is the population parameter **greater than** a specific value?
+
+- This is used when we have a strong reason to believe the effect can only go in one direction, or we are only interested in an effect in one direction.
+  - **Null Hypothesis:** $H_0: \mu \le \mu_0$
+  - **Alternative Hypothesis:** $H_A: \mu > \mu_0$
+
+## Rejection Region One-Sided Test (Right-Tailed)
+
+- The entire significance level ($\alpha$) is placed in the **upper (right) tail**.
+
+```{r right-sided-plot, out.width=200}
+# Critical value for a right-tailed test
+crit_lower_right <- -Inf # No lower bound for rejection
+crit_upper_right <- qnorm(1 - alpha)
+
+# Plot
+p_right <- plot_test(norm_dat, c(crit_lower_right, crit_upper_right), "Right-Tailed Rejection Region")
+p_right + annotate("text", x = 2.5, y = 0.1, label = paste("Reject H0, alpha =", alpha), color="firebrick")
+```
+
+## One-Sided Hypothesis Testing (Left-Tailed)
+
+- In the left-tailed case, we ask whether the population parameter is **less than** a specific value?
+  - **Null Hypothesis:** $H_0: \mu \ge \mu_0$
+  - **Alternative Hypothesis:** $H_A: \mu < \mu_0$
+
+## Rejection Region One-Sided Test (Left-Tailed)
+
+- The entire significance level ($\alpha$) is placed in the **lower (left) tail**.
+
+```{r left-sided-plot, out.width=200}
+# Critical value for a left-tailed test
+crit_lower_left <- qnorm(alpha)
+crit_upper_left <- Inf # No upper bound for rejection
+
+# Plot
+p_left <- plot_test(norm_dat, c(crit_lower_left, crit_upper_left), "Left-Tailed Rejection Region")
+p_left + annotate("text", x = -2.5, y = 0.1, label = paste("Reject H0, alpha =", alpha), color="firebrick")
+```
+
+## Example Hypothesis Testing 
+
+:::{.callout-tip title="Example: Fertilizer"}
+
+We are testing if a new fertilizer *increases or decreases* crop yield. We have a dataset of land units that either use fertilizer or not, and their associated crop yields. We have a sample size $\geq$ 30 in both groups, meaning we can assume the CLT holds. 
+
+A good estimator of the crop yield in either group (fertilizer, $\mu_F$ and no fertilzer $\mu_N$) is the group's sample mean, $\overline{\mu_F}$ and $\overline{\mu_N}$. Suppose we also know that both crop yields are distributed around their population means with variance $\sigma^2=5$.
+
+According to the CLT, we know that $\overline{\mu_F} \sim N(\mu_F, \frac{5}{30})$ and $\overline{\mu_N} \sim N(\mu_N, \frac{5}{30})$. 
+
+Suppose we want to know whether the group yields differ per group. **This is a two-sided hypothesis**: $H_0: \mu_F = \mu_N$, and $H_A: \mu_F \neq \mu_N$. 
+
+:::
+
+
+## Example Hypothesis Testing (Cont.)
+
+:::{.callout-tip title="Example: Fertilizer (Cont.)"}
+
+Suppose our test statistic is $T = \overline{\mu_F} - \overline{\mu_N}$. Under the null hypothesis, its expected value is 0. According to the law of variances, its variance is $\frac{5}{30} + \frac{5}{30} = \frac{1}{3}$. Since both components are normally distributed, under the null hypothesis our test statistic $T \sim N(0, \frac{1}{3})$. 
+
+Suppose our data show that $\overline{\mu_F}=5$ and $\overline{\mu_N}=1$. Hence $T=4$. How likely is that under the null hypothesis? 
+
+\begin{align*}
+P(|T|> 4) &= P(T>4) + P(T<-4) \newline
+&= P(Z > \frac{4}{\sqrt{\frac{1}{3}}}) + P(Z < \frac{-4}{\sqrt{\frac{1}{3}}})
+&\approx 0 
+\end{align*}
+
+This probability is also the $p$-value. This means that it is _very_ unlikely to observe this difference between the two groups given the null hypothesis. Therefore, with e.g. $\alpha=0.05$, we reject the null hypothesis. 
+
+:::
+
+## Example Hypothesis Testing (Cont.)
+
+:::{.callout-tip title="Example: Fertilizer (Cont.)"}
+
+Suppose now that $\overline{\mu_F}=1.5$ and $\overline{\mu_N}=1$, such that $T=0.5$, and we're interested in whether fertilizer *increases* crop yield. **This is a one-sided hypothesis test** with $H_0: \mu_F = \mu_N$ against $H_A: \mu_F > \mu_N$. We again use a significance level $\alpha=0.05$. 
+
+Under the null hypothesis, $T \sim N(0, \frac{1}{3})$. We now calculate the $p$-value as $P(T > 0.5)$ = $P(Z > \frac{0.5}{\sqrt{\frac{1}{3}}}) = P(Z > 0.86)$, which evaluates to 0.19. Since we have a significance-level of 5%, we **do not reject the null hypothesis**: the test statistic we observed is not unlikely enough to reject it. 
+
+:::
+
+## Which Test to Use?
+
+- **Golden Rule:** Unless you have a very strong, justifiable, pre-specified reason for expecting an effect in only one direction, **you should use a two-sided test.** 
+  - Two-sided tests define the $p$-value as the probability of observing something more extreme than the observed test statistic on both sides, i.e. $P(|T|>t)$
+  - One-sided tests define the $p$-value as the probability of observing something more extreme than the observed test statistic on one side, i.e. $P(T>t)$ or $P(T<t)$. 
+
+
+:::{style="font-size: 1.2em;"}
+
+| Feature             | Two-Sided Test                     | One-Sided Test                               |
+|---------------------|------------------------------------|----------------------------------------------|
+| **Key Question**    | Is there a **difference**?         | Is it **greater than** or **less than**?     |
+| **Alternative ($H_A$)** | $\mu \neq \mu_0$                   | $\mu > \mu_0$ **or** $\mu < \mu_0$           |
+| **Rejection Region**| Split into two tails               | All in one tail (left or right)              |
+| **When to Use**     | The default, conservative choice.  | Only when there is a strong prior reason or you only care about one direction. |
+| **Power**           | Less powerful.                     | More powerful (if the effect is in the hypothesized direction). |
+
+:::
+
+# Confidence Intervals
+
+## Confidence Intervals
+
+:::{.callout-note title="Definition: Confidence Interval"}
+
+A confidence interval (CI) is a range of values, derived from sample data, that is likely to contain the value of an unknown **population parameter** (e.g., the true population mean $\mu$ or proportion $p$).
+
+:::
+
+- Ingredients: 
+  - **Point Estimate:** A single value calculated from the sample that estimates the population parameter (e.g., sample mean $\bar{x}$). It's our "best guess," but it's almost certainly wrong.
+  - **Interval Estimate:** The confidence interval provides a range around the point estimate, acknowledging the uncertainty inherent in sampling.
+  - **Confidence Level:** The probability that the *method* used to construct the interval will capture the true population parameter. Common levels are 90%, 95%, and 99%.
+
+## Interpretation
+
+- The confidence level refers to the **long-run success rate of the method**, not the probability of a single interval being correct.
+
+- **Correct Interpretation:** "We are **95% confident** that the method used to construct this interval from our sample captures the true population mean."
+  - *Analogy:* Imagine throwing rings at a post (the true parameter). The 95% confidence level means that if you were to take many samples and throw many "ring" intervals, 95% of them would land on the post. You don't know if the *one* ring you just threw is a success or a miss.
+
+- **Incorrect Interpretation:** It is **wrong** to say, "There is a 95% probability that the true population mean lies within *this specific* interval $[A, B]$." Once an interval is calculated, the true mean is either in it or it isn't; there is no probability involved for that specific interval.
+
+
+## Construction of a Confidence Interval
+
+- Most confidence intervals share a common structure.
+
+:::{.callout-note title="Construction of a Confidence Interval"}
+$$
+CI= \text{Point Estimate} \pm \text{Margin of Error}
+$$
+
+::: 
+
+- The Margin of Error (ME) quantifies the uncertainty of our estimate and is built from two pieces..
+
+## Margin of Error
+
+- 1.  **Critical Value:**
+  - A number from a probability distribution (typically a **Z** or **t** distribution).
+  - It determines how many standard errors to go out from the point estimate to achieve the desired confidence level.
+  - For a 95% CI, the Z-critical value is $Z_{\alpha/2} = 1.96$. For a t-distribution, it also depends on the sample size (degrees of freedom).
+
+- 2.  **Standard Error of the Estimate (SE):**
+  - An estimate of the standard deviation of the sampling distribution of the point estimate.
+  - It measures the typical amount of variability we expect in our point estimate from sample to sample.
+  - Example for a mean: $SE = s / \sqrt{n}$ (where $s$ is the sample standard deviation and $n$ is the sample size).
+
+## Common Examples
+
+:::{.callout-tip title="Example: CI for a Population Mean"}
+
+Suppose we observe $n$ samples of a population, which is i.i.d. distributed with some unknown mean $\mu_X$ and some known variance $\sigma^2$. A confidence interval for a population mean (when population $\sigma$ is known) is:
+
+$$
+\bar{x} \pm z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right).
+$$
+Where $\bar{x}$ is the sample mean, $\sigma$ is the standard deviation, and $z$ is the critical value from the normal distribution at the $\alpha/2$'th quantile. 
+
+The confidence interval is constructed on the basis of the central limit theorem, i.e. the normal distribution of $\bar{x}$ with variance $\sigma^2/n$, hence standard error $\sigma/\sqrt{n}$. 
+:::
+
+## Common Examples (Cont.)
+
+:::{.callout-tip title="Example: CI for a Proportion"}
+
+Suppose we have $n$ samples of a Bernoulli-distributed variable, i.e. $X_i \sim \text{Ber}(p)$ with unknown $p$. Our objective is to provide a CI for this $p$ on the basis of our observed data. 
+
+In lecture one, we have seen that the variance of a Bernoulli distribution is $p(1-p)$. According to the CLT, $\hat{p}=\frac{1}{n}\sum x_i \sim N(p, \frac{p(1-p)}{n})$. 
+
+A $(1-\alpha)$% CI can then be constructed as follows:
+
+$$
+\hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}.
+$$
+
+Where $\hat{p}$ is the sample proportion and $z_{\alpha/2}$ is the $\alpha/2$'th quantile from the standard normal distribution.
+
+:::
+
+# Summary
+
+## What did we do?
+
+- **Distinguished between populations and samples:** 
+  - The lecture established the core idea of inferential statistics, which is to use a **sample statistic** (e.g., the sample mean $\bar{x}$) calculated from observed data to learn about an unknown **population parameter** (e.g., the true population mean $\mu$).
+
+- **Introduced the Sampling Distribution:** 
+  - It explained that any statistic calculated from a random sample is itself a random variable. The **sampling distribution** is the probability distribution of this statistic, showing all its possible values and their likelihoods across many different potential samples.
+
+- **Explained the Central Limit Theorem (CLT):** 
+  - We highlighted the CLT as a cornerstone of statistics. It states that for a sufficiently large sample size, the sampling distribution of the sample mean will be approximately normal, even if the original population data is not normally distributed.
+
+## What did we do? (Cont.)
+
+- **Outlined the framework for Hypothesis Testing:** 
+  - We presented hypothesis testing as a formal procedure to evaluate a claim about a population. This involves setting up a null ($H_0$) and alternative ($H_A$) hypothesis, calculating a test statistic from the sample, and using a **p-value** to determine if the data provides statistically significant evidence to reject the null hypothesis.
+
+- **Differentiated between One-Sided and Two-Sided Tests:**
+  - The lecture clarified how the research question determines the type of test. A two-sided test checks for any difference ($\neq$), while a one-sided test checks for a specific direction (greater than `>` or less than `<`), which affects how the p-value and rejection region are determined.
+
+- **Defined Confidence Intervals:** 
+  - Finally, the lecture introduced confidence intervals as a method for estimation. A confidence interval provides a range of plausible values for an unknown population parameter, constructed as a point estimate plus or minus a margin of error that reflects the level of sampling uncertainty.
+
+# The End
+
+
+
+

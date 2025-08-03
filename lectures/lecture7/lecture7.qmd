@@ -1,0 +1,1080 @@
+---
+title: "Empirical Economics"
+subtitle: "Lecture 7: Potential Outcomes and Difference-in-differences"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 7 - Potential Outcomes and DiD'
+resources:
+  - demo.pdf
+---
+
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+# Outline
+
+## Course Overview
+
+- Statistics and Probability - Basic Concepts
+- Statistics and Probability - Hypothesis Testing
+- The Linear Regression Model
+- Time Series Data
+- Panel Data (FE) and Control Variables
+- Binary Outcome Data
+- Potential Outcomes and Difference-in-differences
+- Hands-on Econometrics in Practice
+
+## What do we do today?
+
+
+# Potential Outcomes
+
+## Correlation vs. Causality
+
+- The fundamental challenge in empirical work.
+
+- **Correlation:** Two variables move together.
+  - *Example:* Ice cream sales are positively correlated with crime rates.
+- **Causation:** A change in one variable *causes* a change in another.
+    - *Does eating ice cream cause crime?* Unlikely.
+- **Confounding Variable:** A third variable affects both.
+    - *Hot weather* increases both ice cream sales and the number of people outside (leading to more opportunities for crime).
+
+- Our goal is to isolate the causal effect, not just the correlation.
+
+
+## The Potential Outcomes Framework
+
+- Also known as the **Rubin Causal Model**.
+
+- Let's think about the effect of a treatment (e.g., a job training program) on an individual *i*.
+
+-   $Y_i(1)$: The potential outcome for unit *i* **if they receive the treatment**.
+
+-   $Y_i(0)$: The potential outcome for unit *i* **if they do NOT receive the treatment**.
+
+
+:::{.callout-tip title="Example: Potential Outcomes"}
+In the context where the treatment is a job training program:
+
+$Y_i(1)$: A person's earnings if they attend the program.
+
+$Y_i(0)$: A person's earnings if they do not attend the program.
+
+:::
+
+
+## The Individual Causal Effect
+
+- For any single individual *i*, the true causal effect of the treatment is the difference between their two potential outcomes:
+
+:::{.callout-note title="Definition: Individual Causal Effect"}
+$$\tau_i = Y_i(1) - Y_i(0)$$
+:::
+
+-   This is the pure, unadulterated effect of the treatment on that one person.
+-   *Example:* The increase in Person *i*'s earnings caused *only* by the training program.
+
+# From Individuals to Populations
+
+## The Average Treatment Effect (ATE)
+
+- Since we usually can't measure the effect for every single individual, we focus on averages.
+
+- The **Average Treatment Effect (ATE)** is the average of the individual causal effects over the entire population.
+  - This tells us, "On average, what is the effect of this treatment for a person randomly drawn from the population?"
+  - For future reference, consider also the **Average Treatment Effect** on the treated population: 
+
+:::{.callout-note title="Definition: Average Treatment Effect"}
+$$\text{ATE} = E[\tau_i] = E[Y(1) - Y(0)]$$
+
+$$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
+
+:::
+  
+
+## The Fundamental Problem of Causal Inference
+
+- This is the core challenge that all causal methods try to solve.
+
+- **For any given unit *i*, we can only ever observe *one* of their potential outcomes.**
+  - If person *i* takes the training program, we see $Y_i(1)$. We will never know what their earnings would have been without it, $Y_i(0)$.
+  - If person *i* does not take the program, we see $Y_i(0)$. We will never know $Y_i(1)$.
+
+- Causal inference is a **missing data problem**. The $Y_i(0)$ for the treated and the $Y_i(1)$ for the untreated are called **counterfactuals**.
+
+
+## Illustrating the Fundamental Problem
+
+- The following illustrates the data we have at our disposal. 
+
+:::{style="font-size: 1.5em;"}
+| Unit (i) | Attends Program? | Observed Earnings | $Y_i(1)$ | $Y_i(0)$ |
+| :---: | :---: | :---: | :---: | :---: |
+| Alice | Yes (T=1) | $50,000 | $50,000 | **???** |
+| Bob | No (T=0) | $40,000 | **???** | $40,000 |
+| Carol | Yes (T=1) | $45,000 | $45,000 | **???** |
+| David | No (T=0) | $60,000 | **???** | $60,000 |
+
+:::
+
+- We can't calculate $Y_i(1) - Y_i(0)$ for anyone!
+
+# Motivation for DiD
+
+## Why Simple Comparisons Fail
+
+- A naive approach might be to just compare the average earnings of those who attended the program to those who didn't.
+
+  $$
+    \text{Difference-in-means} = E[Y | T=1] - E[Y | T=0]
+  $$
+
+- This is almost always **wrong**. Why?
+
+- Because the people who *choose* to get treatment might be different from those who don't in ways that also affect the outcome. 
+- This is referred to as **Selection Bias**
+
+
+## Selection Bias: The Hidden Difference
+
+- The simple difference-in-means can be decomposed:
+
+:::{style="font-size: 0.7em;"}
+\begin{align*}
+    \text{Difference-in-means} &= E[Y|T=1] - E[Y|T=0] \\
+    &= E[Y(1)|T=1] - E[Y(0)|T=0] \\
+    &= E[Y(1)|T=1] - \overbrace{E[Y(0)|T=1] + E[Y(0)|T=1]}^{\text{Subtract and add the same term.}} - E[Y(0)|T=0] \\
+    &= \underbrace{\left( E[Y(1)|T=1] - E[Y(0)|T=1] \right)}_{\text{Average Treatment Effect on the Treated (ATT)}} \\
+     &\quad \quad \hspace{3em} + \underbrace{\left( E[Y(0)|T=1] - E[Y(0)|T=0] \right)}_{\text{Selection Bias}}
+\end{align*}
+:::
+
+- The selection bias tells you the difference in the untreated potential outcomes between the treatment and control groups. 
+
+
+## Selection Bias: Decomposition
+
+- Hence, we can make the following decomposition:
+
+:::{.callout-note title="Theorem: Decomposition of Sample Average"}
+
+$$E[Y|T=1] - E[Y|T=0] = ATT + \text{Selection Bias},$$
+
+where $\text{Selection Bias} = E[Y(0)|T=1] - E[Y(0)|T=0].$
+:::
+
+- In words, selection bias is the difference in the **no-treatment outcome** between the treated and untreated groups.
+- *Job Program Example:* People who sign up for training ($T=1$) might be more motivated. Even without the program, their earnings $Y(0)$ might have been higher than the less motivated group ($T=0$).
+
+# Intro to DiD
+
+## Introduction to Differences-in-Differences (DiD)
+
+- The core idea in DiD is to use data from a **pre-treatment period** to account for selection bias.
+  - We assume that the "selection bias" (the difference between the groups) is constant over time.
+  
+- We compare the *change* in the outcome over time for the treatment group to the *change* over time for a control group.
+  - The "difference in the differences" isolates the treatment effect.
+
+
+## The $2 \times 2$ DiD Setup
+
+- The classic setup involves two groups and two time periods.
+
+:::{style="font-size: 1.5em;"}
+
+| | **Before Period (Pre)** | **After Period (Post)** |
+| :--- | :--- | :--- |
+| **Treatment Group** | $\hat{Y}_{T, Pre}$ | $\hat{Y}_{T, Post}$ |
+| **Control Group** | $\hat{Y}_{C, Pre}$ | $\hat{Y}_{C, Post}$ |
+
+:::
+
+- **Treatment Group:** A group that is exposed to the policy/treatment in the "After" period.
+- **Control Group:** A similar group that is *not* exposed to the treatment in either period.
+
+## Calculating the Simple DiD Estimator
+
+- We calculate two differences, then take the difference between them.
+
+:::{.callout-tip title="Manual Calculation of DiD Estimator"}
+1. **First Difference (Treatment Group):** The change over time for the treated.
+
+    $\Delta_T = \hat{Y}_{T,Post} - \hat{Y}_{T, Pre}$
+
+2. **First Difference (Control Group):** The change over time for the controls. This represents the "secular trend" – what would have happened without the treatment.
+
+    $\Delta_C = \hat{Y}_{C, Post} - \hat{Y}_{C, Pre}$
+
+3. **The Difference-in-Differences:**
+
+    $\tau_{DiD} = \Delta_T - \Delta_C$
+:::
+## Example: DiD in a $2 \times 2$ Set-Up
+
+:::{.callout-tip title="Example: Card and Krueger (1994)"}
+The study by Card and Alan Krueger (AER, 1994), titled "Minimum Wages and Employment: A Case Study of the Fast Food Industry in New Jersey and Pennsylvania," is a landmark paper in labor economics. 
+
+It challenged the conventional wisdom that raising the minimum wage necessarily reduces employment.
+
+The authors analyzed the impact of New Jersey's 1992 minimum wage increase (from $4.25 to $5.05 per hour) by comparing employment changes at fast-food restaurants in New Jersey (where the wage rose) to those in Pennsylvania (where it remained unchanged). 
+
+Surprisingly, they found that employment in New Jersey increased by 13% relative to Pennsylvania, contradicting traditional economic predictions 
+:::
+
+## Example: DiD in a $2 \times 2$ Set-Up
+
+:::{.panel-tabset .hey}
+
+### R 
+
+- Download the Card & Krueger (1994) data: 
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+library(tidyverse); library(fixest)
+file_url <- "https://github.com/mca91/EconometricsWithR/blob/master/data/fastfood.dta?raw=true"
+card_krueger_data <- foreign::read.dta(file_url) |> as_tibble()
+head(card_krueger_data)
+```
+
+```{r}
+#| echo: false
+card_krueger_data <- card_krueger_data |>
+    mutate(fte = nmgrs + empft + (0.5 * emppt),
+           fte2 = nmgrs2 + empft2 + (0.5 * emppt2)) |>
+  select(sheet, chain, state, fte, fte2) |>
+  pivot_longer(c(fte, fte2), names_to="time", values_to="employment") |>
+  mutate(time = if_else(time == "fte", "before", "after") |> factor(levels=c("before", "after")))
+```
+
+- Compute $\tau_{DID}$
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+# Treatment group before and after
+treated <- card_krueger_data |>
+  filter(state==1)|>
+  summarize(treated_emp_before = mean(employment[time=='before'], na.rm=T),
+            treated_emp_after = mean(employment[time=='after'], na.rm=T))
+
+treated
+
+control <- card_krueger_data |>
+  filter(state==0)|>
+  summarize(control_emp_before = mean(employment[time=='before'], na.rm=T),
+            control_emp_after = mean(employment[time=='after'], na.rm=T))
+
+control
+
+tau_did <- treated$treated_emp_after - treated$treated_emp_before - (control$control_emp_after - control$control_emp_before)
+
+tau_did
+
+pre_treatment_mean <- card_krueger_data |> 
+  filter(state==1, time=='before') |> 
+  summarize(m = mean(employment, na.rm=T)) |>
+  pull(m)
+
+tau_did/pre_treatment_mean
+```
+
+### Python
+
+- Download the Card & Krueger (1994) data
+
+```{python}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+import pandas as pd
+import numpy as np
+
+# Load data
+file_url = "https://github.com/mca91/EconometricsWithR/blob/master/data/fastfood.dta?raw=true"
+card_krueger_data = pd.read_stata(file_url)
+
+# Preview data
+print(card_krueger_data.head())
+```
+
+
+```{python}
+#| echo: false
+
+# Calculate FTE and reshape data
+card_krueger_data['fte'] = card_krueger_data['nmgrs'] + card_krueger_data['empft'] + (0.5 * card_krueger_data['emppt'])
+card_krueger_data['fte2'] = card_krueger_data['nmgrs2'] + card_krueger_data['empft2'] + (0.5 * card_krueger_data['emppt2'])
+
+# Select columns and melt/pivot to long format
+card_krueger_data = card_krueger_data[['sheet', 'chain', 'state', 'fte', 'fte2']]
+card_krueger_data = card_krueger_data.melt(
+    id_vars=['sheet', 'chain', 'state'], 
+    value_vars=['fte', 'fte2'],
+    var_name='time',
+    value_name='employment'
+)
+
+# Convert time to categorical
+card_krueger_data['time'] = card_krueger_data['time'].replace({
+    'fte': 'before',
+    'fte2': 'after'
+})
+card_krueger_data['time'] = pd.Categorical(
+    card_krueger_data['time'], 
+    categories=['before', 'after'],
+    ordered=True
+)
+```
+
+- Compute $\tau_{DID}$
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+# Treatment group before and after
+treated = card_krueger_data[card_krueger_data['state'] == 1]
+treated_before = treated[treated['time'] == 'before']['employment'].mean()
+treated_after = treated[treated['time'] == 'after']['employment'].mean()
+
+print("\nTreated group:")
+print(f"Before: {treated_before}")
+print(f"After: {treated_after}")
+
+# Control group before and after
+control = card_krueger_data[card_krueger_data['state'] == 0]
+control_before = control[control['time'] == 'before']['employment'].mean()
+control_after = control[control['time'] == 'after']['employment'].mean()
+
+print("\nControl group:")
+print(f"Before: {control_before}")
+print(f"After: {control_after}")
+
+# Calculate difference-in-differences
+tau_did = (treated_after - treated_before) - (control_after - control_before)
+
+print("\nDifference-in-differences estimate:")
+print(tau_did)
+
+print("\nRelative to pre-treatment mean:")
+tau_did / treated_before
+```
+
+
+### Stata
+
+- Download the Card & Krueger (1994) data
+
+```{stata}
+#| eval: false
+#| code-fold: true
+#| echo: true
+* Load data from URL
+copy "https://github.com/mca91/EconometricsWithR/blob/master/data/fastfood.dta?raw=true" fastfood.dta, replace
+use fastfood.dta, clear
+
+* Preview data
+list in 1/5
+```
+
+```{stata}
+#| eval: false
+#| echo: false
+
+* Calculate FTE measures
+gen fte = nmgrs + empft + (0.5 * emppt)
+gen fte2 = nmgrs2 + empft2 + (0.5 * emppt2)
+
+* Keep only needed variables
+keep sheet chain state fte fte2
+
+* Reshape from wide to long
+reshape long fte, i(sheet chain state) j(time) string
+replace time = "before" if time == "fte"
+replace time = "after" if time == "fte2"
+
+* Convert time to numeric with labels
+encode time, gen(time_num)
+drop time
+rename time_num time
+label define time 1 "before" 2 "after"
+label values time time
+
+* Treatment group means
+preserve
+keep if state == 1
+collapse (mean) employment = fte, by(time)
+list
+restore
+
+* Control group means
+preserve
+keep if state == 0
+collapse (mean) employment = fte, by(time)
+list
+restore
+```
+
+- Compute $\tau_{DID}$
+
+```{python}
+#| eval: false
+#| code-fold: true
+#| echo: true
+
+* Calculate difference-in-differences
+sum fte if state == 1 & time == 1  // treated before
+local treated_before = r(mean)
+sum fte if state == 1 & time == 2  // treated after
+local treated_after = r(mean)
+sum fte if state == 0 & time == 1  // control before
+local control_before = r(mean)
+sum fte if state == 0 & time == 2  // control after
+local control_after = r(mean)
+
+local did = (`treated_after' - `treated_before') - (`control_after' - `control_before')
+display "Difference-in-differences estimate: " `did'
+
+display "Relative to pre-treatment mean:" `did / treated_before'
+```
+
+:::
+
+## Visualization
+
+```{r}
+#| echo: false
+#| fig.align: 'center'
+#| fig.width: 12
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+# Recreate the provided tibble structure
+full_data <- card_krueger_data
+# Summarize the data to get the mean employment for each group and time
+summary_data <- full_data %>%
+  group_by(state, time) %>%
+  summarise(mean_employment = mean(employment, na.rm = TRUE), .groups = 'drop')
+
+# Separate the data for control and treatment groups
+control_data <- summary_data %>% filter(state == 0)
+treatment_data <- summary_data %>% filter(state == 1)
+
+# --- Plot 1: Control Group ---
+
+p1 <- ggplot(control_data, aes(x = time, y = mean_employment, group = 1)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue", size = 4) +
+  labs(
+    title = "Employment Trend in Control Group (Pennsylvania)",
+    x = "Time Period",
+    y = "Average Full-Time Equivalent Employment"
+  ) +
+  ylim(0, max(summary_data$mean_employment) + 2) +
+  theme_minimal()
+
+# --- Plot 2: Treatment Group with Counterfactual ---
+
+# Calculate the counterfactual
+control_change <- control_data$mean_employment[control_data$time == "after"] - control_data$mean_employment[control_data$time == "before"]
+treatment_before <- treatment_data$mean_employment[treatment_data$time == "before"]
+counterfactual_after <- treatment_before + control_change
+
+# Create a data frame for the counterfactual line
+counterfactual_data <- tibble(
+  time = factor(c("before", "after"), levels = c("before", "after")),
+  mean_employment = c(treatment_before, counterfactual_after)
+)
+
+p2 <- ggplot() +
+  # Observed treatment group line
+  geom_line(data = treatment_data, aes(x = time, y = mean_employment, group = 1, color = "Observed Treatment")) +
+  geom_point(data = treatment_data, aes(x = time, y = mean_employment, group = 1, color = "Observed Treatment"), size = 4) +
+  
+  # Counterfactual line
+  geom_line(data = counterfactual_data, aes(x = time, y = mean_employment, group = 1, color = "Counterfactual"), linetype = "dashed") +
+  geom_point(data = counterfactual_data, aes(x = time, y = mean_employment, group = 1, color = "Counterfactual"), size = 4, shape = 1) +
+  
+  # Segment to show the DiD estimate
+  geom_segment(
+    aes(
+      x = 2, y = counterfactual_after,
+      xend = 2, yend = treatment_data$mean_employment[treatment_data$time == "after"]
+    ),
+    arrow = arrow(length = unit(0.3, "cm")),
+    color = "red"
+  ) +
+  annotate("text", x = 2.1, y = (counterfactual_after + treatment_data$mean_employment[treatment_data$time == "after"]) / 2, label = "DiD Estimate", hjust = 0, color = "red") +
+  
+  scale_color_manual(name = "Group", values = c("Observed Treatment" = "darkgreen", "Counterfactual" = "orange")) +
+  labs(
+    title = "Employment in Treatment Group (New Jersey) and Counterfactual",
+    x = "Time Period",
+    y = "Average Full-Time Equivalent Employment"
+  ) +
+  ylim(0, max(summary_data$mean_employment) + 2) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+p1+p2
+```
+
+
+## Deconstructing the DiD Graph
+
+-   The **solid blue line** is the observed trend for the control group.
+-   The **solid green line** is the observed outcome for the treatment group.
+-   The **dotted orange line** is the *counterfactual* for the treatment group, constructed by assuming its trend would have been parallel to the control group's trend.
+-   The **DiD effect** is the vertical distance between the actual outcome for the treatment group and its counterfactual outcome in the post-period.
+
+# DiD Under Potential Outcomes
+
+## DiD Under Potential Outcomes
+
+- The observed outcome, $Y_{it}$, is determined by the unit's group status and the time period.
+
+- For the **treated group** ($D_i=1$): They are untreated at $t=0$ and treated at $t=1$.
+  - $Y_{i0} = Y_{i0}(0)$ for $t=0$ (pre-treatment)
+  - $Y_{i1} = Y_{i1}(1)$ for $t=1$ (post-treatment)
+
+- For the **control group** ($D_i=0$): They are never treated.
+  - $Y_{i0} = Y_{i0}(0)$ for $t=0$
+  - $Y_{i1} = Y_{i1}(0)$ for $t=1$
+  
+## Example Interpretation 
+
+:::{.callout-tip title="Example: DiD Under Potential Outcomes"}
+Let the treatment $D$ be a job training program. Let the outcome $Y$ be monthly income. Let the treated group $D_i=1$ consist of Alice, and the control group $D_i=0$ consist of Bob. 
+
+- For the treated group:
+  - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
+  - Alice's observed income before training is her potential income without training.
+  - Post-treatment ($t=1$): $Y_{i1} = Y_{i1} (1)$
+  - Alice's observed income after training is her potential income with training.
+  
+- For the control group: 
+  - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
+  - Bob's observed income is his potential income without training.
+  - Post-treatment ($t=1$): $Y_{i1} = Y_{i1} (0)$
+  -  Bob's observed income is his potential income without training, as he remains untreated.
+
+:::
+
+## Estimand: ATT
+
+- Formally, the ATT is the difference between the treated group's outcome at $t=1$ and what their outcome _would have been_ at $t=1$ if they had not been treated.
+
+  $$
+    \text{ATT} = E[Y_{i1}(1) | D_i=1] - E[Y_{i1}(0) | D_i=1]
+  $$
+
+- The first term, $E[Y_{i1}(1) | D_i=1]$, is observed as the average outcome for the treated group in the post-period, $E[Y_{i1} | D_i=1]$.
+
+- The second term, $E[Y_{i1}(0) | D_i=1]$, is the **counterfactual**.
+  - It is the unobservable average outcome for the treated group had they not received the treatment.
+  - The entire goal of the DiD strategy is to find a way to estimate this term.
+
+## Parallel Trends
+
+- The DiD estimator is valid under the **parallel trends assumption**.
+  - This assumption states that, in the absence of treatment, the average outcome for the treated group would have changed over time by the same amount as the average outcome for the control group.
+  - Mathematically, this is expressed in terms of the potential outcome under no-treatment, $Y_{it}(0)$:
+
+:::{.callout-note title="Definition: Parallel Trends"}
+
+  $$E[Y_{i1}(0) - Y_{i0}(0) | D_i=1] = E[Y_{i1}(0) - Y_{i0}(0) | D_i=0]$$ {#eq-pt}
+:::
+
+- The left side is the counterfactual change for the treated group.
+- The right side is the observed change for the control group, since for them $Y_{it} = Y_{it}(0)$. 
+  - This assumption allows us to use the control group to identify the counterfactual trend for the treated group.
+
+
+## Derivation of the DiD Estimator
+
+- We rearrange the parallel trends assumption from [@eq-pt] to solve for our unobserved counterfactual:
+
+\begin{align}
+\label{eq:cf}
+E[Y_{i1}(0) | D_i=1] = &\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-treatment}} + \\ &\underbrace{\left( E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Change in control group}}
+\end{align}
+
+- This equation shows how we construct the counterfactual: we take the treated group's initial level and add the change experienced by the control group.
+
+---
+
+## Derivation of the DiD Estimator
+
+- Substitute this expression for the counterfactual back into the definition of ATT:
+
+$$
+\begin{align}
+\text{ATT} &= E[Y_{i1}(1) | D_i=1] - E[Y_{i1}(0) | D_i=1] \\
+    &= E[Y_{i1}(1) | D_i=1] - \\
+    &\quad \underbrace{\left( E[Y_{i0}(0) | D_i=1] + E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Expression for counterfactual}}
+\end{align}
+$$
+
+
+## Replacing Potential Outcomes with Observables
+
+- Finally, we replace the potential outcomes with their observable counterparts to obtain $\widehat{\tau_{\text{DID}}}$: 
+
+  $$
+    \begin{align}
+    \text{ATT} &= \color{red}{E[Y_{i1}(1) | D_i=1]} - \\
+    &\quad \biggl( \color{blue}{E[Y_{i0}(0) | D_i=1]} + \color{orange}{E[Y_{i1}(0) | D_i=0]} - \color{green}{E[Y_{i0}(0) | D_i=0]} \biggr) \\
+    &= \color{red}{E[Y_{i1} | D_i = 1 ]} - \\
+    &\quad \biggl(  \color{blue}{E[Y_{i0} | D_i = 1]} + \color{orange}{E[Y_{i1} | D_i = 0]} - \color{green}{E[Y_{i0} | D_i = 0]}\biggr) \\
+    &= \widehat{\tau_{DID}}
+    \end{align}
+  $$
+
+- This is the famous "difference-in-differences" formula. It identifies the ATT under the crucial assumption of parallel trends.
+
+
+# DiD in Regression
+
+## DiD using a Regression Framework
+
+- We can estimate the exact same 2x2 DiD using a simple OLS regression. This is more powerful and flexible.
+
+:::{.callout-note title="Definition: DiD in a Regression Framework"}
+$Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i × Post_t) + \epsilon_{it}$
+
+-   $Y_{it}$: Outcome for unit *i* at time *t*.
+-   $Treat_i$: A dummy variable = 1 if unit *i* is in the treatment group, 0 otherwise.
+-   $Post_t$: A dummy variable = 1 if the period is "Post", 0 otherwise.
+-   $Treat_i \times Post_t$: An interaction term.
+:::
+
+## Interpretation of Coefficients (1/2)
+
+- Let's break down what each $\beta$ represents:
+
+$Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$
+
+- **$\beta_0$ (Intercept):** The average outcome for the **Control Group** (`Treat=0`) in the **Pre-Period** (`Post=0`).
+  - $E[Y | Treat=0, Post=0] = \beta_0$
+
+- **$\beta_1$:** The average *pre-existing difference* between the treatment and control groups in the pre-period. **This is the selection bias.**
+  - $E[Y | Treat=1, Post=0] = \beta_0 + \beta_1$
+  - So, $\beta_1 = E[Y | Treat=1, Post=0] - E[Y | Treat=0, Post=0]$
+
+---
+
+## Interpretation of Coefficients (2/2)
+
+  $$
+    Y_{it} = \beta_0 + \beta_1Treat_i + \beta_2Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}
+  $$
+
+- **$\beta_2$:** The average change in the outcome for the **Control Group** from the pre- to the post-period. **This is the secular trend.**
+  - $E[Y | Treat=0, Post=1] = \beta_0 + \beta_2$
+  - So, $\beta_2 = E[Y | Treat=0, Post=1] - E[Y | Treat=0, Post=0]$
+
+- **$\beta_3$:** **This is the DiD estimator!** It's the additional change in the outcome for the Treatment Group, above and beyond the secular trend.
+  - It is the causal effect of interest.
+  - $\beta_3 = (E[Y|T=1,P=1] - E[Y|T=1,P=0]) - (E[Y|T=0,P=1] - E[Y|T=0,P=0])$
+  - Hence $\beta_3$ is $\tau_{DID}$
+
+## Example: DiD in a Regression Framework
+
+:::{.callout-tip title="Example: Card and Krueger (1994)"}
+
+The Card and Krueger (1994) estimate can also be recovered using the specification we have seen above. Recall that $\tau_{DID}=2.75$. 
+
+:::{.panel-tabset .hey}
+
+### R
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+model <- lm(employment ~ state*time, data = card_krueger_data)
+summary(model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pyfixest as pf
+model = pf.feols("employment ~ time + state + time*state", data=r.card_krueger_data)
+model.summary()
+```
+
+### Stata
+
+Hey
+
+:::
+
+:::
+
+
+## Advantages of the Regression Framework
+
+- Why bother with regression instead of just calculating the four means?
+
+1.  **Standard Errors:** Regression automatically provides standard errors, t-statistics, and p-values for your DiD estimate ($\beta_3$), allowing for statistical inference.
+
+2.  **Adding Covariates:** It is easy to add control variables to the model to increase precision and make the parallel trends assumption more plausible.
+
+3.  **Flexibility:** The framework is easily extended to more complex scenarios (more groups, more time periods, etc.).
+
+## Adding Covariates to the DiD Model
+
+- We can add a vector of control variables, $X$, to the regression.
+
+  $$
+    Y_{it} = \beta_0 + \beta_1Treat_i + \beta_2Post_t + \beta_3(Treat_i \times Post_t) + \gamma'X_{it} + \epsilon_{it}
+  $$
+
+-  The purpose is to control for observable characteristics that might differ between the groups and affect trends in the outcome.
+-   This helps strengthen the parallel trends assumption. It becomes "parallel trends *conditional on X*".
+  - *Example:* When studying a state-level policy, you might control for state GDP, population size, etc.
+
+## Testing the Parallel Trends Assumption
+
+- We can't prove the assumption, but we can build evidence for it. This requires data from **multiple pre-treatment periods**.
+
+-   **Method 1: Visual Inspection (Most Common)**
+    -   Plot the average outcomes for the treatment and control groups over time.
+    -   Visually check if their trends were parallel in the periods *before* the treatment was introduced.
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 10
+#| fig-height: 4
+
+# Load necessary library
+library(ggplot2)
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Define parameters for data simulation
+n_individuals_per_group <- 50
+n_time_periods <- 10
+treatment_period <- 6
+
+# Create the data frame
+did_data <- data.frame(
+  individual = 1:(n_individuals_per_group * 2),
+  group = rep(c("Control", "Treatment"), each = n_individuals_per_group),
+  time = rep(1:n_time_periods, each = n_individuals_per_group * 2)
+)
+
+# Simulate the outcome variable
+did_data$outcome <- ifelse(
+  did_data$group == "Treatment",
+  15 + 1.2 * did_data$time + rnorm(n_individuals_per_group * n_time_periods, mean = 0, sd = 2),
+  10 + 1.2 * did_data$time + rnorm(n_individuals_per_group * n_time_periods, mean = 0, sd = 2)
+)
+
+# Add the treatment effect for the treatment group in the post-treatment period
+did_data$outcome <- ifelse(
+  did_data$group == "Treatment" & did_data$time >= treatment_period,
+  did_data$outcome + 5,
+  did_data$outcome
+)
+
+# Calculate the average outcome for each group at each time point
+plot_data <- aggregate(outcome ~ group + time, data = did_data, FUN = mean)
+
+# Create the ggplot
+ggplot(plot_data, aes(x = time, y = outcome, color = group, group = group)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_vline(xintercept = treatment_period - 0.5, linetype = "dashed", color = "black") +
+  scale_color_manual(values = c("Control" = "blue", "Treatment" = "red")) +
+  labs(
+    title = "Parallel Trends for Difference-in-Differences",
+    subtitle = "Illustrating the parallel trends assumption with simulated data",
+    x = "Time Period",
+    y = "Average Outcome",
+    color = "Group"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5),
+    legend.position = "bottom"
+  )
+```
+
+## Statistical Tests for Parallel Trends
+
+- If you have multiple pre-treatment periods, you can run a "placebo" test.
+  - The idea is to run a DiD analysis using only pre-treatment data. For instance, define a fake "treatment" in period t-2 and use t-3 as the "pre" period.
+- **In a regression:** interact the treatment group dummy with time-period dummies for *each pre-treatment period*:
+
+:::{.callout-note title="DiD Placebo Test"}
+
+$$
+\begin{align}
+    Y_{it} = &\beta_0 + \beta_1 \text{Treat}_i + \beta_2 \text{Post}_t + \dots + \\ &\delta_{-2} (\text{Treat} \times \text{PrePeriod}_{-2}) + \delta_{-1} (\text{Treat} \times \text{PrePeriod}_{-1}) + \\
+    &\beta_3(\text{Treat}_i \times \text{Post}_t) + \epsilon_{it}
+\end{align}
+$$
+
+**Result:** The coefficients $\delta_{-2}$ and $\delta_{-1}$ should be small and statistically insignificant (not different from zero). This shows there was no pre-existing differential trend.
+
+:::
+
+## Extension: Multiple Periods & Staggered Adoption
+
+- The real world is often messier than 2x2.
+
+- Often times, treatments have **staggered adoption:** 
+  - Different units receive the treatment at different times.
+  - For example, State A adopts a policy in 2010, State B in 2012, State C never does.
+- The simple 2x2 Treat $\times$ Post model is no longer sufficient and can be biased.
+- Modern methods (e.g., Callaway & Sant'Anna, Sun & Abraham) address these issues by using better defined control groups for each treated unit.
+
+## Staggered Adoption
+
+- Many modern DiD settings involve \textbf{staggered treatment adoption}, where different units get treated at different times.
+    
+- The standard tool for this has been the two-way fixed effects (TWFE) regression:
+
+  \begin{equation*}
+      Y_{it} = \alpha_i + \lambda_t + \beta^{TWFE} \cdot D_{it} + \epsilon_{it}
+  \end{equation*}
+  where $D_{it}=1$ if unit $i$ is treated at time $t$.
+    
+- Recent research (Goodman-Bacon, 2021; de Chaisemartin \& D'Haultfœuille, 2020; 2022) shows that $\hat{\beta}^{TWFE}$ is a weighted average of all possible 2x2 DiD estimators.
+        
+- Some of these comparisons are "bad": they use already-treated units as controls for later-treated units.
+
+## Why Are Bad Comparisons A Problem?
+
+:::{.callout-tip title="Example: Bad Comparison"}
+
+Imagine Cohort 2010 gets treated in 2010 and Cohort 2012 gets treated in 2012.
+To estimate the effect on Cohort 2012 in the year 2012, TWFE implicitly uses the observations from Cohort 2010 as part of the "control" group. But Cohort 2010 has already been treated for two years!
+:::
+
+- This is only valid if treatment effects are constant across cohorts and time. If effects are heterogeneous or dynamic (e.g., they grow over time), this comparison is contaminated.
+
+- The resulting $\hat{\beta}^{TWFE}$ can be a meaningless average, sometimes with negative weights, and may not represent any true ATT.
+
+## Sun and Abraham (2021) Solution
+
+- The core idea is to avoid aggregation and bad comparisons.
+
+:::{.callout-note title="Sun and Abraham (2021) Procedure"}
+
+Step 1: Define cohorts
+
+A cohort, $G=g$, is the group of all units that are first treated at the same time period $g$.
+
+Let $G=\infty$ (or $G=C$) be the \textbf{never-treated} group.
+
+Step 2: Estimate Cohort-Specific ATTs
+
+Instead of one $\beta$, estimate a separate effect for _each cohort_ $g$ at _each time period_ $\ell$.
+
+Use only clean controls: units that are not yet treated. The never-treated group ($G=C$) is the cleanest control.
+
+:::
+
+
+## Identification of Cohort-Specific ATT
+
+- The estimand of interest is the ATT for cohort $g$ at calendar time $\ell$ (where $\ell \ge g$). We denote this $\text{ATT}(g, \ell)$.
+
+- For each pair $(g, \ell)$, $\text{ATT}(g, \ell)$ is identified by a simple 2x2 DiD comparing cohort $g$ to the clean control group ($C$) between the pre-treatment period ($g-1$) and period $\ell$:
+
+\begin{align*}
+    \widehat{\text{ATT}}(g, \ell) = \Big( &E[Y_\ell | G=g] - E[Y_{g-1} | G=g] \Big) \\
+    - \Big( &E[Y_\ell | G=C] - E[Y_{g-1} | G=C] \Big)
+\end{align*}
+
+- Identification assumption in this case is a cohort-specific parallel trends assumption. 
+  - In the absence of treatment, the outcome for cohort $g$ would have evolved in parallel to the outcome for the never-treated (or not-yet-treated) group.
+
+
+## Bias-variance Trade-off
+
+- The Sun and Abraham (2021) framework is flexible. You can choose your control group to manage the bias-variance trade-off:
+
+- Option A: Never-Treated Controls:
+  - This is the cleanest option, requiring the weakest parallel trends assumption (only vs. never-treated). It is preferred if the group is large enough.
+    
+- Option B: Not-Yet-Treated Controls.
+  - The estimator can use all currently untreated units as a time-varying control group.
+  - This substantially increases statistical power and reduces variance. The cost is a slightly stronger (but still plausible) parallel trends assumption against these not-yet-treated units.
+
+
+## Visualizing Staggered DiD: Event Study Plots
+
+- We have seen this already in Lecture 4
+  - These plots are standard for visualizing results from models with multiple periods.
+
+-   **X-axis:** Time relative to the treatment event (e.g., -3, -2, -1, 0, +1, +2 years).
+-   **Y-axis:** The estimated DiD coefficient for that relative time period.
+-   **Interpretation:**
+    -   Coefficients for **pre-periods** ($t < 0$) should be near zero (validates parallel trends).
+    -   Coefficients for **post-periods** ($t \geq 0$) show the dynamic causal effect of the policy over time.
+
+## Visualization of Sun and Abraham (2021) approach
+
+- This is the dataset used in the study by Sun and Abraham (2021)
+
+:::{.panel-tabset .hey}
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| eval: false
+library(fixest)
+data(base_stagg)
+# Note that in this dataset, year_treated == 10000 for never treated firms 
+# and time_to_treatment == -1000
+model <- feols(y ~ sunab(year_treated, year) | id + year, data = base_stagg)
+#summary(model)
+iplot(model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| eval: false
+import pyfixest as pf
+base_stagg = r.base_stagg
+
+fit_twfe_saturated = pf.event_study(
+    base_stagg,
+    yname="y",
+    idname="id",
+    tname="year",
+    gname="year_treated",
+    estimator="saturated",
+)
+
+fit_twfe_saturated.aggregate()
+fit_twfe_saturated.iplot_aggregate()
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| code-fold: true
+#| echo: true
+
+* Estimate the Sun and Abraham (2021) estimator in our example:
+eventstudyinteract y id year year_treated, fe(id year) cohort(year_treated) control_cohort(10000) event_time(time_to_treatment)
+```
+
+:::
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 7
+#| fig-height: 3.5
+
+library(fixest)
+data(base_stagg)
+# Note that in this dataset, year_treated == 10000 for never treated firms 
+# and time_to_treatment == -1000
+model <- feols(y ~ sunab(year_treated, year) | id + year, data = base_stagg)
+#summary(model)
+iplot(model)
+```
+
+# Potential Pitfalls
+
+## Potential Pitfalls (1/3): Ashenfelter's Dip
+
+- A famous issue where the parallel trends assumption is violated in a specific way.
+- The Aschenfelter's dip is when there is a notable drop in the outcome for the treatment group *just before* treatment.
+
+:::{.callout-tip title="Example: Aschenfelter's Dip"}
+Individuals' earnings often drop right before they enter a job training program (e.g., due to job loss).
+
+This makes it look like the program had a huge effect, but it's really just a recovery to a normal level.
+:::
+
+
+## Potential Pitfalls (2/3): Policy Anticipation & Spillovers
+
+- **Anticipation Effects:** If people know a policy is coming, they may change their behavior *before* it's officially implemented. This contaminates the "pre" period and violates parallel trends.
+    - *Example:* A firm hires fewer people in anticipation of a minimum wage hike.
+
+- **Spillover Effects:** The treatment "spills over" and affects the control group.
+    -   *Example:* A job fair in one city (treatment) draws workers from a neighboring city (control), affecting the control city's labor market. Your control group is no longer a valid counterfactual.
+
+
+## Potential Pitfalls (3/3): Other Limitations
+
+- **Functional Form:** The basic DiD model assumes the treatment effect is a constant, additive shift.
+- **Data Requirements:** Requires panel data (tracking the same units over time) or repeated cross-sectional data.
+- **Bad Control Group:** The entire method relies on finding a credible control group that satisfies the parallel trends assumption. This is often the hardest part.
+
+# Summary
+
+## What did we do today?
+
+- **Potential Outcomes**:
+  - We have seen an introduction to potential outcomes notation. Potential outcomes define outcomes under the treatment and under the control at the individual level. 
+- **The ATE and the ATT**:
+  - We have seen two estimands -- things we would like to estimate -- of interest: the ATT and the ATE. We have discovered assumptions leading to identification of one of those in a cross-sectional context
+- **Difference-in-difference**:
+  - We switched to a two-period setting, which offers a more credible assumption of identifying the ATT: _parallel trends_. 
+  - DiD provides a powerful and intuitive way to estimate causal effects by controlling for time-invariant unobserved differences (selection bias).
+
+## What did we do? (Cont.)
+
+- **DiD in Regression**: 
+  - We then saw that the DID estimator can be implemented in a regression framework. A regression framework is useful for S.E.s and inclusion of covariates.
+- **Testing parallel trends**: 
+  - In DiD, this assumption is everything. You must convince yourself and your audience that it is plausible.
+- **Multi-period and staggered adoption**: 
+  - We have seen extensions of the DiD framework to a multi-period design closely resembling an event study, and we have focused on getting rid of "bad comparisons" in a staggered adoption setting.
+
+# The End
+
+
+
+

@@ -1,0 +1,188 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 3: The Linear Model"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial - The Linear Model'
+resources:
+  - demo.pdf
+---
+
+# Tutorial 3
+
+## Recapitulation of the Lecture
+
+## Slide 1
+
+## Slide 2
+
+
+# Comprehension & Application Questions
+
+## Housing prices
+
+Consider the following regression output from a model trying to explain the price of a house:
+    `price = 300,000 + 1500 * sqmtr`
+
+where `price` is the sale price of a house in euro, and `sqmtr` is the interior surface in square meters. The R-squared is 0.64.
+
+(a) Interpret the intercept (300,000) and the slope coefficient (1,500) in plain English.
+
+(b) What does the R-squared value of 0.64 tell us about this model?
+
+(c) If you were to re-estimate the model with price measured in thousands of euros (e.g., a 250,000 euro house becomes 250), what would the new equation be?
+
+## Log-Log Model
+
+Suppose you run a log-log regression to analyze the relationship between online ad spending and product sales, and you get the following result:
+
+`log(Sales) = 2.1 - 0.85 * log(Ad_Price)`
+
+How would you interpret the coefficient -0.85? What is the economic term for this value?
+
+# Theory Questions
+
+## Error Term and Residual
+
+What is the fundamental difference between the population error term ($u_i$) and the OLS residual ($e_i$)?
+
+Why can we observe one but not the other?
+
+## Proving a Fundamental OLS Property
+
+The lecture states that the OLS regression line always passes through the point of sample means, $(\bar{x}, \bar{y})$. 
+
+Using the formula for the OLS intercept estimator, $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$, prove that this is true. 
+
+That is, show that if you plug $\bar{x}$ into the estimated regression equation, the predicted value $\hat{y}$ is exactly $\bar{y}$.
+  
+## Unbiasedness
+
+The unbiasedness of the OLS estimator, $E(\hat{\beta}_1) = \beta_1$, is a cornerstone result that relies on the first four Gauss-Markov assumptions. Let's prove it. Start with the formula for the slope estimator:
+    $$
+      \hat{\beta}_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2}
+    $$
+
+(a) First, substitute the true population model $y_i = \beta_0 + \beta_1 x_i + u_i$ into the numerator. Show that the estimator can be rewritten as:
+
+    $$ \hat{\beta}_1 = \beta_1 + \frac{\sum_{i=1}^{n} (x_i - \bar{x})u_i}{\sum_{i=1}^{n} (x_i - \bar{x})^2} $$
+   
+- *(Hint: You will need to use the fact that $\sum(x_i - \bar{x})(c) = 0$ for any constant c, and that $\sum(x_i - \bar{x})(\bar{y}) = 0$.)*
+- *(Hint: A useful property is $\sum (x_i - \bar{x})(y_i - \bar{y}) = \sum (x_i - \bar{x})y_i$.)*
+
+## Unbiasedness (Cont.)
+
+(b) Now, take the conditional expectation of your result from part (a) with respect to X (the set of all $x_i$ values). Use the Zero Conditional Mean assumption, $E(u_i|X) = 0$, to prove that $E(\hat{\beta}_1|X) = \beta_1$.
+
+
+## Omitted Variable Bias 
+
+:::{style="font-size: 0.7em;"}
+This is a challenging but crucial derivation. Suppose the *true* population model is a multiple regression:
+  $$
+    y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u
+  $$
+However, you mistakenly estimate a simple regression, omitting $x_2$:
+    $$
+      y = \gamma_0 + \gamma_1 x_1 + v
+    $$
+Let $\hat{\gamma}_1$ be the OLS estimate from your incorrect (short) regression. Show that the expected value of this estimator is:
+
+  $$
+    E(\hat{\gamma}_1) = \beta_1 + \beta_2 \cdot \delta_1
+  $$
+  
+where $\delta_1$ is the slope coefficient from an auxiliary regression of the omitted variable ($x_2$) on the included variable ($x_1$): $x_2 = \delta_0 + \delta_1 x_1 + \text{error}$.
+
+- *(Hint: Start with the formula for $\hat{\gamma}_1$, substitute the true model for y, and then take the expectation. The term $\beta_2 \cdot \delta_1$ represents the omitted variable bias.)*
+- *(Hint: $\frac{\sum(x_{1i}-\bar{x}_1)x_{2i}}{\sum(x_{1i}-\bar{x}_1)^2} = \frac{\sum(x_{1i}-\bar{x}_1)(x_{2i}-\bar{x}_2)}{\sum(x_{1i}-\bar{x}_1)^2}$)*
+
+:::
+
+## Marginal Effects
+
+The lecture explains how to interpret coefficients in models with different functional forms. 
+
+Use calculus to derive the *marginal effect* of a change in $x$ on $y$ for the following two models:
+
+(a) **The Quadratic Model:** For the model $y = \beta_0 + \beta_1 x + \beta_2 x^2 + u$, find the derivative $\frac{dy}{dx}$. How does your result show that the effect of a one-unit change in $x$ on $y$ depends on the current level of $x$?
+
+(b) **The Level-Log Model:** For the model $y = \beta_0 + \beta_1 \log(x) + u$, show that a 1% change in $x$ leads to an approximate change of $(\beta_1/100)$ units in $y$.
+
+*(Hint: For (b), recall that a change in $\log(x)$, i.e., $d(\log(x))$, is equal to $\frac{dx}{x}$, which is the proportional change in x.)*
+
+## Perfect Multicollinearity
+
+The variance of a coefficient estimator in a multiple regression model with two variables ($x_1, x_2$) is given by:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_1 (1 - R_1^2)}
+  $$
+
+where $R_1^2$ is the R-squared from a regression of $x_1$ on $x_2$.
+
+(a) What does it mean for $x_1$ and $x_2$ to have *perfect multicollinearity* in terms of their relationship?
+
+(b) Analytically, what happens to the value of $R_1^2$ under perfect multicollinearity?
+
+(c) Using the variance formula, explain mathematically why it is impossible to calculate the OLS estimate $\hat{\beta}_1$ in this scenario. What happens to the variance of the estimator?
+    
+## Zero Conditional Mean
+
+The lecture states that the **Zero Conditional Mean assumption** ($E(u|x) = 0$) is the most crucial assumption for causality.
+
+(a) Explain in your own words what this assumption means.
+
+(b) Using the lecture's example of `wage` on `education`, explain why "innate ability" is a potential unobserved factor ($u$) that likely violates this assumption.
+
+(c) If higher ability is positively correlated with both education and wages, in which direction will the OLS estimate for the effect of education on wages ($\hat{\beta}_1$) be biased? Explain your reasoning.
+
+## Variance of the OLS Estimator
+
+The variance of the OLS estimator in a simple linear regression is given by: $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$.
+
+Imagine you are a researcher designing an experiment to find the causal effect of fertilizer ($x$) on crop yield ($y$). 
+
+Using this formula as your guide, what two things could you do in your experimental design to increase the *precision* of your estimate, $\hat{\beta}_1$?
+
+# Discussion Questions
+
+## R-squared
+
+A junior analyst tells you, "My model is great, it has an R-squared of 0.92!" 
+
+Why is a high R-squared not necessarily the ultimate goal of an econometric analysis, especially if we are interested in making policy decisions based on one specific variable?
+
+What is often more important than a high R-squared?
+
+## Omitted Variable Bias
+
+The lecture introduces multiple regression as a way to control for other factors and mitigate omitted variable bias. Let's return to the `wage` on `education` model.
+
+Besides experience (which was added in the lecture), what are two or three other variables you would want to include in the model to get a more credible estimate of the true return to education?
+
+What practical challenges might you face in obtaining data for these variables?
+
+## OLS Minimization
+
+Why do we use the *sum of squared residuals* as the criterion to minimize in OLS?
+
+Why not minimize the sum of the absolute values of the residuals, or just the sum of the residuals?
+
+What are the statistical and practical advantages of squaring them?
+
+## Polynomials
+
+The lecture introduced polynomial terms (e.g., adding $x^2$) to model non-linear relationships. 
+
+When might you suspect that a simple linear model is not sufficient and that a quadratic model (like `wage` on `experience` and `experience²`) would be more appropriate?
+
+What would a negative coefficient on the `experience²` term imply about the relationship between experience and wages?

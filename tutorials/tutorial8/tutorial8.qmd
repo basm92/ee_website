@@ -1,0 +1,89 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 8: Hands-On Econometrics / Exam Prep."
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial 8 - Hands-On and Exam Prep.'
+resources:
+  - demo.pdf
+---
+
+## Regression in R/Python
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+
+::: panel-tabset
+## R
+
+-   The standard way of doing this in R:
+
+```{r}
+model <- lm(formula = cyl ~ mpg, data = mtcars)
+summary(model)
+```
+
+## Python
+
+-   The standard way of doing this in Python:
+
+```{python}
+import statsmodels.api as sm 
+y = r.mtcars['cyl']
+X = r.mtcars['mpg']
+X = sm.add_constant(X)
+model = sm.OLS(y, X)
+results = model.fit()
+print(results.summary())
+```
+:::
+
+## Regression Tables in R/Python
+
+::: panel-tabset
+
+### R
+
+-   The best way to do this in R:
+
+```{r}
+#| tbl-cap: "Tables in R"
+library(fixest); library(modelsummary)
+model1 <- feols(cyl ~ mpg, data=mtcars)
+model2 <- feols(cyl ~ mpg + hp, data=mtcars)
+modelsummary(list(model1, model2), output='gt', gof_map=c('nobs', 'r.squared'))
+```
+
+### Python
+
+-   The best way to do this in Python:
+
+```{python}
+#| tbl-cap: "Tables in Python"
+import pyfixest as pf
+fit1 = pf.feols(fml="cyl ~ mpg", data=r.mtcars)
+fit2 = pf.feols(fml="cyl ~ mpg + hp", data=r.mtcars)
+pf.etable([fit1, fit2])
+```
+
+### Stata
+
+
+:::

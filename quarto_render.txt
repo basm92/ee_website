@@ -1,0 +1,2 @@
+quarto render lectures/ --profile custom
+quarto render tutorials/ --profile custom
