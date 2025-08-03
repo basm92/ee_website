@@ -2664,7 +2664,7 @@
     "href": "lectures/lecture4/lecture4.html#slide-12-how-to-avoid-spurious-regression",
     "title": "Empirical Economics",
     "section": "Slide 12: How to Avoid Spurious Regression",
-    "text": "Slide 12: How to Avoid Spurious Regression\n\nDifferencing the Data: If two variables are non-stationary, their first differences (ΔYt and ΔXt) may be stationary.\nRegressing the Differences: Regressing the change in Y on the change in X can reveal the true short-run relationship between the variables, if one exists.\nCaution: This is a common solution, but it’s important to first test for non-stationarity (a topic for a more advanced course)."
+    "text": "Slide 12: How to Avoid Spurious Regression\n\nIf the static model \\(Y_t = \\alpha + \\beta X_t + \\epsilon_t\\) is so dangerous, what is the alternative?\nDifferencing the Data: If two variables are non-stationary, their first differences (ΔYt and ΔXt) may be stationary.\nDynamic models: We need models that explicitly account for dynamics—the idea that a change in X can affect Y both today and in the future."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#slide-13-dynamic-discrete-time-processes",
@@ -2797,7 +2797,7 @@
     "href": "lectures/lecture4/lecture4.html#the-problem-of-spurious-regression",
     "title": "Empirical Economics",
     "section": "The Problem of Spurious Regression",
-    "text": "The Problem of Spurious Regression\n\nA Deceptive Relationship: A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.\nThe Root of the Problem: This often happens when both variables have a strong trend (are non-stationary). The trend can be deterministic (predictable) or stochastic (random)."
+    "text": "The Problem of Spurious Regression\n\nIf \\(X\\) is stationary, e.g. \\(X \\sim AR(1)\\) with \\(|\\rho|&lt;1\\), this is a valid approach.\nHowever, in different situations, OLS may give a deceptive relationship:\n\nA spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.\n\nThis often happens when both variables have a strong trend (are non-stationary), and especially, when \\(X\\) is non-stationary.\n\nThe trend can be deterministic (predictable) or stochastic (random)."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#visualizing-spurious-regression",
@@ -2825,7 +2825,7 @@
     "href": "lectures/lecture4/lecture4.html#the-moving-average-model",
     "title": "Empirical Economics",
     "section": "The Moving Average Model",
-    "text": "The Moving Average Model\nIn the MA model, the current value is a function of the current and past random shocks.\nYt = μ + ut + θut-1\n\nμ (mu): The mean of the series.\nθ (theta): The moving average coefficient.\nMemory: The MA(1) process has a finite memory. A shock ut-1 affects Yt-1 and Yt, but has no direct effect on Yt+1."
+    "text": "The Moving Average Model\n\nIn the MA model, the current value is a function of the current and past random shocks.\n\\[\n  Y_t = \\mu + u_t + \\theta u_{t-1}\n\\]\n\\(\\mu\\): The mean of the series.\n\\(\\theta\\): The moving average coefficient.\nThe MA(1) process has a finite memory. A shock \\(u_{t-1}\\) affects \\(Y_{t-1}\\) and \\(Y_t\\), but has no direct effect on \\(Y_{t+1}\\)."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#interpreting-the-ma1-coefficient-theta",
@@ -2839,7 +2839,7 @@
     "href": "lectures/lecture4/lecture4.html#the-autoregressive-moving-average-arma-model",
     "title": "Empirical Economics",
     "section": "The Autoregressive Moving Average (ARMA) Model",
-    "text": "The Autoregressive Moving Average (ARMA) Model\n\nCombining AR and MA: We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.\nARMA(1,1): Yt = α + ρYt-1 + ut + θut-1\nFlexibility: ARMA models are very flexible and can capture a wide range of time series dynamics."
+    "text": "The Autoregressive Moving Average (ARMA) Model\n\nCombining AR and MA: We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.\nFor example, an ARMA(1,1) Model: \\(Y_t = \\alpha + \\rho Y_{t-1} + u_t + \\theta u_{t=1}\\)\nARMA models are very flexible and can capture a wide range of time series dynamics."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#why-model-a-single-series",
@@ -2860,7 +2860,7 @@
     "href": "lectures/lecture4/lecture4.html#the-random-walk-model",
     "title": "Empirical Economics",
     "section": "The Random Walk Model",
-    "text": "The Random Walk Model\n\nA special case of the AR(1) model where ρ = 1:\n\\[\n  Y_t = Y_{t-1} + u_t\n\\]\nThe best forecast for tomorrow’s value is today’s value.\nPermanent Shocks: The impact of a shock \\(u_t\\) is permanent; it is carried forward in all future periods.\n\nExamples: The prices of financial assets are often modeled as random walks."
+    "text": "The Random Walk Model\n\nA special case of the AR(1) model where \\(\\rho=1\\):\n\\[\n  Y_t = Y_{t-1} + u_t\n\\]\nThe best forecast for tomorrow’s value is today’s value.\nPermanent Shocks: The impact of a shock \\(u_t\\) is permanent; it is carried forward in all future periods.\n\nExamples: The prices of financial assets are often modeled as random walks."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#higher-order-arp-models",
@@ -2874,6 +2874,41 @@
     "href": "lectures/lecture4/lecture4.html#linear-model-in-time-series",
     "title": "Empirical Economics",
     "section": "Linear Model in Time Series",
-    "text": "Linear Model in Time Series\n\nThe model form is identical to its cross-sectional counterpart:\n\\[\n  Y_t = \\alpha + \\beta X_t + \\epsilon_t\n\\]\nThis model posits a contemporaneous relationship between X and Y.\nQuestion: Can we estimate this with OLS and trust the results?\nFor OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the Zero Conditional Mean assumption:\n\\[\n  Cov(X_t, \\epsilon_t) = 0\n\\]"
+    "text": "Linear Model in Time Series\n\nThe model form is identical to its cross-sectional counterpart:\n\\[\n  Y_t = \\alpha + \\beta X_t + \\epsilon_t\n\\]\nThis model posits a contemporaneous relationship between X and Y.\nQuestion: Can we estimate this with OLS and trust the results?\nFor OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of :\n\\[\n  Cov(X_t, \\epsilon_t) = 0\n\\]"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#spurious-regression-is-non-stationarity",
+    "href": "lectures/lecture4/lecture4.html#spurious-regression-is-non-stationarity",
+    "title": "Empirical Economics",
+    "section": "Spurious Regression is Non-Stationarity",
+    "text": "Spurious Regression is Non-Stationarity\n\nLet’s look at the most common non-stationary process: the random walk.\n\\[\n  X_t = X_{t-1} + u_t\n\\]\n\n\n\n\n\n\n\n\nTheorem: Variance of a Random Walk\n\n\nSuppose \\(X_0=0\\). Let us find the variance of \\(X_t\\). We know that \\(X_1 = u_i\\). \\(X_2 = X_1 + u_2 = u_1 + u_2\\), etc. Hence, \\(X_t = \\sum u_i\\).\nHence \\(Var(X_t) = Var(u_1 + u_2 + \\dots + u_t)\\).\nSince the \\(u_i\\) are uncorrelated (white noise), the variance of the sum is the sum of the variances: \\[\n    \\begin{align}\n    Var(X_t) &= \\sigma^2_u + \\dots + \\sigma^2_u \\text{ ( t times)} \\\\\n            &= t \\times \\sigma^2_u\n    \\end{align}\n  \\]\nThe variance depends on time t and grows without bound. This is a clear violation of stationarity."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-spurious-regression-setup",
+    "href": "lectures/lecture4/lecture4.html#the-spurious-regression-setup",
+    "title": "Empirical Economics",
+    "section": "The Spurious Regression Setup",
+    "text": "The Spurious Regression Setup\n\nImagine two independent and unrelated random walks, \\(Yt = Yt-1 + u_t\\) and \\(Xt = Xt-1 + v_t\\), where \\(u_t\\) and \\(v_t\\) are independent white noise processes.\nBy construction, the true \\(\\beta\\) in a regression of \\(Y_t\\) on \\(X_t\\) is zero.\nWhen we run \\(Y_t= \\alpha + \\beta X_t + u_t\\), we know \\(Var(Y_t)=Var(X_t)=t\\times \\sigma^2_u\\).\n\nBoth variables have variances that are trending upwards.\nBut OLS is a “variance-minimizing” estimator. It finds a \\(\\beta\\) that makes the variance of the residuals (Yt - βXt) as small as possible."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#why-ols-finds-a-false-relationship",
+    "href": "lectures/lecture4/lecture4.html#why-ols-finds-a-false-relationship",
+    "title": "Empirical Economics",
+    "section": "Why OLS Finds a False Relationship",
+    "text": "Why OLS Finds a False Relationship\nWhen we run Yt = α + βXt + εt:\nWe know Var(Yt) = t * σu² and Var(Xt) = t * σv².\n\nBoth variables have variances that are trending upwards.\n\nOLS is a \"variance-minimizing\" estimator. It finds a β that makes the variance of the residuals (Yt - βXt) as small as possible.\n\nBecause Yt and Xt share a common deterministic trend in their variance, OLS is \"fooled\" into finding a non-zero β that appears to link their movements."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#failure-of-reliable-estimation",
+    "href": "lectures/lecture4/lecture4.html#failure-of-reliable-estimation",
+    "title": "Empirical Economics",
+    "section": "Failure of Reliable Estimation",
+    "text": "Failure of Reliable Estimation\n\nImagine two independent and unrelated random walks, \\(Yt = Yt-1 + u_t\\) and \\(Xt = Xt-1 + v_t\\), where \\(u_t\\) and \\(v_t\\) are independent white noise processes.\nBy construction, the true \\(\\beta\\) in a regression of \\(Y_t\\) on \\(X_t\\) is zero.\nWhen we run \\(Y_t= \\alpha + \\beta X_t + u_t\\), we know \\(Var(Y_t)=Var(X_t)=t\\times \\sigma^2_u\\).\nWe also know that the OLS coefficient is \\(\\hat{\\beta}=\\frac{\\text{Cov}(X,Y)}{\\text{Var}(X)}\\).\nWhen \\(T \\rightarrow \\infty\\) , this term also tends to infinity.\nSince this is in the denominator, we might get unusually large \\(\\beta\\) coefficients and \\(t\\)-statistics."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#visualization-ar1-process",
+    "href": "lectures/lecture4/lecture4.html#visualization-ar1-process",
+    "title": "Empirical Economics",
+    "section": "Visualization AR(1) Process",
+    "text": "Visualization AR(1) Process"
   }
 ]
