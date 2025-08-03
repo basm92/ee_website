@@ -4,7 +4,7 @@
     "href": "lectureslides.html",
     "title": "Lecture Slides",
     "section": "",
-    "text": "The lecture slides can be found below.\n\nLecture 1\nLecture 2\nLecture 3\nLecture 4\nLecture 5\nLecture 6\nLecture 7\nLecture 8"
+    "text": "The lecture slides can be found below.\n\nLecture 1: Probability\nLecture 2: Statistics\nLecture 3: The Linear Model\nLecture 4: Time Series\nLecture 5: Panel Data\nLecture 6: Binary Outcomes\nLecture 7: Potential Outcomes and DiD\nLecture 8: Hand-on Econometrics"
   },
   {
     "objectID": "tutorialslides.html",
@@ -1131,7 +1131,7 @@
     "href": "tutorials/tutorial8/tutorial8.html#regression-in-rpython",
     "title": "Empirical Economics",
     "section": "Regression in R/Python",
-    "text": "Regression in R/Python\n\nRPython\n\n\n\nThe standard way of doing this in R:\n\n\n\n\nCall:\nlm(formula = cyl ~ mpg, data = mtcars)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-1.8569 -0.6484  0.1205  0.5965  1.5876 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept) 11.26068    0.59304   18.99  &lt; 2e-16 ***\nmpg         -0.25251    0.02831   -8.92 6.11e-10 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 0.95 on 30 degrees of freedom\nMultiple R-squared:  0.7262,    Adjusted R-squared:  0.7171 \nF-statistic: 79.56 on 1 and 30 DF,  p-value: 6.113e-10\n\n\n\n\n\nThe standard way of doing this in Python:\n\n\n\n                            OLS Regression Results                            \n==============================================================================\nDep. Variable:                    cyl   R-squared:                       0.726\nModel:                            OLS   Adj. R-squared:                  0.717\nMethod:                 Least Squares   F-statistic:                     79.56\nDate:                Sun, 03 Aug 2025   Prob (F-statistic):           6.11e-10\nTime:                        12:55:35   Log-Likelihood:                -42.731\nNo. Observations:                  32   AIC:                             89.46\nDf Residuals:                      30   BIC:                             92.39\nDf Model:                           1                                         \nCovariance Type:            nonrobust                                         \n==============================================================================\n                 coef    std err          t      P&gt;|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nconst         11.2607      0.593     18.988      0.000      10.050      12.472\nmpg           -0.2525      0.028     -8.920      0.000      -0.310      -0.195\n==============================================================================\nOmnibus:                        1.364   Durbin-Watson:                   2.000\nProb(Omnibus):                  0.506   Jarque-Bera (JB):                1.259\nSkew:                          -0.354   Prob(JB):                        0.533\nKurtosis:                       2.335   Cond. No.                         74.1\n==============================================================================\n\nNotes:\n[1] Standard Errors assume that the covariance matrix of the errors is correctly specified."
+    "text": "Regression in R/Python\n\nRPython\n\n\n\nThe standard way of doing this in R:\n\n\n\n\nCall:\nlm(formula = cyl ~ mpg, data = mtcars)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-1.8569 -0.6484  0.1205  0.5965  1.5876 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept) 11.26068    0.59304   18.99  &lt; 2e-16 ***\nmpg         -0.25251    0.02831   -8.92 6.11e-10 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 0.95 on 30 degrees of freedom\nMultiple R-squared:  0.7262,    Adjusted R-squared:  0.7171 \nF-statistic: 79.56 on 1 and 30 DF,  p-value: 6.113e-10\n\n\n\n\n\nThe standard way of doing this in Python:\n\n\n\n                            OLS Regression Results                            \n==============================================================================\nDep. Variable:                    cyl   R-squared:                       0.726\nModel:                            OLS   Adj. R-squared:                  0.717\nMethod:                 Least Squares   F-statistic:                     79.56\nDate:                Sun, 03 Aug 2025   Prob (F-statistic):           6.11e-10\nTime:                        13:17:15   Log-Likelihood:                -42.731\nNo. Observations:                  32   AIC:                             89.46\nDf Residuals:                      30   BIC:                             92.39\nDf Model:                           1                                         \nCovariance Type:            nonrobust                                         \n==============================================================================\n                 coef    std err          t      P&gt;|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nconst         11.2607      0.593     18.988      0.000      10.050      12.472\nmpg           -0.2525      0.028     -8.920      0.000      -0.310      -0.195\n==============================================================================\nOmnibus:                        1.364   Durbin-Watson:                   2.000\nProb(Omnibus):                  0.506   Jarque-Bera (JB):                1.259\nSkew:                          -0.354   Prob(JB):                        0.533\nKurtosis:                       2.335   Cond. No.                         74.1\n==============================================================================\n\nNotes:\n[1] Standard Errors assume that the covariance matrix of the errors is correctly specified."
   },
   {
     "objectID": "tutorials/tutorial8/tutorial8.html#regression-tables-in-rpython",
@@ -1292,7 +1292,7 @@
     "href": "index.html#contact",
     "title": "Empirical Economics",
     "section": "Contact",
-    "text": "Contact\n\nThe course coordinator is Bas Machielsen (a dot h dot machielsen at uu dot .nl)"
+    "text": "Contact\n\nThe course coordinator is Bas Machielsen (a dot h dot machielsen at uu dot .nl)\nTutorial teachers:\n\nJelena\nKattia\nTina\nVincent\nMads"
   },
   {
     "objectID": "lectures/lecture5/lecture5.html#course-overview",
@@ -1796,7 +1796,7 @@
     "href": "lectures/lecture3/lecture3.html#interpreting-ols-coefficients",
     "title": "Empirical Economics",
     "section": "Interpreting OLS Coefficients",
-    "text": "Interpreting OLS Coefficients\n\nLet’s run our wage-education regression: \\(\\text{Wage}_i = \\hat{\\beta}_0 + \\hat{\\beta}_1 \\text{Educ}_i\\)\n\n\nRPythonStata\n\n\n\n\nCode\nslr_model &lt;- lm(wage ~ educ, data = dat)\n# The coefficients are:\nsummary(slr_model)\n## \n## Call:\n## lm(formula = wage ~ educ, data = dat)\n## \n## Residuals:\n##     Min      1Q  Median      3Q     Max \n## -6.7201 -2.3878 -0.3926  1.9554 11.6092 \n## \n## Coefficients:\n##             Estimate Std. Error t value Pr(&gt;|t|)    \n## (Intercept)   1.7863     2.5164   0.710    0.479    \n## educ          1.1498     0.1887   6.092 2.19e-08 ***\n## ---\n## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n## \n## Residual standard error: 3.4 on 98 degrees of freedom\n## Multiple R-squared:  0.2747, Adjusted R-squared:  0.2673 \n## F-statistic: 37.11 on 1 and 98 DF,  p-value: 2.192e-08\n\n\n\n\n\n\nCode\nimport statsmodels.api as sm\nX = r.dat.educ\ny = r.dat.wage\nX = sm.add_constant(X)\nmodel = sm.OLS(y, X).fit()\nprint(model.summary())\n##                             OLS Regression Results                            \n## ==============================================================================\n## Dep. Variable:                   wage   R-squared:                       0.275\n## Model:                            OLS   Adj. R-squared:                  0.267\n## Method:                 Least Squares   F-statistic:                     37.11\n## Date:                Sun, 03 Aug 2025   Prob (F-statistic):           2.19e-08\n## Time:                        12:56:18   Log-Likelihood:                -263.27\n## No. Observations:                 100   AIC:                             530.5\n## Df Residuals:                      98   BIC:                             535.8\n## Df Model:                           1                                         \n## Covariance Type:            nonrobust                                         \n## ==============================================================================\n##                  coef    std err          t      P&gt;|t|      [0.025      0.975]\n## ------------------------------------------------------------------------------\n## const          1.7863      2.516      0.710      0.479      -3.207       6.780\n## educ           1.1498      0.189      6.092      0.000       0.775       1.524\n## ==============================================================================\n## Omnibus:                        8.366   Durbin-Watson:                   2.235\n## Prob(Omnibus):                  0.015   Jarque-Bera (JB):                8.006\n## Skew:                           0.626   Prob(JB):                       0.0183\n## Kurtosis:                       3.595   Cond. No.                         99.2\n## ==============================================================================\n## \n## Notes:\n## [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n\n\n\n\n\n\n\n\n\nSo our estimated SRF is: \\(\\widehat{wage} = 1.79 + 1.15 \\times educ\\)"
+    "text": "Interpreting OLS Coefficients\n\nLet’s run our wage-education regression: \\(\\text{Wage}_i = \\hat{\\beta}_0 + \\hat{\\beta}_1 \\text{Educ}_i\\)\n\n\nRPythonStata\n\n\n\n\nCode\nslr_model &lt;- lm(wage ~ educ, data = dat)\n# The coefficients are:\nsummary(slr_model)\n## \n## Call:\n## lm(formula = wage ~ educ, data = dat)\n## \n## Residuals:\n##     Min      1Q  Median      3Q     Max \n## -6.7201 -2.3878 -0.3926  1.9554 11.6092 \n## \n## Coefficients:\n##             Estimate Std. Error t value Pr(&gt;|t|)    \n## (Intercept)   1.7863     2.5164   0.710    0.479    \n## educ          1.1498     0.1887   6.092 2.19e-08 ***\n## ---\n## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n## \n## Residual standard error: 3.4 on 98 degrees of freedom\n## Multiple R-squared:  0.2747, Adjusted R-squared:  0.2673 \n## F-statistic: 37.11 on 1 and 98 DF,  p-value: 2.192e-08\n\n\n\n\n\n\nCode\nimport statsmodels.api as sm\nX = r.dat.educ\ny = r.dat.wage\nX = sm.add_constant(X)\nmodel = sm.OLS(y, X).fit()\nprint(model.summary())\n##                             OLS Regression Results                            \n## ==============================================================================\n## Dep. Variable:                   wage   R-squared:                       0.275\n## Model:                            OLS   Adj. R-squared:                  0.267\n## Method:                 Least Squares   F-statistic:                     37.11\n## Date:                Sun, 03 Aug 2025   Prob (F-statistic):           2.19e-08\n## Time:                        13:18:05   Log-Likelihood:                -263.27\n## No. Observations:                 100   AIC:                             530.5\n## Df Residuals:                      98   BIC:                             535.8\n## Df Model:                           1                                         \n## Covariance Type:            nonrobust                                         \n## ==============================================================================\n##                  coef    std err          t      P&gt;|t|      [0.025      0.975]\n## ------------------------------------------------------------------------------\n## const          1.7863      2.516      0.710      0.479      -3.207       6.780\n## educ           1.1498      0.189      6.092      0.000       0.775       1.524\n## ==============================================================================\n## Omnibus:                        8.366   Durbin-Watson:                   2.235\n## Prob(Omnibus):                  0.015   Jarque-Bera (JB):                8.006\n## Skew:                           0.626   Prob(JB):                       0.0183\n## Kurtosis:                       3.595   Cond. No.                         99.2\n## ==============================================================================\n## \n## Notes:\n## [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n\n\n\n\n\n\n\n\n\nSo our estimated SRF is: \\(\\widehat{wage} = 1.79 + 1.15 \\times educ\\)"
   },
   {
     "objectID": "lectures/lecture3/lecture3.html#interpretation",
@@ -2076,7 +2076,7 @@
     "href": "lectures/lecture3/lecture3.html#understanding-statistical-output-1",
     "title": "Empirical Economics",
     "section": "Understanding Statistical Output",
-    "text": "Understanding Statistical Output\n\nBy now, we can understand virtually all of the standard statistical output from R/Python/Stata.\nLet’s look at the full output from R/Python/Stata for our simple regression.\n\n\nRPythonStata\n\n\n\nmlr_model &lt;- lm(wage ~ educ + exper, data = dat_mlr)\nsummary(mlr_model)\n\n\nCall:\nlm(formula = wage ~ educ + exper, data = dat_mlr)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-7.3544 -1.9212  0.1218  2.1522  7.5290 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)  2.82941    2.64978   1.068   0.2883    \neduc         1.02959    0.17534   5.872 6.03e-08 ***\nexper        0.16733    0.06647   2.518   0.0135 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 3.142 on 97 degrees of freedom\nMultiple R-squared:  0.2825,    Adjusted R-squared:  0.2677 \nF-statistic:  19.1 on 2 and 97 DF,  p-value: 1.016e-07\n\n\n\n\n\nimport statsmodels.api as sm\nimport pandas as pd\n# Create a DataFrame for X (automatically keeps variable names)\nX = pd.DataFrame({\n    'educ': r.dat_mlr['educ'],\n    'exper': r.dat_mlr['exper']\n})\n\nX = sm.add_constant(X)  # Adds 'const' column\ny = r.dat_mlr['wage']\nmodel = sm.OLS(y, X).fit()\nprint(model.summary())\n\n                            OLS Regression Results                            \n==============================================================================\nDep. Variable:                   wage   R-squared:                       0.283\nModel:                            OLS   Adj. R-squared:                  0.268\nMethod:                 Least Squares   F-statistic:                     19.10\nDate:                Sun, 03 Aug 2025   Prob (F-statistic):           1.02e-07\nTime:                        12:56:19   Log-Likelihood:                -254.87\nNo. Observations:                 100   AIC:                             515.7\nDf Residuals:                      97   BIC:                             523.6\nDf Model:                           2                                         \nCovariance Type:            nonrobust                                         \n==============================================================================\n                 coef    std err          t      P&gt;|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nconst          2.8294      2.650      1.068      0.288      -2.430       8.088\neduc           1.0296      0.175      5.872      0.000       0.682       1.378\nexper          0.1673      0.066      2.518      0.013       0.035       0.299\n==============================================================================\nOmnibus:                        0.187   Durbin-Watson:                   2.158\nProb(Omnibus):                  0.911   Jarque-Bera (JB):                0.359\nSkew:                          -0.059   Prob(JB):                        0.836\nKurtosis:                       2.731   Cond. No.                         175.\n==============================================================================\n\nNotes:\n[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n\n\n\n\n\nreg wage educ expr"
+    "text": "Understanding Statistical Output\n\nBy now, we can understand virtually all of the standard statistical output from R/Python/Stata.\nLet’s look at the full output from R/Python/Stata for our simple regression.\n\n\nRPythonStata\n\n\n\nmlr_model &lt;- lm(wage ~ educ + exper, data = dat_mlr)\nsummary(mlr_model)\n\n\nCall:\nlm(formula = wage ~ educ + exper, data = dat_mlr)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-7.3544 -1.9212  0.1218  2.1522  7.5290 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)  2.82941    2.64978   1.068   0.2883    \neduc         1.02959    0.17534   5.872 6.03e-08 ***\nexper        0.16733    0.06647   2.518   0.0135 *  \n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 3.142 on 97 degrees of freedom\nMultiple R-squared:  0.2825,    Adjusted R-squared:  0.2677 \nF-statistic:  19.1 on 2 and 97 DF,  p-value: 1.016e-07\n\n\n\n\n\nimport statsmodels.api as sm\nimport pandas as pd\n# Create a DataFrame for X (automatically keeps variable names)\nX = pd.DataFrame({\n    'educ': r.dat_mlr['educ'],\n    'exper': r.dat_mlr['exper']\n})\n\nX = sm.add_constant(X)  # Adds 'const' column\ny = r.dat_mlr['wage']\nmodel = sm.OLS(y, X).fit()\nprint(model.summary())\n\n                            OLS Regression Results                            \n==============================================================================\nDep. Variable:                   wage   R-squared:                       0.283\nModel:                            OLS   Adj. R-squared:                  0.268\nMethod:                 Least Squares   F-statistic:                     19.10\nDate:                Sun, 03 Aug 2025   Prob (F-statistic):           1.02e-07\nTime:                        13:18:06   Log-Likelihood:                -254.87\nNo. Observations:                 100   AIC:                             515.7\nDf Residuals:                      97   BIC:                             523.6\nDf Model:                           2                                         \nCovariance Type:            nonrobust                                         \n==============================================================================\n                 coef    std err          t      P&gt;|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nconst          2.8294      2.650      1.068      0.288      -2.430       8.088\neduc           1.0296      0.175      5.872      0.000       0.682       1.378\nexper          0.1673      0.066      2.518      0.013       0.035       0.299\n==============================================================================\nOmnibus:                        0.187   Durbin-Watson:                   2.158\nProb(Omnibus):                  0.911   Jarque-Bera (JB):                0.359\nSkew:                          -0.059   Prob(JB):                        0.836\nKurtosis:                       2.731   Cond. No.                         175.\n==============================================================================\n\nNotes:\n[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n\n\n\n\n\nreg wage educ expr"
   },
   {
     "objectID": "lectures/lecture3/lecture3.html#understanding-statistical-output-cont.",
@@ -2525,5 +2525,355 @@
     "title": "Course Manual\nEmpirical Economics\n2025-2026",
     "section": "Examination",
     "text": "Examination\n\nThe course will have a mid-term exam (40%) and an end-term exam (60% of the grade). Both of these will tentatively be conducted on Brightspace, but in person. Utrecht University will provide Chromebooks. The exam is closed book, you can bring a pen/pencil and a calculator. Scrap paper will be provided.\nA mock mid-term and end-term exam will be provided to make you acquainted with the format.\nIn case of illness on the day of the exam, please contact the study advisor immediately: studyadvisor.use@uu.nl.\nRetake policy: There is one retake. If you have a \\(4 \\leq \\text{Grade} \\leq 5.5\\), you are eligible for the retake.\nInspection policy: there will be an inspection organized by the course coordinator following the mid-term and end-term exams. These will be announced on Brightspace.\nGrading: Your final grade will be your raw grade rounded to the nearest \\(1,1.5,2,2.5,3,\\dots, 10\\).\nLast course provision: A written exam (similar to the retake exam) takes place after period 4. Students who passed all courses (including thesis) except Empirical Economics can request the Board of Examiners for this last course provision."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#course-overview",
+    "href": "lectures/lecture4/lecture4.html#course-overview",
+    "title": "Empirical Economics",
+    "section": "Course Overview",
+    "text": "Course Overview\n\nStatistics and Probability - Basic Concepts\nStatistics and Probability - Hypothesis Testing\nThe Linear Regression Model\nTime Series Data\nPanel Data (FE) and Control Variables\nBinary Outcome Data\nPotential Outcomes and Difference-in-differences\nHands-on Econometrics in Practice"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#what-is-time-series-data",
+    "href": "lectures/lecture4/lecture4.html#what-is-time-series-data",
+    "title": "Empirical Economics",
+    "section": "What is Time Series Data?",
+    "text": "What is Time Series Data?\n\n\n\n\n\n\n\nDefinition: Time Series Data\n\n\nTime series data consists of observations of a variable or several variables over time.\n\n\n\n\n\nKey Feature: The data is ordered chronologically.\n\n\n\n\n\n\n\n\nExamples: Time Series Data\n\n\n\nGross Domestic Product (GDP) measured quarterly\nMonthly inflation rates\nDaily stock prices\nAnnual government budget deficits"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#characteristics-of-time-series-data",
+    "href": "lectures/lecture4/lecture4.html#characteristics-of-time-series-data",
+    "title": "Empirical Economics",
+    "section": "Characteristics of Time Series Data",
+    "text": "Characteristics of Time Series Data\n\nTemporal Ordering: Unlike cross-sectional data, the order of observations in time series data matters. The past can affect the future, but the future cannot affect the past.\nSerial Correlation (or Autocorrelation): Observations in a time series are often correlated with their own past values. For example, a high GDP in one quarter may suggest a high GDP in the next quarter.\nSeasonality: Many time series exhibit regular patterns at certain times of the year (e.g., retail sales are higher in the fourth quarter).\nTrends: A time series may have a long-term upward or downward movement."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#objectives-of-time-series-analysis",
+    "href": "lectures/lecture4/lecture4.html#objectives-of-time-series-analysis",
+    "title": "Empirical Economics",
+    "section": "Objectives of Time Series Analysis",
+    "text": "Objectives of Time Series Analysis\n\nThere are various objectives of time series econometrics:\n\n\nForecasting: Predicting future values of a variable is a primary objective. For instance, forecasting inflation is crucial for central banks.\nPolicy Analysis: Economists use time series models to assess the impact of policy changes. For example, what is the effect of an interest rate hike on unemployment?\nUnderstanding Dynamic Economic Relationships: Time series analysis helps us understand how economic variables interact over time."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#notation-and-basic-concepts",
+    "href": "lectures/lecture4/lecture4.html#notation-and-basic-concepts",
+    "title": "Empirical Economics",
+    "section": "Notation and Basic Concepts",
+    "text": "Notation and Basic Concepts\n\n\\(Y_t\\): The value of the variable Y at time period t.\n\\(Y_{t-1}\\): The value of Y in the previous period (the first lag).\n\\(Y_{t-s}\\): The value of Y s periods ago (the s-th lag).\n\\(\\Delta Y_t = Y_t - Y_{t-1}\\): The first difference of \\(Y\\), which represents the change in \\(Y\\) from the previous period to the current period."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#a-time-series-as-a-stochastic-process",
+    "href": "lectures/lecture4/lecture4.html#a-time-series-as-a-stochastic-process",
+    "title": "Empirical Economics",
+    "section": "A Time Series as a Stochastic Process",
+    "text": "A Time Series as a Stochastic Process\n\n\n\n\n\n\n\nDefinition: Time Series (Mathematical)\n\n\nA time series is a set of random variables indexed by time, denoted as \\(\\{Y_1, Y_2, \\dots, Y_T\\}\\) or simply \\(\\{Y_t\\}\\).\n\n\n\n\n\nStochastic vs. Deterministic: We treat a time series as a stochastic process because we don’t know the future values with certainty. We can only talk about their probability distributions.\nOne Realization: The actual data we have (e.g., GDP from 1950-2024) is just one of many possible paths the process could have taken.\nOur goal is to infer the properties of the underlying process from this single realization."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#basic-statistical-properties",
+    "href": "lectures/lecture4/lecture4.html#basic-statistical-properties",
+    "title": "Empirical Economics",
+    "section": "Basic Statistical Properties",
+    "text": "Basic Statistical Properties\n\nJust like any random variable, each point in a time series has statistical properties.\n\nMean: The expected value of the process at time t: \\(E(Y_t) = \\mu_t\\)\nVariance: The variance of the process at time t: \\(Var(Y_t) = E[(Y_t - \\mu_t)^2] = \\sigma_t^2\\)\n\nCrucially, in general, the mean and variance could be different at each point in time."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#autocovariance",
+    "href": "lectures/lecture4/lecture4.html#autocovariance",
+    "title": "Empirical Economics",
+    "section": "Autocovariance",
+    "text": "Autocovariance\n\nCovariance:\n\nRecall that covariance measures how two variables move together.\n\nAutocovariance\n\nAutocovariance is the covariance of a time series with its own past values. It measures the linear dependence between different points in the series.\n\n\n\n\n\n\n\n\n\nDefinition: Autocovariance\n\n\nThe \\(k\\)-th Order Autocovariance (\\(\\gamma_k\\)):\n\\[\n    \\gamma(t, t-k) = Cov(Y_t, Y_{t-k}) = E[(Y_t - \\mu_t)(Y_{t-k} - \\mu_{t-k})]\n  \\]\n\n\n\n\n\nThis measures the covariance between the series at time t and time t-k."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#other-topics-in-time-series-econometrics",
+    "href": "lectures/lecture4/lecture4.html#other-topics-in-time-series-econometrics",
+    "title": "Empirical Economics",
+    "section": "Other Topics in Time Series Econometrics",
+    "text": "Other Topics in Time Series Econometrics\nThis lecture has been an introduction. More advanced topics include:\n\nTesting for Stationarity: Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.\nCointegration: A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).\nVolatility Modeling (ARCH/GARCH): Modeling the changing variance of a time series, which is crucial in finance."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#what-did-we-do",
+    "href": "lectures/lecture4/lecture4.html#what-did-we-do",
+    "title": "Empirical Economics",
+    "section": "What did we do?",
+    "text": "What did we do?\n\nSpurious Regression:\nA misleading relationship between two non-stationary time series. Beware of high R-squared and low Durbin-Watson statistics.\nAutoregressive (AR) Models:\nExplain a variable using its own past values. The concept of persistence is key.\nMoving Average (MA) Models:\nExplain a variable using past random shocks.\nDistributed Lag (DL) Models:\nModel the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#what-did-we-do-cont.",
+    "href": "lectures/lecture4/lecture4.html#what-did-we-do-cont.",
+    "title": "Empirical Economics",
+    "section": "What did we do? (Cont.)",
+    "text": "What did we do? (Cont.)"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#stationarity-a-key-simplifying-assumption",
+    "href": "lectures/lecture4/lecture4.html#stationarity-a-key-simplifying-assumption",
+    "title": "Empirical Economics",
+    "section": "Stationarity: A Key Simplifying Assumption",
+    "text": "Stationarity: A Key Simplifying Assumption\n\nFor analysis to be tractable, we often assume the series is covariance stationary (or weakly stationary).\nThis means the three aforementioned statistical properties do not change over time. Three conditions must hold:\n\n\n\n\n\n\n\n\nDefinition: Stationarity\n\n\n\nConstant Mean: \\(E(Y_t) = \\mu\\) for all t. The series fluctuates around a constant level.\nConstant Variance: \\(Var(Y_t) = \\sigma^2\\) for all t. The volatility of the series is constant.\nConstant Autocovariance: \\(Cov(Y_t, Y_{t-k}) = \\gamma_k\\) for all t. The covariance between two points depends only on the lag \\(k\\) (how far apart they are), not on their position in time."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#autocorrelation-function-acf",
+    "href": "lectures/lecture4/lecture4.html#autocorrelation-function-acf",
+    "title": "Empirical Economics",
+    "section": "Autocorrelation Function (ACF)",
+    "text": "Autocorrelation Function (ACF)\n\nThe value of the autocovariance (\\(\\gamma_k\\)) depends on the units of the variable \\(Y\\). This makes it hard to compare across different series.\nAutocorrelation: standardize the autocovariance to get the autocorrelation, which is unit-free.\n\n\n\n\n\n\n\n\nDefinition: Autocorrelation\n\n\nThe \\(k\\)-th Order Autocorrelation (\\(\\rho_k\\)):\n\\[\n    \\rho_k = \\frac{ Cov(Y_t, Y_{t-k}) }{\\sqrt{Var(Y_t) Var(Y_{t-k})}}\n  \\]\nIf the series is stationary, this simplifies to:\n\\[\n    \\rho_k = \\frac{\\gamma_k}{\\gamma_0}\n  \\]\nwhere \\(\\gamma_0\\) is the variance, \\(Var(Y_t)\\)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-p7-interpreting-the-autocorrelation-function-acf",
+    "href": "lectures/lecture4/lecture4.html#slide-p7-interpreting-the-autocorrelation-function-acf",
+    "title": "Empirical Economics",
+    "section": "Slide P7: Interpreting the Autocorrelation Function (ACF)",
+    "text": "Slide P7: Interpreting the Autocorrelation Function (ACF)\n\nThe ACF, denoted by \\(\\rho_k\\), measures the “memory” or persistence of a time series.\n\nIt is a value between -1 and +1.\n\\(\\rho_1\\): The correlation between \\(Y_t\\) and \\(Y_{t-1}\\)(“today” and “yesterday”).\n\\(\\rho_k\\): The correlation between \\(Y_t\\) and \\(Y_{t-k}\\)\nA high \\(\\rho_k\\) suggests that a shock in one period will have a persistent effect k periods later.\n\nFor a stationary series, we expect \\(\\rho_k \\rightarrow 0\\) as \\(k\\) gets larger."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-7-visualizing-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#slide-7-visualizing-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Slide 7: Visualizing Spurious Regression",
+    "text": "Slide 7: Visualizing Spurious Regression\nImagine two variables that follow a “random walk” (we’ll define this more formally later). They are independent by construction.\n(Insert a graph here showing two randomly generated time series that both trend upwards over time. The visual impression should be that they are related.)\nCaption: Two independent random walks can appear to be correlated simply because they are both trending."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-8-a-classic-example-yule-1926",
+    "href": "lectures/lecture4/lecture4.html#slide-8-a-classic-example-yule-1926",
+    "title": "Empirical Economics",
+    "section": "Slide 8: A Classic Example: Yule (1926)",
+    "text": "Slide 8: A Classic Example: Yule (1926)\n\nThe Study: Statistician George Udny Yule found a high correlation between the mortality rate in England and Wales and the proportion of marriages solemnized in the Church of England.\nThe Reality: There was no causal link. Both series were trending downwards over time due to unrelated social and economic factors."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-9-why-does-spurious-regression-happen",
+    "href": "lectures/lecture4/lecture4.html#slide-9-why-does-spurious-regression-happen",
+    "title": "Empirical Economics",
+    "section": "Slide 9: Why Does Spurious Regression Happen?",
+    "text": "Slide 9: Why Does Spurious Regression Happen?\n\nNon-stationarity: A time series is stationary if its statistical properties (mean, variance, autocorrelation) are constant over time.\nStochastic Trends: Many economic time series are non-stationary and exhibit a “random walk” like behavior, meaning they have a stochastic trend.\nThe Illusion of Correlation: When two independent non-stationary time series are regressed on each other, the shared tendency to trend can create a statistically significant relationship where none exists."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-10-consequences-of-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#slide-10-consequences-of-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Slide 10: Consequences of Spurious Regression",
+    "text": "Slide 10: Consequences of Spurious Regression\nIf you run a regression of Yt on Xt where both are trending but unrelated:\n\nYou will likely find a high R-squared.\nThe t-statistics for the estimated coefficients will likely be significant.\nYou might conclude that X causes Y, but this conclusion would be meaningless and misleading."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-11-detecting-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#slide-11-detecting-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Slide 11: Detecting Spurious Regression",
+    "text": "Slide 11: Detecting Spurious Regression\n\nA Low Durbin-Watson Statistic: A key indicator of spurious regression is a very low Durbin-Watson (DW) statistic, often close to zero.\nRule of Thumb: If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-12-how-to-avoid-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#slide-12-how-to-avoid-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Slide 12: How to Avoid Spurious Regression",
+    "text": "Slide 12: How to Avoid Spurious Regression\n\nDifferencing the Data: If two variables are non-stationary, their first differences (ΔYt and ΔXt) may be stationary.\nRegressing the Differences: Regressing the change in Y on the change in X can reveal the true short-run relationship between the variables, if one exists.\nCaution: This is a common solution, but it’s important to first test for non-stationarity (a topic for a more advanced course)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-13-dynamic-discrete-time-processes",
+    "href": "lectures/lecture4/lecture4.html#slide-13-dynamic-discrete-time-processes",
+    "title": "Empirical Economics",
+    "section": "Slide 13: Dynamic Discrete-Time Processes",
+    "text": "Slide 13: Dynamic Discrete-Time Processes\n\nIntroducing Dynamics: So far, we have mostly considered static models. Dynamic models explicitly incorporate the passage of time.\nLags Matter: These models allow the current value of a variable to be influenced by past values of itself or other variables."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-14-the-autoregressive-ar-model-ar1",
+    "href": "lectures/lecture4/lecture4.html#slide-14-the-autoregressive-ar-model-ar1",
+    "title": "Empirical Economics",
+    "section": "Slide 14: The Autoregressive (AR) Model: AR(1)",
+    "text": "Slide 14: The Autoregressive (AR) Model: AR(1)\nThe simplest dynamic model is the first-order autoregressive, or AR(1), model:\nYt = α + ρYt-1 + ut\n\nYt: The value of Y at time t.\nYt-1: The value of Y in the previous period.\nρ (rho): The autoregressive coefficient, which measures the persistence of the series.\nut: A white noise error term (uncorrelated with past values)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-15-stationarity-of-an-ar1-process",
+    "href": "lectures/lecture4/lecture4.html#slide-15-stationarity-of-an-ar1-process",
+    "title": "Empirical Economics",
+    "section": "Slide 15: Stationarity of an AR(1) Process",
+    "text": "Slide 15: Stationarity of an AR(1) Process\nFor the AR(1) model Yt = α + ρYt-1 + ut:\n\nIf |ρ| &lt; 1, the series is stationary. Any shock (ut) will eventually die out.\nIf |ρ| = 1, the series is non-stationary and is called a random walk. Shocks have a permanent effect.\nIf |ρ| &gt; 1, the series is explosive (this is rare in economics)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-16-understanding-the-autoregressive-coefficient-ρ",
+    "href": "lectures/lecture4/lecture4.html#slide-16-understanding-the-autoregressive-coefficient-ρ",
+    "title": "Empirical Economics",
+    "section": "Slide 16: Understanding the Autoregressive Coefficient (ρ)",
+    "text": "Slide 16: Understanding the Autoregressive Coefficient (ρ)\n\nSpeed of Adjustment: A value of ρ close to 0 suggests that the effect of a past value dies out quickly.\nPersistence: A value of ρ close to 1 indicates that a shock to the system will persist for a long time. The series will return to its mean slowly."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-17-the-random-walk-model",
+    "href": "lectures/lecture4/lecture4.html#slide-17-the-random-walk-model",
+    "title": "Empirical Economics",
+    "section": "Slide 17: The Random Walk Model",
+    "text": "Slide 17: The Random Walk Model\nA special case of the AR(1) model where ρ = 1:\nYt = Yt-1 + ut\n\n“Best Guess”: The best forecast for tomorrow’s value is today’s value.\nPermanent Shocks: The impact of a shock ut is permanent; it is carried forward in all future periods.\nExamples: The prices of financial assets are often modeled as random walks."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-18-higher-order-arp-models",
+    "href": "lectures/lecture4/lecture4.html#slide-18-higher-order-arp-models",
+    "title": "Empirical Economics",
+    "section": "Slide 18: Higher-Order AR(p) Models",
+    "text": "Slide 18: Higher-Order AR(p) Models\nWe can include more lags of the dependent variable. An AR(p) model includes p lags:\nYt = α + ρ1Yt-1 + ρ2Yt-2 + … + ρpYt-p + ut\n\nChoosing p: The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-19-the-lag-operator-l",
+    "href": "lectures/lecture4/lecture4.html#slide-19-the-lag-operator-l",
+    "title": "Empirical Economics",
+    "section": "Slide 19: The Lag Operator (L)",
+    "text": "Slide 19: The Lag Operator (L)\n\nA Convenient Notation: The lag operator, L, is a useful tool for writing and manipulating dynamic models.\nDefinition: LYt = Yt-1\nProperties:\n\nL²Yt = L(LYt) = LYt-1 = Yt-2\nLpYt = Yt-p\n\nAR(1) in Lag Notation: Yt = α + ρLYt + ut =&gt; (1 - ρL)Yt = α + ut"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-correlogram-acf-plot",
+    "href": "lectures/lecture4/lecture4.html#the-correlogram-acf-plot",
+    "title": "Empirical Economics",
+    "section": "The Correlogram (ACF Plot)",
+    "text": "The Correlogram (ACF Plot)\n\nA correlogram is a bar chart that plots the sample autocorrelations (\\(r_k\\)) for different lags (\\(k = 1, 2, 3, \\dots\\)).\n\nIt provides a visual summary of the persistence in a time series. We can see how quickly the correlations die out.\nCorrelograms usually include confidence bands. Autocorrelations that fall outside these bands are considered statistically different from zero.\n\n\n(Todo: Insert a sample correlogram plot here, showing bars for lags 1, 2, 3… and confidence bands)"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-20-introduction-to-moving-average-ma-processes",
+    "href": "lectures/lecture4/lecture4.html#slide-20-introduction-to-moving-average-ma-processes",
+    "title": "Empirical Economics",
+    "section": "Slide 20: Introduction to Moving Average (MA) Processes",
+    "text": "Slide 20: Introduction to Moving Average (MA) Processes\n\nA Different Kind of Dependence: While AR models link Yt to past values of Y, moving average (MA) models link Yt to past values of the error term, ut.\nInterpretation: A shock that occurred in the past can still affect the current value of the variable."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-21-the-moving-average-ma-model-ma1",
+    "href": "lectures/lecture4/lecture4.html#slide-21-the-moving-average-ma-model-ma1",
+    "title": "Empirical Economics",
+    "section": "Slide 21: The Moving Average (MA) Model: MA(1)",
+    "text": "Slide 21: The Moving Average (MA) Model: MA(1)\nThe first-order moving average, or MA(1), model is:\nYt = μ + ut + θut-1\n\nμ (mu): The mean of the series.\nut: The current shock.\nut-1: The shock from the previous period.\nθ (theta): The moving average coefficient."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-22-interpreting-the-ma1-coefficient-θ",
+    "href": "lectures/lecture4/lecture4.html#slide-22-interpreting-the-ma1-coefficient-θ",
+    "title": "Empirical Economics",
+    "section": "Slide 22: Interpreting the MA(1) Coefficient (θ)",
+    "text": "Slide 22: Interpreting the MA(1) Coefficient (θ)\n\nLimited Memory: Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.\nThe coefficient θ determines the extent to which a past shock affects the current observation."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-23-the-autoregressive-moving-average-arma-model",
+    "href": "lectures/lecture4/lecture4.html#slide-23-the-autoregressive-moving-average-arma-model",
+    "title": "Empirical Economics",
+    "section": "Slide 23: The Autoregressive Moving Average (ARMA) Model",
+    "text": "Slide 23: The Autoregressive Moving Average (ARMA) Model\n\nCombining AR and MA: We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.\nARMA(1,1): Yt = α + ρYt-1 + ut + θut-1\nFlexibility: ARMA models are very flexible and can capture a wide range of time series dynamics."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-24-introduction-to-distributed-lag-dl-models",
+    "href": "lectures/lecture4/lecture4.html#slide-24-introduction-to-distributed-lag-dl-models",
+    "title": "Empirical Economics",
+    "section": "Slide 24: Introduction to Distributed Lag (DL) Models",
+    "text": "Slide 24: Introduction to Distributed Lag (DL) Models\n\nDelayed Effects of Explanatory Variables: Distributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time.\nExample: How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-25-the-finite-distributed-lag-fdl-model",
+    "href": "lectures/lecture4/lecture4.html#slide-25-the-finite-distributed-lag-fdl-model",
+    "title": "Empirical Economics",
+    "section": "Slide 25: The Finite Distributed Lag (FDL) Model",
+    "text": "Slide 25: The Finite Distributed Lag (FDL) Model\nA finite distributed lag model of order q is:\nYt = α + β0Xt + β1Xt-1 + … + βqXt-q + ut\n\nβ0: The impact multiplier - the immediate effect of a one-unit change in Xt on Yt.\nβs (s &gt; 0): The dynamic multipliers - the effect of a one-unit change in Xt-s on Yt."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-26-interpreting-the-dl-coefficients",
+    "href": "lectures/lecture4/lecture4.html#slide-26-interpreting-the-dl-coefficients",
+    "title": "Empirical Economics",
+    "section": "Slide 26: Interpreting the DL Coefficients",
+    "text": "Slide 26: Interpreting the DL Coefficients\nYt = α + β0Xt + β1Xt-1 + … + βqXt-q + ut\n\nShort-Run Multiplier: The total effect after a certain number of periods (e.g., β0 + β1).\nLong-Run (or Total) Multiplier: The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: Σ βs."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-27-the-koyck-geometric-distributed-lag-model",
+    "href": "lectures/lecture4/lecture4.html#slide-27-the-koyck-geometric-distributed-lag-model",
+    "title": "Empirical Economics",
+    "section": "Slide 27: The Koyck (Geometric) Distributed Lag Model",
+    "text": "Slide 27: The Koyck (Geometric) Distributed Lag Model\n\nThe Problem of Infinite Lags: Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.\nKoyck’s Assumption: The Koyck model assumes that the coefficients (βs) decline geometrically: βs = β0λ^s, where 0 &lt; λ &lt; 1.\nA Simpler Form: This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated: Yt = α(1-λ) + β0Xt + λYt-1 + vt (This is a form of an ARDL model)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#slide-28-the-autoregressive-distributed-lag-ardl-model",
+    "href": "lectures/lecture4/lecture4.html#slide-28-the-autoregressive-distributed-lag-ardl-model",
+    "title": "Empirical Economics",
+    "section": "Slide 28: The Autoregressive Distributed Lag (ARDL) Model",
+    "text": "Slide 28: The Autoregressive Distributed Lag (ARDL) Model\n\nA General and Powerful Model: The ARDL model includes lags of both the dependent variable and the explanatory variable(s).\nARDL(p,q): Yt = α + Σ(ρi * Yt-i) [from i=1 to p] + Σ(βj * Xt-j) [from j=0 to q] + ut\nAdvantages: ARDL models are very flexible and can be used to estimate both short-run and long-run effects."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-white-noise-process",
+    "href": "lectures/lecture4/lecture4.html#the-white-noise-process",
+    "title": "Empirical Economics",
+    "section": "The White Noise Process",
+    "text": "The White Noise Process\n\nThe Simplest Time Series: A process called “white noise” is the building block for more complex models. We often denote it as \\(u_t\\)\n\n\n\n\n\n\n\n\nDefinition: White Noise Process\n\n\nA white noise is a time series such that:\n\n\\(E(u_t) = 0\\) (Zero mean)\n\\(Var(u_t) = \\sigma^2\\) (Constant variance)\n\\(Cov(u_t, u_s) = 0\\) for all \\(t\\neq s\\) (No autocorrelation)\n\n\n\n\n\n\nInterpretation: A white noise process is completely random and unpredictable. Its ACF will be zero for all lags \\(k &gt; 0\\). It is the ideal error term in a time series regression."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-problem-of-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#the-problem-of-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "The Problem of Spurious Regression",
+    "text": "The Problem of Spurious Regression\n\nA Deceptive Relationship: A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.\nThe Root of the Problem: This often happens when both variables have a strong trend (are non-stationary). The trend can be deterministic (predictable) or stochastic (random)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#visualizing-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#visualizing-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Visualizing Spurious Regression",
+    "text": "Visualizing Spurious Regression\nImagine two variables that follow a “random walk” (we’ll define this more formally later). They are independent by construction.\n(Insert a graph here showing two randomly generated time series that both trend upwards over time. The visual impression should be that they are related.)\nCaption: Two independent random walks can appear to be correlated simply because they are both trending."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#interpretation-of-the-autocorrelation-function-acf",
+    "href": "lectures/lecture4/lecture4.html#interpretation-of-the-autocorrelation-function-acf",
+    "title": "Empirical Economics",
+    "section": "Interpretation of the Autocorrelation Function (ACF)",
+    "text": "Interpretation of the Autocorrelation Function (ACF)\n\nThe ACF, denoted by \\(\\rho_k\\), measures the “memory” or persistence of a time series.\n\nIt is a value between -1 and +1.\n\\(\\rho_1\\): The correlation between \\(Y_t\\) and \\(Y_{t-1}\\)(“today” and “yesterday”).\n\\(\\rho_k\\): The correlation between \\(Y_t\\) and \\(Y_{t-k}\\)\nA high \\(\\rho_k\\) suggests that a shock in one period will have a persistent effect k periods later.\n\nFor a stationary series, we expect \\(\\rho_k \\rightarrow 0\\) as \\(k\\) gets larger."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-autoregressive-ar-model-ar1",
+    "href": "lectures/lecture4/lecture4.html#the-autoregressive-ar-model-ar1",
+    "title": "Empirical Economics",
+    "section": "The Autoregressive (AR) Model: AR(1)",
+    "text": "The Autoregressive (AR) Model: AR(1)\n\nThe simplest dynamic model is the first-order autoregressive, or AR(1), model:\n\n\\[\n  Y_t = α + \\rho Y_{t-1} + u_t\n\\]\n\n\\(Y_t\\): The value of Y at time t.\n\\(Y_{t-1}\\): The value of Y in the previous period.\n\\(\\rho\\): The autoregressive coefficient, which measures the persistence of the series.\n\\(u_t\\): A white noise error term (uncorrelated with past values)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-moving-average-model",
+    "href": "lectures/lecture4/lecture4.html#the-moving-average-model",
+    "title": "Empirical Economics",
+    "section": "The Moving Average Model",
+    "text": "The Moving Average Model\nIn the MA model, the current value is a function of the current and past random shocks.\nYt = μ + ut + θut-1\n\nμ (mu): The mean of the series.\nθ (theta): The moving average coefficient.\nMemory: The MA(1) process has a finite memory. A shock ut-1 affects Yt-1 and Yt, but has no direct effect on Yt+1."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#interpreting-the-ma1-coefficient-theta",
+    "href": "lectures/lecture4/lecture4.html#interpreting-the-ma1-coefficient-theta",
+    "title": "Empirical Economics",
+    "section": "Interpreting the MA(1) Coefficient (\\(\\theta\\))",
+    "text": "Interpreting the MA(1) Coefficient (\\(\\theta\\))\n\nLimited Memory: Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.\nThe coefficient θ determines the extent to which a past shock affects the current observation."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-autoregressive-moving-average-arma-model",
+    "href": "lectures/lecture4/lecture4.html#the-autoregressive-moving-average-arma-model",
+    "title": "Empirical Economics",
+    "section": "The Autoregressive Moving Average (ARMA) Model",
+    "text": "The Autoregressive Moving Average (ARMA) Model\n\nCombining AR and MA: We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.\nARMA(1,1): Yt = α + ρYt-1 + ut + θut-1\nFlexibility: ARMA models are very flexible and can capture a wide range of time series dynamics."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#why-model-a-single-series",
+    "href": "lectures/lecture4/lecture4.html#why-model-a-single-series",
+    "title": "Empirical Economics",
+    "section": "Why Model a Single Series?",
+    "text": "Why Model a Single Series?\n\nBefore we ask how X affects Y, we must first understand the behavior of Y itself.\nUnivariate models describe the dynamic properties of a single time series using its own past.\nMain uses:\n\nUnderstanding Persistence: How long do shocks to the economy last?\nForecasting: Using the past of a series to predict its future."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#stationarity-of-an-ar1-process",
+    "href": "lectures/lecture4/lecture4.html#stationarity-of-an-ar1-process",
+    "title": "Empirical Economics",
+    "section": "Stationarity of an AR(1) Process",
+    "text": "Stationarity of an AR(1) Process\n\nFor the AR(1) model \\(Y_t = \\alpha + \\rho Y_{t-1} + u_t\\):\n\nIf \\(|\\rho| &lt; 1\\):, the series is stationary. Any shock (\\(u_t\\)) will eventually die out.\nIf \\(|\\rho|=1\\), the series is non-stationary and is called a random walk. Shocks have a permanent effect.\nIf \\(|\\rho|&gt;1\\), the series is explosive (this is rare in economics).\n\nSpeed of Adjustment: A value of \\(\\rho\\) close to 0 suggests that the effect of a past value dies out quickly.\nPersistence: A value of \\(\\rho\\) close to 1 indicates that a shock to the system will persist for a long time. The series will return to its mean slowly."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#the-random-walk-model",
+    "href": "lectures/lecture4/lecture4.html#the-random-walk-model",
+    "title": "Empirical Economics",
+    "section": "The Random Walk Model",
+    "text": "The Random Walk Model\n\nA special case of the AR(1) model where ρ = 1:\n\\[\n  Y_t = Y_{t-1} + u_t\n\\]\nThe best forecast for tomorrow’s value is today’s value.\nPermanent Shocks: The impact of a shock \\(u_t\\) is permanent; it is carried forward in all future periods.\n\nExamples: The prices of financial assets are often modeled as random walks."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#higher-order-arp-models",
+    "href": "lectures/lecture4/lecture4.html#higher-order-arp-models",
+    "title": "Empirical Economics",
+    "section": "Higher-Order AR(p) Models",
+    "text": "Higher-Order AR(p) Models\n\nWe can include more lags of the dependent variable. An \\(AR(p)\\) model includes \\(p\\) lags:\n\n\\[\nY_t = \\alpha + \\rho_1 Y_{t-1} + \\rho_2 Y_{t-2} + \\dots + \\rho_p Y_{t-p} + u_t\n\\]\n\nChoosing p: The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#linear-model-in-time-series",
+    "href": "lectures/lecture4/lecture4.html#linear-model-in-time-series",
+    "title": "Empirical Economics",
+    "section": "Linear Model in Time Series",
+    "text": "Linear Model in Time Series\n\nThe model form is identical to its cross-sectional counterpart:\n\\[\n  Y_t = \\alpha + \\beta X_t + \\epsilon_t\n\\]\nThis model posits a contemporaneous relationship between X and Y.\nQuestion: Can we estimate this with OLS and trust the results?\nFor OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the Zero Conditional Mean assumption:\n\\[\n  Cov(X_t, \\epsilon_t) = 0\n\\]"
   }
 ]

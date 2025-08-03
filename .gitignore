@@ -9,3 +9,5 @@
 */_presentation/
 */__pycache__/
 __pycache__/
+/.quarto/
+/_site/

@@ -1,0 +1,398 @@
+---
+title: "Empirical Economics"
+subtitle: "Lecture 4: The Linear Model and Time Series"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 4 - Linear Model and Time Series'
+resources:
+  - demo.pdf
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+# Introduction
+
+## Course Overview
+
+- Statistics and Probability - Basic Concepts
+- Statistics and Probability - Hypothesis Testing
+- The Linear Regression Model
+- Time Series Data
+- Panel Data (FE) and Control Variables
+- Binary Outcome Data
+- Potential Outcomes and Difference-in-differences
+- Hands-on Econometrics in Practice
+
+
+## What is Time Series Data?
+
+:::{.callout-note title="Definition: Time Series Data"}
+Time series data consists of observations of a variable or several variables over time.
+:::
+
+- **Key Feature:** The data is ordered chronologically.
+
+:::{.callout-tip title="Examples: Time Series Data"}
+- Gross Domestic Product (GDP) measured quarterly
+- Monthly inflation rates
+- Daily stock prices
+- Annual government budget deficits
+:::
+
+---
+
+## Characteristics of Time Series Data
+
+- **Temporal Ordering:** Unlike cross-sectional data, the order of observations in time series data matters. The past can affect the future, but the future cannot affect the past.
+- **Serial Correlation (or Autocorrelation):** Observations in a time series are often correlated with their own past values. For example, a high GDP in one quarter may suggest a high GDP in the next quarter.
+- **Seasonality:** Many time series exhibit regular patterns at certain times of the year (e.g., retail sales are higher in the fourth quarter).
+- **Trends:** A time series may have a long-term upward or downward movement.
+
+## Objectives of Time Series Analysis
+
+- There are various objectives of time series econometrics:
+
+1. **Forecasting:** Predicting future values of a variable is a primary objective. For instance, forecasting inflation is crucial for central banks.
+2. **Policy Analysis:** Economists use time series models to assess the impact of policy changes. For example, what is the effect of an interest rate hike on unemployment?
+3. **Understanding Dynamic Economic Relationships:** Time series analysis helps us understand how economic variables interact over time.
+
+## Notation and Basic Concepts
+
+- $Y_t$:  The value of the variable Y at time period t.
+- $Y_{t-1}$: The value of Y in the previous period (the first lag).
+- $Y_{t-s}$: The value of Y s periods ago (the s-th lag).
+- $\Delta Y_t = Y_t - Y_{t-1}$: The first difference of $Y$, which represents the change in $Y$ from the previous period to the current period.
+
+# Introduction to Dynamic Processes
+
+## A Time Series as a Stochastic Process
+
+:::{.callout-note title="Definition: Time Series (Mathematical)"}
+A time series is a set of random variables indexed by time, denoted as $\{Y_1, Y_2, \dots, Y_T\}$ or simply $\{Y_t\}$. 
+:::
+
+- Stochastic vs. Deterministic: We treat a time series as a stochastic process because we don't know the future values with certainty. We can only talk about their probability distributions.
+
+- One Realization: The actual data we have (e.g., GDP from 1950-2024) is just one of many possible paths the process could have taken. 
+- Our goal is to infer the properties of the underlying process from this single realization.
+
+## Basic Statistical Properties
+
+- Just like any random variable, each point in a time series has statistical properties.
+
+  - Mean: The expected value of the process at time t: $E(Y_t) = \mu_t$
+  - Variance: The variance of the process at time t: $Var(Y_t) = E[(Y_t - \mu_t)^2] = \sigma_t^2$
+
+- Crucially, in general, the mean and variance could be different at each point in time.
+
+
+## Autocovariance 
+
+- Covariance: 
+  - Recall that covariance measures how two variables move together.
+
+- Autocovariance
+  - Autocovariance is the covariance of a time series with its own past values. It measures the linear dependence between different points in the series.
+  
+:::{.callout-note title="Definition: Autocovariance"}
+The $k$-th Order Autocovariance ($\gamma_k$):
+
+  $$
+    \gamma(t, t-k) = Cov(Y_t, Y_{t-k}) = E[(Y_t - \mu_t)(Y_{t-k} - \mu_{t-k})]
+  $$
+:::
+
+- This measures the covariance between the series at time t and time t-k.
+
+## Stationarity: A Key Simplifying Assumption
+
+- For analysis to be tractable, we often assume the series is covariance stationary (or weakly stationary).
+
+- This means the three aforementioned statistical properties do not change over time. Three conditions must hold:
+
+:::{.callout-note title="Definition: Stationarity"}
+- Constant Mean: $E(Y_t) = \mu$ for all t. The series fluctuates around a constant level.
+- Constant Variance: $Var(Y_t) = \sigma^2$ for all t. The volatility of the series is constant.
+- Constant Autocovariance: $Cov(Y_t, Y_{t-k}) = \gamma_k$ for all t. The covariance between two points depends only on the lag $k$ (how far apart they are), not on their position in time.
+:::
+
+## Autocorrelation Function (ACF)
+
+- The value of the autocovariance ($\gamma_k$) depends on the units of the variable $Y$. This makes it hard to compare across different series.
+
+- Autocorrelation: standardize the autocovariance to get the autocorrelation, which is unit-free.
+
+:::{.callout-note title="Definition: Autocorrelation"}
+
+The $k$-th Order Autocorrelation ($\rho_k$): 
+
+  $$
+    \rho_k = \frac{ Cov(Y_t, Y_{t-k}) }{\sqrt{Var(Y_t) Var(Y_{t-k})}}
+  $$
+
+If the series is stationary, this simplifies to:
+
+  $$
+    \rho_k = \frac{\gamma_k}{\gamma_0}
+  $$
+  
+where $\gamma_0$ is the variance, $Var(Y_t)$. 
+  
+:::
+
+## Interpretation of the Autocorrelation Function (ACF)
+
+- The ACF, denoted by $\rho_k$, measures the "memory" or persistence of a time series.
+  - It is a value between -1 and +1.
+  - $\rho_1$: The correlation between $Y_t$ and $Y_{t-1}$("today" and "yesterday").
+  - $\rho_k$: The correlation between $Y_t$ and $Y_{t-k}$
+  - A high $\rho_k$ suggests that a shock in one period will have a persistent effect k periods later.
+
+- For a stationary series, we expect $\rho_k \rightarrow 0$ as $k$ gets larger.
+
+## The Correlogram (ACF Plot)
+
+- A correlogram is a bar chart that plots the sample autocorrelations ($r_k$) for different lags ($k = 1, 2, 3, \dots$).
+  - It provides a visual summary of the persistence in a time series. We can see how quickly the correlations die out.
+  - Correlograms usually include confidence bands. Autocorrelations that fall outside these bands are considered statistically different from zero.
+
+(Todo: Insert a sample correlogram plot here, showing bars for lags 1, 2, 3... and confidence bands)
+
+# Modeling a Single Time Series
+
+## Why Model a Single Series?
+
+- Before we ask how X affects Y, we must first understand the behavior of Y itself.
+- **Univariate models** describe the dynamic properties of a single time series using its own past.
+- Main uses:
+    1.  **Understanding Persistence:** How long do shocks to the economy last?
+    2.  **Forecasting:** Using the past of a series to predict its future.
+
+## The White Noise Process
+
+- The Simplest Time Series: A process called "white noise" is the building block for more complex models. We often denote it as $u_t$
+
+:::{.callout-note title="Definition: White Noise Process"}
+A white noise is a time series such that:
+
+- $E(u_t) = 0$ (Zero mean)
+- $Var(u_t) = \sigma^2$ (Constant variance)
+- $Cov(u_t, u_s) = 0$ for all $t\neq s$ (No autocorrelation)
+:::
+
+- Interpretation: A white noise process is completely random and unpredictable. Its ACF will be zero for all lags $k > 0$. It is the ideal error term in a time series regression.
+
+## The Autoregressive (AR) Model: AR(1)
+
+- The simplest dynamic model is the first-order autoregressive, or AR(1), model:
+
+$$
+  Y_t = α + \rho Y_{t-1} + u_t
+$$
+
+- $Y_t$: The value of Y at time t.
+- $Y_{t-1}$: The value of Y in the previous period.
+- $\rho$: The autoregressive coefficient, which measures the persistence of the series.
+- $u_t$: A white noise error term (uncorrelated with past values).
+
+## Stationarity of an AR(1) Process
+
+- For the AR(1) model $Y_t = \alpha + \rho Y_{t-1} + u_t$:
+  - If $|\rho| < 1$:, the series is **stationary**. Any shock ($u_t$) will eventually die out.
+  - If $|\rho|=1$, the series is **non-stationary** and is called a **random walk**. Shocks have a permanent effect.
+  - If $|\rho|>1$, the series is **explosive** (this is rare in economics).
+
+- **Speed of Adjustment:** A value of $\rho$ close to 0 suggests that the effect of a past value dies out quickly.
+- **Persistence:** A value of $\rho$ close to 1 indicates that a shock to the system will persist for a long time. The series will return to its mean slowly.
+
+## The Random Walk Model
+
+- A special case of the AR(1) model where **ρ = 1**:
+
+  $$
+    Y_t = Y_{t-1} + u_t
+  $$
+
+- The best forecast for tomorrow's value is today's value.
+- **Permanent Shocks:** The impact of a shock $u_t$ is permanent; it is carried forward in all future periods.
+  - **Examples:** The prices of financial assets are often modeled as random walks.
+
+## Higher-Order AR(p) Models
+
+- We can include more lags of the dependent variable. An $AR(p)$ model includes $p$ lags:
+
+$$
+Y_t = \alpha + \rho_1 Y_{t-1} + \rho_2 Y_{t-2} + \dots + \rho_p Y_{t-p} + u_t
+$$
+
+- **Choosing p:** The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
+
+## The Moving Average Model
+
+In the MA model, the current value is a function of the current and past **random shocks**.
+
+**Yt = μ + ut + θut-1**
+
+*   **μ (mu):** The mean of the series.
+*   **θ (theta):** The moving average coefficient.
+*   **Memory:** The MA(1) process has a **finite memory**. A shock *ut-1* affects Yt-1 and Yt, but has no direct effect on Yt+1.
+
+## Interpreting the MA(1) Coefficient ($\theta$)
+
+*   **Limited Memory:** Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.
+*   **The coefficient θ** determines the extent to which a past shock affects the current observation.
+
+## The Autoregressive Moving Average (ARMA) Model
+
+*   **Combining AR and MA:** We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.
+*   **ARMA(1,1):** Yt = α + ρYt-1 + ut + θut-1
+*   **Flexibility:** ARMA models are very flexible and can capture a wide range of time series dynamics.
+
+
+# Relationship Between Time Series
+
+## Linear Model in Time Series
+
+- The model form is identical to its cross-sectional counterpart:
+
+  $$
+    Y_t = \alpha + \beta X_t + \epsilon_t
+  $$
+
+- This model posits a contemporaneous relationship between X and Y.
+- Question: Can we estimate this with OLS and trust the results?
+- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the **Zero Conditional Mean** assumption:
+  
+  $$
+    Cov(X_t, \epsilon_t) = 0
+  $$
+    
+## The Problem of Spurious Regression
+
+*   **A Deceptive Relationship:** A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.
+*   **The Root of the Problem:** This often happens when both variables have a strong trend (are non-stationary). The trend can be deterministic (predictable) or stochastic (random).
+
+
+
+
+## Visualizing Spurious Regression
+
+Imagine two variables that follow a "random walk" (we'll define this more formally later). They are independent by construction.
+
+**(Insert a graph here showing two randomly generated time series that both trend upwards over time. The visual impression should be that they are related.)**
+
+*Caption: Two independent random walks can appear to be correlated simply because they are both trending.*
+
+
+## Slide 8: A Classic Example: Yule (1926)
+
+*   **The Study:** Statistician George Udny Yule found a high correlation between the mortality rate in England and Wales and the proportion of marriages solemnized in the Church of England.
+*   **The Reality:** There was no causal link. Both series were trending downwards over time due to unrelated social and economic factors.
+
+## Slide 9: Why Does Spurious Regression Happen?
+
+*   **Non-stationarity:** A time series is stationary if its statistical properties (mean, variance, autocorrelation) are constant over time.
+*   **Stochastic Trends:** Many economic time series are non-stationary and exhibit a "random walk" like behavior, meaning they have a stochastic trend.
+*   **The Illusion of Correlation:** When two independent non-stationary time series are regressed on each other, the shared tendency to trend can create a statistically significant relationship where none exists.
+
+## Slide 10: Consequences of Spurious Regression
+
+If you run a regression of Yt on Xt where both are trending but unrelated:
+
+*   You will likely find a **high R-squared**.
+*   The **t-statistics** for the estimated coefficients will likely be **significant**.
+*   You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
+
+## Slide 11: Detecting Spurious Regression
+
+*   **A Low Durbin-Watson Statistic:** A key indicator of spurious regression is a very low Durbin-Watson (DW) statistic, often close to zero.
+*   **Rule of Thumb:** If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship.
+
+## Slide 12: How to Avoid Spurious Regression
+
+*   **Differencing the Data:** If two variables are non-stationary, their first differences (ΔYt and ΔXt) may be stationary.
+*   **Regressing the Differences:** Regressing the change in Y on the change in X can reveal the true short-run relationship between the variables, if one exists.
+*   **Caution:** This is a common solution, but it's important to first test for non-stationarity (a topic for a more advanced course).
+
+## Slide 24: Introduction to Distributed Lag (DL) Models
+
+*   **Delayed Effects of Explanatory Variables:** Distributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time.
+*   **Example:** How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?
+
+
+## Slide 25: The Finite Distributed Lag (FDL) Model
+
+A finite distributed lag model of order q is:
+
+**Yt = α + β0Xt + β1Xt-1 + ... + βqXt-q + ut**
+
+*   **β0:** The **impact multiplier** - the immediate effect of a one-unit change in Xt on Yt.
+*   **βs (s > 0):** The **dynamic multipliers** - the effect of a one-unit change in Xt-s on Yt.
+
+## Slide 26: Interpreting the DL Coefficients
+
+**Yt = α + β0Xt + β1Xt-1 + ... + βqXt-q + ut**
+
+*   **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., β0 + β1).
+*   **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: **Σ βs**.
+
+## Slide 27: The Koyck (Geometric) Distributed Lag Model
+
+*   **The Problem of Infinite Lags:** Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
+*   **Koyck's Assumption:** The Koyck model assumes that the coefficients (βs) decline geometrically: βs = β0λ^s, where 0 < λ < 1.
+*   **A Simpler Form:** This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated:
+    **Yt = α(1-λ) + β0Xt + λYt-1 + vt** (This is a form of an ARDL model).
+
+## Slide 28: The Autoregressive Distributed Lag (ARDL) Model
+
+*   **A General and Powerful Model:** The ARDL model includes lags of both the dependent variable and the explanatory variable(s).
+*   **ARDL(p,q):**
+    **Yt = α + Σ(ρi * Yt-i) [from i=1 to p] + Σ(βj * Xt-j) [from j=0 to q] + ut**
+*   **Advantages:** ARDL models are very flexible and can be used to estimate both short-run and long-run effects.
+
+
+## Other Topics in Time Series Econometrics
+
+This lecture has been an introduction. More advanced topics include:
+
+*   **Testing for Stationarity:** Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.
+*   **Cointegration:** A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).
+*   **Volatility Modeling (ARCH/GARCH):** Modeling the changing variance of a time series, which is crucial in finance.
+
+
+# Summary
+
+## What did we do?
+
+
+*   **Spurious Regression:** 
+  - A misleading relationship between two non-stationary time series. Beware of high R-squared and low Durbin-Watson statistics.
+*   **Autoregressive (AR) Models:**
+  - Explain a variable using its own past values. The concept of persistence is key.
+*   **Moving Average (MA) Models:**
+  - Explain a variable using past random shocks.
+*   **Distributed Lag (DL) Models:**
+  - Model the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects.
+
+
+
+## What did we do? (Cont.)
+
+# The End
