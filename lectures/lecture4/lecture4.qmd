@@ -318,7 +318,7 @@ import matplotlib.pyplot as plt
 T = 500      # Number of time periods to simulate
 rho = 1    # Autoregressive parameter (must be < 1 for stationarity)
 c = 2        # A constant/intercept term
-sigma = 1.0  # Standard deviation of the white noise error term
+sigma = 5.0  # Standard deviation of the white noise error term
 
 # Generate all the random shocks at once using NumPy
 np.random.seed(42) # for reproducibility
@@ -329,7 +329,7 @@ y_values = [0] * T
 
 # Set the initial value. A good choice is the unconditional mean of the process
 # E[Y] = c / (1 - rho), to start the series near its long-run equilibrium.
-y_values[0] = c / (1 - rho)
+y_values[0] = 0
 
 # Loop to generate the AR(1) series recursively
 for t in range(1, T):
@@ -340,7 +340,7 @@ for t in range(1, T):
 df = pl.DataFrame({
     'time': range(T),
     'ar_process': y_values
-})
+}, strict=False)
 
 # Set the style and size for the plot
 sns.set_theme(style="whitegrid")
@@ -351,16 +351,7 @@ lineplot = sns.lineplot(
     data=df,
     x='time',
     y='ar_process',
-    label='Random Walk')'
-)
-
-# Add a horizontal line for the theoretical mean of the process
-mean_value = c / (1 - rho)
-plt.axhline(
-    mean_value,
-    color='red',
-    linestyle='--',
-    label=f'Theoretical Mean: {mean_value:.2f}'
+    label='Random Walk'
 )
 
 # Add titles and labels for clarity
@@ -395,10 +386,17 @@ $$
 - $\theta$: The moving average coefficient.
 - The MA(1) process has a **finite memory**. A shock $u_{t-1}$ affects $Y_{t-1}$ and $Y_t$, but has no direct effect on $Y_{t+1}$. 
 
-## Interpreting the MA(1) Coefficient ($\theta$)
+## Estimation and Interpretation of MA Coefficients ($\theta$)
 
-*   **Limited Memory:** Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.
-*   **The coefficient θ** determines the extent to which a past shock affects the current observation.
+- As you may have noticed, there are no independent variables in an MA model. 
+  - Usually, what we do is assume $u_0=0$, take a guess for $\mu$ and $\theta$, and solve for $u_t$: $u_t = Y_t - \mu - \theta u_{t-1}$
+  - If the true shocks came from a Normal distribution $N(0, \sigma^2_u)$, how likely was it to get this specific sequence of inferred shocks? The joint probability of observing this sequence is called the Likelihood.
+  - We try to find the most likely $\mu$ and $\theta$ that could have generated the actual data.[^1]
+  
+- Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.
+- The coefficient $\theta$ determines the extent to which a past shock affects the current observation.
+
+[^1]: More about this in Lecture 6. 
 
 ## The Autoregressive Moving Average (ARMA) Model
 
@@ -443,9 +441,11 @@ $$
   $$
 
 :::{.callout-note title="Theorem: Variance of a Random Walk"}
-Suppose $X_0=0$. Let us find the variance of $X_t$. We know that $X_1 = u_i$. $X_2 = X_1 + u_2 = u_1 + u_2$, etc. Hence, $X_t = \sum u_i$.  
+Suppose $X_0=0$. Let us find the variance of $X_t$. 
 
-Hence $Var(X_t) = Var(u_1 + u_2 + \dots + u_t)$. 
+We know that $X_1 = u_i$. $X_2 = X_1 + u_2 = u_1 + u_2$, etc. 
+
+Hence, $X_t = \sum u_i$, and $Var(X_t) = Var(u_1 + u_2 + \dots + u_t)$. 
 
 Since the $u_i$ are uncorrelated (white noise), the variance of the sum is the sum of the variances:
   $$
@@ -467,52 +467,85 @@ The variance depends on time t and grows without bound. This is a clear violatio
 
 - When we run $Y_t= \alpha + \beta X_t + u_t$,  we know $Var(Y_t)=Var(X_t)=t\times \sigma^2_u$. 
 
+Todo: fix this argument
+
 - We also know that the OLS coefficient is $\hat{\beta}=\frac{\text{Cov}(X,Y)}{\text{Var}(X)}$. 
- - When $T \rightarrow \infty$ , this term also tends to infinity. 
+ - When $T \rightarrow \infty$ , the denominator term tends to infinity. 
  - Since this is in the denominator, we might get unusually large $\beta$ coefficients and $t$-statistics. 
 
 
-## Slide 10: Consequences of Spurious Regression
+## Consequences of Spurious Regression
 
-If you run a regression of Yt on Xt where both are trending but unrelated:
-
-*   You will likely find a **high R-squared**.
-*   The **t-statistics** for the estimated coefficients will likely be **significant**.
-*   You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
+- Hence, if you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
+  - You will likely find a **high R-squared**.
+  - The **t-statistics** for the estimated coefficients will likely be **significant**.
+  - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
 
 ## Slide 11: Detecting Spurious Regression
 
-*   **A Low Durbin-Watson Statistic:** A key indicator of spurious regression is a very low Durbin-Watson (DW) statistic, often close to zero.
-*   **Rule of Thumb:** If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship.
+:::{.callout-note title="Definition: Breusch-Godfrey Test"}
+The BG test assesses whether the error term, $\epsilon_t$, follows an AR(p) process. You, the researcher, choose the number of lags (p) to test for. The assumed model for the error is:
+$$\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + \dots + \rho_p \epsilon_{t-p} + v_t,$$
 
-## Slide 12: How to Avoid Spurious Regression
+where $v_t$ is a white noise term. $H_0: \rho_1, \dots, \rho_p=0$, and $H_A$ is that at least one $\rho$ coefficient is non-zero: there is serial correlation up to some order $p$. 
+:::
+
+- **Rejection of the BG Test:** A key indicator of spurious regression is a rejection of the Breusch-Godfrey test. 
+- **Rule of Thumb:** If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship.
+
+## Breusch-Godfrey Test
+
+:::{.callout-note title="Breusch-Godfrey Test: Procedure"}
+The BG test is performed in three simple steps:
+
+- Run the Main Regression: First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals,
+- Run an Auxiliary Regression. Run a new regression where the residual $e_t$ is the dependent variable. The independent variables are:
+  - All the original regressors from the main model. 
+  - The lagged residuals up to order $p$: e_{t-1}, \dots, e_{t-p}
+- Obtain the R-squared: Calculate the R-squared from this auxiliary regression. 
+
+---
+
+- The Breusch-Godfrey test uses a Lagrange Multiplier (LM) statistic: $LM = T \times R^2_{aux}$, where $T$ is the number of observations used in the auxiliary regression and $R^2_{aux}$ is the $R^2$ from the auxiliary regression in Step 2.
+
+- Under the null hypothesis of no serial correlation, the LM statistic follows a $\chi^2$ distribution with p degrees of freedom (where p is the number of lagged residuals included).
+
+- If $LM > \chi^2_{crit}$, you reject the null hypothesis. You conclude there is significant evidence of serial correlation.
+  
+:::
+
+
+## Avoiding Spurious Regression
 
 - If the static model $Y_t = \alpha + \beta X_t + \epsilon_t$ is so dangerous, what is the alternative?
 
-- **Differencing the Data:** If two variables are non-stationary, their first differences (ΔYt and ΔXt) may be stationary.
-- **Dynamic models**: We need models that explicitly account for dynamics—the idea that a change in X can affect Y both today and in the future.
+- **Differencing the Data:** If two variables are non-stationary, their first differences ($\Delta Y_t$ and $\Delta X_t$) may be stationary.
+- **Dynamic models**: We need models that explicitly account for dynamics—the idea that a change in X can affect Y both today and in the future. 
+  - This makes it more likely that the error term is white noise. 
 
-## Slide 24: Introduction to Distributed Lag (DL) Models
+## Distributed Lag (DL) Models
 
-*   **Delayed Effects of Explanatory Variables:** Distributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time.
-*   **Example:** How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?
+- Distributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time, and we want to focus on potential **delayed effects**. 
+  - **Example:** How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?
 
+:::{.callout-note title="Definition: Distributed Lag Model"}
+A finite distributed lag model of order $q$ is:
 
-## Slide 25: The Finite Distributed Lag (FDL) Model
+$$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
+where:
 
-A finite distributed lag model of order q is:
+$\beta_0$: The **impact multiplier** - the immediate effect of a one-unit change in $X_t$ on $Y_t$.
 
-**Yt = α + β0Xt + β1Xt-1 + ... + βqXt-q + ut**
+$\beta_s (s > 0)$: The **dynamic multipliers** - the effect of a one-unit change in $X_{t-s}$ on $Y_t$.
 
-*   **β0:** The **impact multiplier** - the immediate effect of a one-unit change in Xt on Yt.
-*   **βs (s > 0):** The **dynamic multipliers** - the effect of a one-unit change in Xt-s on Yt.
+:::
 
-## Slide 26: Interpreting the DL Coefficients
+## Interpreting the DL Coefficients
 
-**Yt = α + β0Xt + β1Xt-1 + ... + βqXt-q + ut**
+$$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 
-*   **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., β0 + β1).
-*   **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: **Σ βs**.
+- **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., β0 + β1).
+- **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: **Σ βs**.
 
 ## Slide 27: The Koyck (Geometric) Distributed Lag Model
 
@@ -524,36 +557,50 @@ A finite distributed lag model of order q is:
 ## Slide 28: The Autoregressive Distributed Lag (ARDL) Model
 
 *   **A General and Powerful Model:** The ARDL model includes lags of both the dependent variable and the explanatory variable(s).
-*   **ARDL(p,q):**
-    **Yt = α + Σ(ρi * Yt-i) [from i=1 to p] + Σ(βj * Xt-j) [from j=0 to q] + ut**
-*   **Advantages:** ARDL models are very flexible and can be used to estimate both short-run and long-run effects.
+
+:::{.callout-note title="Definition: ARDL Model"}
+
+An ARDL(p,q) model is defined as follows:
+
+$$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j \cdot X_{t-m}) \text{ [from m=0 to q]} + u_t$$
+:::
+
+- It includes both autoregressive and distributed lag terms. 
+- ARDL models are very flexible and can be used to estimate both short-run and long-run effects..
+
+## Interpretation ARDL Coefficients
+
+To do. 
 
 
 ## Other Topics in Time Series Econometrics
 
-This lecture has been an introduction. More advanced topics include:
+- This lecture has been an introduction. More advanced topics include:
 
-*   **Testing for Stationarity:** Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.
-*   **Cointegration:** A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).
-*   **Volatility Modeling (ARCH/GARCH):** Modeling the changing variance of a time series, which is crucial in finance.
+  - **Testing for Stationarity:** Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.
+  - **Cointegration:** A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).
+  - **Volatility Modeling (ARCH/GARCH):** Modeling the changing variance of a time series, which is crucial in finance.
 
 
 # Summary
 
 ## What did we do?
 
+- **Univariate Time Series**: We looked at ways to analyze a univariate time series, in particular, at:
+  - **Autoregressive models**: Explain a variable using its own past values.
+  -  **Moving Average models**: Explain a variable using past random shocks.
 
-*   **Spurious Regression:** 
-  - A misleading relationship between two non-stationary time series. Beware of high R-squared and low Durbin-Watson statistics.
-*   **Autoregressive (AR) Models:**
-  - Explain a variable using its own past values. The concept of persistence is key.
-*   **Moving Average (MA) Models:**
-  - Explain a variable using past random shocks.
-*   **Distributed Lag (DL) Models:**
-  - Model the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects.
-
+- **The Linear Model**: We focused on the possibility of using OLS on bivariate time series data. 
+  - We ran into the problem of **spurious regression:** a misleading relationship between two non-stationary time series.
 
 
 ## What did we do? (Cont.)
+
+**Distributed Lag (DL) Models:**
+  - We focused on models that investigate the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects. These models make it more likely that the error term is white noise. 
+  
+
+
+
 
 # The End

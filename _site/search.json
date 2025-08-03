@@ -2587,21 +2587,21 @@
     "href": "lectures/lecture4/lecture4.html#other-topics-in-time-series-econometrics",
     "title": "Empirical Economics",
     "section": "Other Topics in Time Series Econometrics",
-    "text": "Other Topics in Time Series Econometrics\nThis lecture has been an introduction. More advanced topics include:\n\nTesting for Stationarity: Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.\nCointegration: A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).\nVolatility Modeling (ARCH/GARCH): Modeling the changing variance of a time series, which is crucial in finance."
+    "text": "Other Topics in Time Series Econometrics\n\nThis lecture has been an introduction. More advanced topics include:\n\nTesting for Stationarity: Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.\nCointegration: A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).\nVolatility Modeling (ARCH/GARCH): Modeling the changing variance of a time series, which is crucial in finance."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#what-did-we-do",
     "href": "lectures/lecture4/lecture4.html#what-did-we-do",
     "title": "Empirical Economics",
     "section": "What did we do?",
-    "text": "What did we do?\n\nSpurious Regression:\nA misleading relationship between two non-stationary time series. Beware of high R-squared and low Durbin-Watson statistics.\nAutoregressive (AR) Models:\nExplain a variable using its own past values. The concept of persistence is key.\nMoving Average (MA) Models:\nExplain a variable using past random shocks.\nDistributed Lag (DL) Models:\nModel the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects."
+    "text": "What did we do?\n\nUnivariate Time Series: We looked at ways to analyze a univariate time series, in particular, at:\n\nAutoregressive models: Explain a variable using its own past values.\nMoving Average models: Explain a variable using past random shocks.\n\nThe Linear Model: We focused on the possibility of using OLS on bivariate time series data.\n\nWe ran into the problem of spurious regression: a misleading relationship between two non-stationary time series."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#what-did-we-do-cont.",
     "href": "lectures/lecture4/lecture4.html#what-did-we-do-cont.",
     "title": "Empirical Economics",
     "section": "What did we do? (Cont.)",
-    "text": "What did we do? (Cont.)"
+    "text": "What did we do? (Cont.)\nDistributed Lag (DL) Models: - We focused on models that investigate the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects. These models make it more likely that the error term is white noise."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#stationarity-a-key-simplifying-assumption",
@@ -2657,7 +2657,7 @@
     "href": "lectures/lecture4/lecture4.html#slide-11-detecting-spurious-regression",
     "title": "Empirical Economics",
     "section": "Slide 11: Detecting Spurious Regression",
-    "text": "Slide 11: Detecting Spurious Regression\n\nA Low Durbin-Watson Statistic: A key indicator of spurious regression is a very low Durbin-Watson (DW) statistic, often close to zero.\nRule of Thumb: If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship."
+    "text": "Slide 11: Detecting Spurious Regression\n\n\n\n\n\n\n\nDefinition: Breusch-Godfrey Test\n\n\nThe BG test assesses whether the error term, \\(\\epsilon_t\\), follows an AR(p) process. You, the researcher, choose the number of lags (p) to test for. The assumed model for the error is: \\[\\epsilon_t = \\rho_1 \\epsilon_{t-1} + \\rho_2 \\epsilon_{t-2} + \\dots + \\rho_p \\epsilon_{t-p} + v_t,\\]\nwhere \\(v_t\\) is a white noise term. \\(H_0: \\rho_1, \\dots, \\rho_p=0\\), and \\(H_A\\) is that at least one \\(\\rho\\) coefficient is non-zero: there is serial correlation up to some order \\(p\\).\n\n\n\n\n\nRejection of the BG Test: A key indicator of spurious regression is a rejection of the Breusch-Godfrey test.\nRule of Thumb: If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#slide-12-how-to-avoid-spurious-regression",
@@ -2783,7 +2783,7 @@
     "href": "lectures/lecture4/lecture4.html#slide-28-the-autoregressive-distributed-lag-ardl-model",
     "title": "Empirical Economics",
     "section": "Slide 28: The Autoregressive Distributed Lag (ARDL) Model",
-    "text": "Slide 28: The Autoregressive Distributed Lag (ARDL) Model\n\nA General and Powerful Model: The ARDL model includes lags of both the dependent variable and the explanatory variable(s).\nARDL(p,q): Yt = α + Σ(ρi * Yt-i) [from i=1 to p] + Σ(βj * Xt-j) [from j=0 to q] + ut\nAdvantages: ARDL models are very flexible and can be used to estimate both short-run and long-run effects."
+    "text": "Slide 28: The Autoregressive Distributed Lag (ARDL) Model\n\nA General and Powerful Model: The ARDL model includes lags of both the dependent variable and the explanatory variable(s).\n\n\n\n\n\n\n\n\nDefinition: ARDL Model\n\n\nAn ARDL(p,q) model is defined as follows:\n\\[Y_t = \\alpha + \\sum(ρ_j \\cdot Y_{t-j}) \\text{ [from j=1 to p]} + \\sum(\\beta_j \\cdot X_{t-m}) \\text{ [from m=0 to q]} + u_t\\]\n\n\n\n\n\nIt includes both autoregressive and distributed lag terms.\nARDL models are very flexible and can be used to estimate both short-run and long-run effects.."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#the-white-noise-process",
@@ -2881,7 +2881,7 @@
     "href": "lectures/lecture4/lecture4.html#spurious-regression-is-non-stationarity",
     "title": "Empirical Economics",
     "section": "Spurious Regression is Non-Stationarity",
-    "text": "Spurious Regression is Non-Stationarity\n\nLet’s look at the most common non-stationary process: the random walk.\n\\[\n  X_t = X_{t-1} + u_t\n\\]\n\n\n\n\n\n\n\n\nTheorem: Variance of a Random Walk\n\n\nSuppose \\(X_0=0\\). Let us find the variance of \\(X_t\\). We know that \\(X_1 = u_i\\). \\(X_2 = X_1 + u_2 = u_1 + u_2\\), etc. Hence, \\(X_t = \\sum u_i\\).\nHence \\(Var(X_t) = Var(u_1 + u_2 + \\dots + u_t)\\).\nSince the \\(u_i\\) are uncorrelated (white noise), the variance of the sum is the sum of the variances: \\[\n    \\begin{align}\n    Var(X_t) &= \\sigma^2_u + \\dots + \\sigma^2_u \\text{ ( t times)} \\\\\n            &= t \\times \\sigma^2_u\n    \\end{align}\n  \\]\nThe variance depends on time t and grows without bound. This is a clear violation of stationarity."
+    "text": "Spurious Regression is Non-Stationarity\n\nLet’s look at the most common non-stationary process: the random walk.\n\\[\n  X_t = X_{t-1} + u_t\n\\]\n\n\n\n\n\n\n\n\nTheorem: Variance of a Random Walk\n\n\nSuppose \\(X_0=0\\). Let us find the variance of \\(X_t\\).\nWe know that \\(X_1 = u_i\\). \\(X_2 = X_1 + u_2 = u_1 + u_2\\), etc.\nHence, \\(X_t = \\sum u_i\\), and \\(Var(X_t) = Var(u_1 + u_2 + \\dots + u_t)\\).\nSince the \\(u_i\\) are uncorrelated (white noise), the variance of the sum is the sum of the variances: \\[\n    \\begin{align}\n    Var(X_t) &= \\sigma^2_u + \\dots + \\sigma^2_u \\text{ ( t times)} \\\\\n            &= t \\times \\sigma^2_u\n    \\end{align}\n  \\]\nThe variance depends on time t and grows without bound. This is a clear violation of stationarity."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#the-spurious-regression-setup",
@@ -2902,7 +2902,7 @@
     "href": "lectures/lecture4/lecture4.html#failure-of-reliable-estimation",
     "title": "Empirical Economics",
     "section": "Failure of Reliable Estimation",
-    "text": "Failure of Reliable Estimation\n\nImagine two independent and unrelated random walks, \\(Yt = Yt-1 + u_t\\) and \\(Xt = Xt-1 + v_t\\), where \\(u_t\\) and \\(v_t\\) are independent white noise processes.\nBy construction, the true \\(\\beta\\) in a regression of \\(Y_t\\) on \\(X_t\\) is zero.\nWhen we run \\(Y_t= \\alpha + \\beta X_t + u_t\\), we know \\(Var(Y_t)=Var(X_t)=t\\times \\sigma^2_u\\).\nWe also know that the OLS coefficient is \\(\\hat{\\beta}=\\frac{\\text{Cov}(X,Y)}{\\text{Var}(X)}\\).\nWhen \\(T \\rightarrow \\infty\\) , this term also tends to infinity.\nSince this is in the denominator, we might get unusually large \\(\\beta\\) coefficients and \\(t\\)-statistics."
+    "text": "Failure of Reliable Estimation\n\nImagine two independent and unrelated random walks, \\(Yt = Yt-1 + u_t\\) and \\(Xt = Xt-1 + v_t\\), where \\(u_t\\) and \\(v_t\\) are independent white noise processes.\nBy construction, the true \\(\\beta\\) in a regression of \\(Y_t\\) on \\(X_t\\) is zero.\nWhen we run \\(Y_t= \\alpha + \\beta X_t + u_t\\), we know \\(Var(Y_t)=Var(X_t)=t\\times \\sigma^2_u\\).\n\nTodo: fix this argument\n\nWe also know that the OLS coefficient is \\(\\hat{\\beta}=\\frac{\\text{Cov}(X,Y)}{\\text{Var}(X)}\\).\nWhen \\(T \\rightarrow \\infty\\) , the denominator term tends to infinity.\nSince this is in the denominator, we might get unusually large \\(\\beta\\) coefficients and \\(t\\)-statistics."
   },
   {
     "objectID": "lectures/lecture4/lecture4.html#visualization-ar1-process",
@@ -2910,5 +2910,61 @@
     "title": "Empirical Economics",
     "section": "Visualization AR(1) Process",
     "text": "Visualization AR(1) Process"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#visualization-random-walk",
+    "href": "lectures/lecture4/lecture4.html#visualization-random-walk",
+    "title": "Empirical Economics",
+    "section": "Visualization Random Walk",
+    "text": "Visualization Random Walk"
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#estimation-and-interpretation-of-ma-coefficients-theta",
+    "href": "lectures/lecture4/lecture4.html#estimation-and-interpretation-of-ma-coefficients-theta",
+    "title": "Empirical Economics",
+    "section": "Estimation and Interpretation of MA Coefficients (\\(\\theta\\))",
+    "text": "Estimation and Interpretation of MA Coefficients (\\(\\theta\\))\n\nAs you may have noticed, there are no independent variables in an MA model.\n\nUsually, what we do is assume \\(u_0=0\\), take a guess for \\(\\mu\\) and \\(\\theta\\), and solve for \\(u_t\\): \\(u_t = Y_t - \\mu - \\theta u_{t-1}\\)\nIf the true shocks came from a Normal distribution \\(N(0, \\sigma^2_u)\\), how likely was it to get this specific sequence of inferred shocks? The joint probability of observing this sequence is called the Likelihood.\nWe try to find the most likely \\(\\mu\\) and \\(\\theta\\) that could have generated the actual data.1\n\nUnlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.\nThe coefficient \\(\\theta\\) determines the extent to which a past shock affects the current observation.\n\nMore about this in Lecture 6."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#consequences-of-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#consequences-of-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Consequences of Spurious Regression",
+    "text": "Consequences of Spurious Regression\n\nHence, if you run a regression of \\(Y_t\\) on \\(X_t\\), where both are trending but unrelated:\n\nYou will likely find a high R-squared.\nThe t-statistics for the estimated coefficients will likely be significant.\nYou might conclude that X causes Y, but this conclusion would be meaningless and misleading."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#avoiding-spurious-regression",
+    "href": "lectures/lecture4/lecture4.html#avoiding-spurious-regression",
+    "title": "Empirical Economics",
+    "section": "Avoiding Spurious Regression",
+    "text": "Avoiding Spurious Regression\n\nIf the static model \\(Y_t = \\alpha + \\beta X_t + \\epsilon_t\\) is so dangerous, what is the alternative?\nDifferencing the Data: If two variables are non-stationary, their first differences (\\(\\Delta Y_t\\) and \\(\\Delta X_t\\)) may be stationary.\nDynamic models: We need models that explicitly account for dynamics—the idea that a change in X can affect Y both today and in the future.\n\nThis makes it more likely that the error term is white noise."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#distributed-lag-dl-models",
+    "href": "lectures/lecture4/lecture4.html#distributed-lag-dl-models",
+    "title": "Empirical Economics",
+    "section": "Distributed Lag (DL) Models",
+    "text": "Distributed Lag (DL) Models\n\nDistributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time, and we want to focus on potential delayed effects.\n\nExample: How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?\n\n\n\n\n\n\n\n\n\nDefinition: Distributed Lag Model\n\n\nA finite distributed lag model of order \\(q\\) is:\n\\[Y_t = \\alpha + \\beta_0 X_t + \\beta_1 X_{t-1} + \\dots + \\beta_q X_{t-q} + u_t\\] where:\n\\(\\beta_0\\): The impact multiplier - the immediate effect of a one-unit change in \\(X_t\\) on \\(Y_t\\).\n\\(\\beta_s (s &gt; 0)\\): The dynamic multipliers - the effect of a one-unit change in \\(X_{t-s}\\) on \\(Y_t\\)."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#interpreting-the-dl-coefficients",
+    "href": "lectures/lecture4/lecture4.html#interpreting-the-dl-coefficients",
+    "title": "Empirical Economics",
+    "section": "Interpreting the DL Coefficients",
+    "text": "Interpreting the DL Coefficients\n\\[Y_t = \\alpha + \\beta_0 X_t + \\beta_1 X_{t-1} + \\dots + \\beta_q X_{t-q} + u_t\\]\n\nShort-Run Multiplier: The total effect after a certain number of periods (e.g., β0 + β1).\nLong-Run (or Total) Multiplier: The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: Σ βs."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#interpretation-ardl-coefficients",
+    "href": "lectures/lecture4/lecture4.html#interpretation-ardl-coefficients",
+    "title": "Empirical Economics",
+    "section": "Interpretation ARDL Coefficients",
+    "text": "Interpretation ARDL Coefficients\nTo do."
+  },
+  {
+    "objectID": "lectures/lecture4/lecture4.html#breusch-godfrey-test",
+    "href": "lectures/lecture4/lecture4.html#breusch-godfrey-test",
+    "title": "Empirical Economics",
+    "section": "Breusch-Godfrey Test",
+    "text": "Breusch-Godfrey Test\n\n\n\n\n\n\n\nBreusch-Godfrey Test: Procedure\n\n\nThe BG test is performed in three simple steps:\n\nRun the Main Regression: First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals,\nRun an Auxiliary Regression. Run a new regression where the residual \\(e_t\\) is the dependent variable. The independent variables are:\n\nAll the original regressors from the main model.\nThe lagged residuals up to order \\(p\\): e_{t-1}, , e_{t-p}\n\nObtain the R-squared: Calculate the R-squared from this auxiliary regression.\n\n\n\nThe Breusch-Godfrey test uses a Lagrange Multiplier (LM) statistic: \\(LM = T \\times R^2_{aux}\\), where \\(T\\) is the number of observations used in the auxiliary regression and \\(R^2_{aux}\\) is the \\(R^2\\) from the auxiliary regression in Step 2.\nUnder the null hypothesis of no serial correlation, the LM statistic follows a \\(\\chi^2\\) distribution with p degrees of freedom (where p is the number of lagged residuals included).\nIf \\(LM &gt; \\chi^2_{crit}\\), you reject the null hypothesis. You conclude there is significant evidence of serial correlation."
   }
 ]
