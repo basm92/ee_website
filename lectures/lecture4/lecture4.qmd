@@ -621,18 +621,19 @@ The BG test is performed in three simple steps:
 
 ## Example BG Test
 
+- We demonstrate the BG test using autocorrelated errors: $Y_t = \alpha + \beta X_t + u_t$ where $u_t = \rho u_{t-1} + e_t$, with $e_t$ being white noise. 
+
+:::{.panel-tabset .hey}
+
 ### R
 
 ```{r}
-#| echo: false
+#| echo: true
 #| code-fold: true
 #| collapse: true
 
 library(lmtest)
-
-#--------------------------------------------------------------------
 # Step 1: Simulate Data with Serially Correlated Errors
-#--------------------------------------------------------------------
 
 # For reproducibility of the random numbers
 set.seed(42) 
@@ -670,13 +671,7 @@ Y <- alpha + beta * X + u
 # Combine into a data frame for easy use
 sim_data <- data.frame(Y = Y, X = X)
 
-# Optional: Visualize the data and the correlated errors
-# plot(u, type = 'l', main = "Simulated Serially Correlated Errors")
-# plot(Y ~ X, data = sim_data, main = "Simulated Regression Data")
-
-#--------------------------------------------------------------------
 # Step 2: Estimate the OLS Regression Model
-#--------------------------------------------------------------------
 
 # We estimate the model Y ~ X, pretending we don't know about the
 # autocorrelation in the errors.
@@ -703,6 +698,166 @@ print(bg_test_order1)
 bg_test_order3 <- bgtest(ols_model, order = 3)
 print(bg_test_order3)
 ```
+
+### Python
+
+```{python}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from statsmodels.stats.diagnostic import acorr_breusch_godfrey
+
+# Step 1: Simulate Data with Serially Correlated Errors
+
+# For reproducibility of the random numbers
+np.random.seed(42)
+
+# Define simulation parameters
+n = 200                 # Sample size
+alpha = 5               # True intercept
+beta = 2                # True slope for X
+
+# *** Key step: Define the autocorrelation structure for the errors ***
+# We will create an error term u_t = rho * u_{t-1} + e_t
+# where e_t is white noise.
+rho = 0.8               # High positive autocorrelation coefficient
+sigma_e = 1.5           # Standard deviation of the white noise component
+
+# Generate the independent variable X
+# In numpy, mean is 'loc' and standard deviation is 'scale'
+X = np.random.normal(loc=20, scale=10, size=n)
+
+# Generate the serially correlated error term 'u'
+# Initialize arrays for the white noise and the final error term
+e = np.random.normal(loc=0, scale=sigma_e, size=n)
+u = np.zeros(n)
+
+# The first error term has no preceding term (Python uses 0-based indexing)
+u[0] = e[0]
+
+# Generate the rest of the errors using the AR(1) formula
+for t in range(1, n):
+  u[t] = rho * u[t-1] + e[t]
+
+# Generate the dependent variable Y using the regression equation
+# Y_t = alpha + beta*X_t + u_t
+Y = alpha + beta * X + u
+
+# Combine into a data frame for easy use
+sim_data = pd.DataFrame({'Y': Y, 'X': X})
+
+# Step 2: Estimate the OLS Regression Model
+
+# We estimate the model Y ~ X, pretending we don't know about the
+# autocorrelation in the errors.
+# The formula syntax in statsmodels is identical to R's.
+# We must call .fit() to perform the estimation.
+ols_model = smf.ols('Y ~ X', data=sim_data).fit()
+
+# Print the summary. The coefficients will likely be close to the true
+# values, but the standard errors and p-values are unreliable.
+print(ols_model.summary())
+
+# Step 3: Conduct the Breusch-Godfrey Test
+
+# The acorr_breusch_godfrey() function performs the test.
+# It takes the fitted model results and the order of autocorrelation (nlags).
+# It returns (lm_statistic, lm_pvalue, f_statistic, f_pvalue)
+
+# Test for order 1, as we created an AR(1) process.
+bg_test_order1 = acorr_breusch_godfrey(ols_model, nlags=1)
+
+print("\n" + "="*50)
+print("Breusch-Godfrey Test (Order 1)")
+print(f"  LM Statistic: {bg_test_order1[0]:.4f}")
+print(f"  p-value (LM): {bg_test_order1[1]:.4f}")
+# A very low p-value indicates rejection of the null hypothesis (no serial correlation).
+
+# You can also test for higher orders. For example, testing up to order 3.
+# This tests the joint null hypothesis that the coefficients on the first
+# three lags of the residuals are all zero in the auxiliary regression.
+bg_test_order3 = acorr_breusch_godfrey(ols_model, nlags=3)
+
+print("\n" + "="*50)
+print("Breusch-Godfrey Test (Order 3)")
+print(f"  LM Statistic: {bg_test_order3[0]:.4f}")
+print(f"  p-value (LM): {bg_test_order3[1]:.4f}")
+print("="*50)
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| collapse: true
+* Housekeeping: Clear memory and stop the output from pausing
+clear all
+set more off
+
+* Step 1: Simulate Data with Serially Correlated Errors
+set seed 42
+
+* Define simulation parameters using local macros
+local n = 200                 // Sample size
+local alpha = 5               // True intercept
+local beta = 2                // True slope for X
+local rho = 0.8               // High positive autocorrelation coefficient
+local sigma_e = 1.5           // Standard deviation of the white noise component
+
+* Set the number of observations for the dataset
+set obs `n'
+
+* Generate an index variable 't' to declare this as time-series data
+gen t = _n
+tsset t
+
+* Generate the independent variable X
+gen X = rnormal(20, 10)
+
+* Generate the serially correlated error term 'u'
+* First, create the white noise component 'e'
+gen e = rnormal(0, `sigma_e')
+
+* Now, generate 'u' using the recursive AR(1) formula
+* u_t = rho * u_{t-1} + e_t
+* We initialize u as missing, set the first value, then generate the rest
+gen u = .
+replace u = e in 1
+replace u = `rho' * L.u + e in 2/l // L. is the lag operator, 2/l means "from obs 2 to the last"
+
+* Generate the dependent variable Y using the regression equation
+* Y_t = alpha + beta*X_t + u_t
+gen Y = `alpha' + `beta'*X + u
+
+
+* Step 2: Estimate the OLS Regression Model
+
+* We estimate the model Y ~ X, pretending we don't know about the
+* autocorrelation in the errors. The output is printed automatically.
+regress Y X
+
+* Step 3: Conduct the Breusch-Godfrey Test
+
+* The `estat bgodfrey` command is a post-estimation command that must be
+* run immediately after the regression.
+
+* Test for order 1, as we created an AR(1) process.
+estat bgodfrey, lags(1)
+
+* You can also test for higher orders. For example, testing up to order 3.
+* This tests the joint null hypothesis that the coefficients on the first
+* three lags of the residuals are all zero in the auxiliary regression.
+estat bgodfrey, lags(3)
+```
+
+:::
 
 ## Avoiding Spurious Regression
 
@@ -736,7 +891,7 @@ $$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 - **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., $\beta_0 + \beta_1$).
 - **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the $\beta$ coefficients: $\sum \beta_S$.
 
-## Slide 27: The Koyck (Geometric) Distributed Lag Model
+## Koyck (Geometric) Distributed Lag Model
 
 - Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
 - The Koyck model assumes that the coefficients decline geometrically: $\beta_s = \beta_0 \lambda^s$, where $0 < \lambda < 1$.
@@ -801,6 +956,120 @@ $$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j
 - **Interpretation**: A **permanent** one-unit increase in $X$ is associated with a total **long-run change of $\theta$ units** in $Y$, after all dynamic adjustments are complete.
 
 - **Key Takeaway**: The ARDL model powerfully separates the **immediate impacts** ($\beta_j$) from the **total equilibrium effect** ($\theta$), which accounts for the feedback from Y's own past values.
+
+## Estimating ARDL Models
+
+- In R, the `ARDL` package is the standard for estimating these models. 
+- Stata has a powerful built-in `ardl` command (in newer versions) or a widely used user-written one (`ssc install ardl`). It automates lag selection and estimation.
+- In Python, the `statsmodels` library has incorporated a dedicated `ARDL` class, which makes estimation much more straightforward than the previous manual method of creating lagged variables.
+
+:::{.panel-tabset .hey}
+
+### R
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+library(ARDL)
+library(urca) # Contains the example 'denmark' dataset
+
+# Load the data
+data(denmark)
+# The variables are LRM, LRY, IBO, IDE (inflation)
+
+# Find the optimal lag order automatically
+# We model LRM as a function of LRY and IBO, with a max lag of 4 for each
+auto_model <- auto_ardl(LRM ~ LRY + IBO, data = denmark, max_order = 4)
+
+# Print the selected orders
+print(auto_model$best_order)
+
+# Estimate the selected ARDL model
+# Let's say auto_ardl selected ARDL(3, 1, 4)
+ardl_model <- ardl(LRM ~ LRY + IBO, data = denmark, order = c(3, 1, 4))
+
+# Get a detailed summary of the model
+# This output neatly separates short-run and long-run coefficients
+print(summary(ardl_model))
+```
+
+### Python
+
+```{python}
+#| collapse: true
+#| echo: true
+#| code-fold: true
+
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.tsa.api import ARDL, ardl_select_order
+
+# Load the same 'lutkepohl2' dataset from statsmodels datasets
+data = r.denmark
+data.index = pd.to_datetime(data['ENTRY'], format='%Y:%m').dt.to_period('Q')
+# Select the variables of interest
+data_subset = data[['LRM', 'LRY', 'IBO']]
+
+# Assign endogenous (Y) and exogenous (X) variables
+endog = data_subset['LRM']
+exog = data_subset[['LRY', 'IBO']]
+
+# Find the optimal lag order
+# maxlag is for the AR (dependent) part, maxorder is for the DL (independent) part
+# aic is the information criterion to use for selection
+sel_order = ardl_select_order(
+    endog, maxlag=4, exog=exog, maxorder=4, ic='aic', trend='c'
+)
+
+# Instantiate the ARDL model with the selected order
+# sel_order.ardl_order gives the optimal (p, q1, q2, ...)
+ardl_result = sel_order.model.fit()
+
+# Print the summary of the results
+# This shows the short-run coefficients
+print(ardl_result.summary())
+
+params = ardl_result.params
+denominator = 1 - params.filter(like='LRM.L').sum()
+
+# 3. Calculate the sum of coefficients for each independent variable and divide
+long_run_effects = pd.Series({
+    'LRY': params.filter(like='LRY.L').sum() / denominator,
+    'IBO': params.filter(like='IBO.L').sum() / denominator,
+    'const': params['const'] / denominator  # Optional: long-run intercept
+})
+
+print(long_run_effects)
+```
+
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+* Load the data (same as the 'denmark' dataset in R)
+webuse lutkepohl2, clear
+
+* Declare the data as time series
+tsset qtr
+
+* Estimate the ARDL model, letting Stata select the best lags up to a max of 4.
+* The dependent variable is 'ln_rm' (log real money).
+* The independent variables are 'ln_inc' (log income) and 'ln_consump' (log consumption).
+* We'll use the variables from the Stata dataset.
+ardl ln_rm ln_inc, maxlags(4)
+
+* After estimation, Stata shows the optimal lags and the short-run results.
+
+* To see the long-run coefficients, use the post-estimation command `estat ec`.
+estat ec
+```
 
 
 ## Other Topics in Time Series Econometrics

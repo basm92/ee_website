@@ -38,6 +38,10 @@
   font-size: 0.8em !important;
 }
 
+.reveal .hey pre.sourceCode code {
+  max-height: 200px !important;
+}
+
 .slide-logo {
   max-height: 5.2rem !important;
 }
