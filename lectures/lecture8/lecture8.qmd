@@ -61,6 +61,44 @@ use_python("/home/bas/anaconda3/bin/python")
 
 # Regression Tables
 
+## Standard format
+
+- After the introduction, the regression tables are probably the most important thing in your thesis. If you take away only one thing from this lecture, you must know that:
+
+::::{.columns}
+
+:::{.column width="50%"}
+- Regression tables should always be formulated like this:
+
+```{r}
+#| echo: false
+library(modelsummary); library(fixest); library(tinytable)
+model <- feols(mpg ~ drat, data=mtcars)
+model2 <- feols(mpg ~ drat + hp, data = mtcars)
+model3 <- feols(mpg ~ drat + hp, vcov='hc1', data=mtcars)
+
+modelsummary(list(model, model2, model3), gof_map=c("nobs", "r.squared"), output = 'tinytable') |>
+  theme_tt("resize", width=1)
+```
+
+:::
+
+:::{.column width="50%"}
+- And they should never be raw output like this:
+
+:::{style="font-size: 0.7em;"}
+```{r}
+#| echo: false
+summary(model)
+```
+:::
+
+:::
+
+::::
+
+
+
 ## Regression Tables
 
 - Regression tables will probably be some of the most important stuff in your thesis.
@@ -78,9 +116,26 @@ use_python("/home/bas/anaconda3/bin/python")
 ## Regression Tables (Cont.)
 
 - Regression tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, statistical significance. 
+
 - They should also have an informative title. 
+- Variable names should be properly and informatively formatted
+  - In human-readable text, so "GDP per capita", not `gdp_per_capita`. 
+  
+## Regression Tables in R/Python/Stata
 
+- Here are three full-fledged examples of nicely formatted regression tables. We'll go through all of the characteristics and their implementation.
 
+:::{.panel-tabset}
+
+### R
+
+### Python
+
+### Stata
+
+:::
+
+  
 # Visualization
 
 ## What should we not show?
