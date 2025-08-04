@@ -621,7 +621,88 @@ The BG test is performed in three simple steps:
 
 ## Example BG Test
 
-Todo. 
+### R
+
+```{r}
+#| echo: false
+#| code-fold: true
+#| collapse: true
+
+library(lmtest)
+
+#--------------------------------------------------------------------
+# Step 1: Simulate Data with Serially Correlated Errors
+#--------------------------------------------------------------------
+
+# For reproducibility of the random numbers
+set.seed(42) 
+
+# Define simulation parameters
+n <- 200                 # Sample size
+alpha <- 5               # True intercept
+beta <- 2                # True slope for X
+
+# *** Key step: Define the autocorrelation structure for the errors ***
+# We will create an error term u_t = rho * u_{t-1} + e_t
+# where e_t is white noise.
+rho <- 0.8               # High positive autocorrelation coefficient
+sigma_e <- 1.5           # Standard deviation of the white noise component
+
+# Generate the independent variable X
+X <- rnorm(n, mean = 20, sd = 10)
+
+# Generate the serially correlated error term 'u'
+u <- numeric(n)
+e <- rnorm(n, mean = 0, sd = sigma_e) # White noise component
+
+# The first error term has no preceding term
+u[1] <- e[1] 
+
+# Generate the rest of the errors using the AR(1) formula
+for (t in 2:n) {
+  u[t] <- rho * u[t-1] + e[t]
+}
+
+# Generate the dependent variable Y using the regression equation
+# Y_t = alpha + beta*X_t + u_t
+Y <- alpha + beta * X + u
+
+# Combine into a data frame for easy use
+sim_data <- data.frame(Y = Y, X = X)
+
+# Optional: Visualize the data and the correlated errors
+# plot(u, type = 'l', main = "Simulated Serially Correlated Errors")
+# plot(Y ~ X, data = sim_data, main = "Simulated Regression Data")
+
+#--------------------------------------------------------------------
+# Step 2: Estimate the OLS Regression Model
+#--------------------------------------------------------------------
+
+# We estimate the model Y ~ X, pretending we don't know about the
+# autocorrelation in the errors.
+ols_model <- lm(Y ~ X, data = sim_data)
+
+# Print the summary. The coefficients will likely be close to the true
+# values, but the standard errors and p-values are unreliable.
+print(summary(ols_model))
+
+
+#--------------------------------------------------------------------
+# Step 3: Conduct the Breusch-Godfrey Test
+#--------------------------------------------------------------------
+
+# The bgtest() function from the 'lmtest' package performs the test.
+# We need to specify the model and the order of autocorrelation to test for.
+# Since we created an AR(1) process, we will test for order 1.
+bg_test_order1 <- bgtest(ols_model, order = 1)
+print(bg_test_order1)
+
+# You can also test for higher orders. For example, testing up to order 3.
+# This would test the joint null hypothesis that the coefficients on the first
+# three lags of the residuals are all zero in the auxiliary regression.
+bg_test_order3 <- bgtest(ols_model, order = 3)
+print(bg_test_order3)
+```
 
 ## Avoiding Spurious Regression
 
