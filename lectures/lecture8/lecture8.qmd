@@ -1,0 +1,71 @@
+---
+title: "Empirical Economics"
+subtitle: "Lecture 8: Hands-on Econometrics"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 8- Hands-on Econometrics'
+resources:
+  - demo.pdf
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+# Introduction
+
+## Course Overview
+
+- Statistics and Probability - Basic Concepts
+- Statistics and Probability - Hypothesis Testing
+- The Linear Regression Model
+- Time Series Data
+- Panel Data (FE) and Control Variables
+- Binary Outcome Data
+- Potential Outcomes and Difference-in-differences
+- Hands-on Econometrics in Practice
+
+## Agenda 
+
+- Data Wrangling
+  - Importing Data
+  - Merging Datasets
+  - Pivoting
+  - String Matching and subset search
+- Data Cleaning
+- Summary Tables
+- Regression Tables
+- Standard Errors and Fit Statistics
+- Visualization
+- Project Organization
+
+# Motivation
+
+## Motivation
+
+
+# Summary
+
+## What did we do?
+
+## Other Resources
+
+- [This](https://github.com/uo-ec607/lectures)
+- [This](https://github.com/msu-econ-data-analytics/course-materials?tab=readme-ov-file)
+
+
