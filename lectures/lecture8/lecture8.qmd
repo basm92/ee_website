@@ -50,13 +50,216 @@ use_python("/home/bas/anaconda3/bin/python")
 - Data Cleaning
 - Summary Tables
 - Regression Tables
-- Standard Errors and Fit Statistics
+  - Standard Errors and Fit Statistics
 - Visualization
 - Project Organization
 
 # Motivation
 
 ## Motivation
+
+
+# Regression Tables
+
+## Regression Tables
+
+- Regression tables will probably be some of the most important stuff in your thesis.
+
+- They often form your central evidence, confirming or rejecting your hypothesis, answering your research question. 
+
+- Anyone who reads your thesis farther than the introduction will probably look at them. 
+
+- This is why **regression tables have to be formatted nicely**. 
+
+- Fortunately, R/Python/Stata all have nice libraries allowing you to generate regression tables. 
+
+- Hence, **you should never manually create a regression table, ever**. 
+
+## Regression Tables (Cont.)
+
+- Regression tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, statistical significance. 
+- They should also have an informative title. 
+
+
+# Visualization
+
+## What should we not show?
+
+- Don't show, or incorporate into your thesis, any raw plotted figure you used to inspect your data
+- I.e. a scatterplot like this is a no-go: 
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+mtcars |>
+  ggplot(aes(x = drat, y = mpg)) + geom_point()
+```
+
+## What should we show?
+
+- Always add a **title** and **clear labels** to your plot.
+  - Make sure they're large enough.
+- If you're unsure, ask somebody else to look at your plot.
+  - If they don't get it, you probably created a bad plot.
+- Pay attention to ticks and intercepts.
+  
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+
+mtcars |>
+  ggplot(aes(x=drat, y=mpg)) + geom_point() + 
+  xlab("Rear axle ratio (drat)") +
+  ylab("Miles/(US) Gallon (mpg)") + 
+  ggtitle("Relationship between Rear axle ratio and Miles per gallon") +
+  theme_bw()
+```
+
+## Use colors strategically
+
+Here is some code that helps you set-up some basic acceptable scatter plots. 
+
+
+## In what format should you save your graphics?
+
+- Vector graphics are composed of formulas or paths.
+  - "Draw a straight line from (0, 0) to (13, 4)."
+  - Infinitely zoom-able. Preserves all underlying information.
+  - May be slow to load when complex.
+  - Extensions .pdf or .svg.
+
+- Raster graphics are composed of pixels (a grid of squares with color information).
+  - Only an approximation to the underlying shapes or points.
+  - Work better with Microsoft Office and HTML.
+  - Usually best: .png. Also .jpeg, .gif.
+
+# Project Organization
+
+## General principes
+
+- A Master's thesis is likely the largest, most complex independent project you've ever managed.
+
+-  The difference between a smooth, relatively low-stress process and a chaotic, last-minute scramble often comes down to the organization you set up at the very beginning.
+
+- Adhering to these principles will make your thesis (hopefully) much less painful
+
+## File Organization
+
+- Create ONE main folder for your entire thesis.
+- Use a numbered prefix system to keep folders in a logical, non-alphabetical order.
+
+```
+\master_thesis\
+      \1_code\
+        \1_download_data.py
+        \2_bring_different_sources.py
+        \3_rename_and_reshape_data.py
+      \2_data\
+        \1_stockprice.csv
+        \2_accounting_info.json
+        \intermediate_data\
+          \stockprices_winsorized.csv
+      \3_figures\
+        \event_study.pdf
+        \scatterplot.pdf
+      \4_tables\
+        \descriptive_statistics.tex
+        \ols_baseline.tex
+        \ols_robust_se.tex
+        \autoregressive_1.tex
+      \5_document\
+        \thesis.docx
+```
+
+## File Organization (Cont.)
+
+- Why numbers? Because it forces the folders into an order that *you* decide is logical, not the alphabet. 'Admin' won't end up at the top, and 'Writing' won't be at the bottom. 
+
+- Keep your raw data in a separate folder and never touch it—always work on a copy. Make a backup of this folder. Set up a cloud sync service today. 
+  - You can use things like [Google Drive](http://drive.google.com), but also [DropBox](www.dropbox.com) and other commercial providers are available.
+  
+- Seperate files into inputs and outputs. 
+
+- Don't use file names or directory names with spaces. 
+  - Computer languages don't handle spaces well
+
+## Organizing Literature
+
+- Manual citation is a recipe for disaster. 
+- Pick a tool **now** and use it for every paper you read.
+  - Popular choices are Zotero, EndNote and Mendeley
+  - You can also use [Overleaf](www.overleaf.com) if you're familiar with LaTeX
+
+- Every time you download a paper, add it to your reference manager immediately. 
+
+- When you're writing, you can insert citations directly from the manager.
+
+## Code Organization
+
+- Break programs into short scripts or functions, each of which conducts a single task.
+
+- Make names distinctive and meaningful.
+
+- Be consistent with code style and formatting.
+  - Pay attention to things like file naming conventions and variable naming conventions
+
+- Use relative filepaths ("../input/data.csv" instead of "C:/build/input/data.csv").
+  - In VSCode, the working directory is always the **folder you have opened**. See [here](https://stackoverflow.com/questions/38623138/how-to-set-the-working-directory-for-debugging-a-python-program-in-vs-code) if you want to change that.
+  - In RStudio, if you set up an [Rproj](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects), your working directory will also be the directory in which the `.Rproj` file is situated. 
+  - In Stata, you can use `cd` to change your working directory. 
+  
+- Make incremental changes in your code, and test them as you go.
+
+
+## Code Organization (Cont.)
+
+
+- Save new copies of your scripts:
+  - Every time you make a substantial revision.
+  - If you make any edits to a script you haven't touched in more than 1-2 weeks.
+
+- Comment often to explain the purpose of your code
+  - Use descriptive variable names, e.g. `income_percapita` rather than `income_pc` or `inc_pc`
+
+- Don't use spaces when naming variables. 
+  - R: The `janitor` package has a function called `clean_names()`, which automatically converts column names into something compatible with R
+
+- In Python, you could use something like this:
+
+:::{style="font-size: 0.7em;"}
+```{python}
+#| echo: true
+#| code-fold: true
+#| eval: false
+import re
+
+def clean_col_names(col_name):
+    """A more robust function to clean column names."""
+    # Convert to lowercase
+    new_col = col_name.lower()
+    # Replace any non-alphanumeric characters with an underscore
+    new_col = re.sub(r'[^A-Za-z0-9]+', '_', new_col)
+    # Remove leading/trailing underscores
+    new_col = new_col.strip('_')
+    return new_col
+
+# Apply the function to all columns
+df.columns = [clean_col_names(col) for col in df_messy_copy.columns]
+```
+:::
+
+
+## Version Control
+
+- We've all been guilty of the 'Final_Final' file name. 
+  - This creates confusion and risk. 
+  - A simple, robust naming convention using dates in the `YEAR-MONTH-DAY` format is a great start because it sorts chronologically.
+  
+- If you're working a lot with code or LaTeX, I strongly encourage you to look into Git.
+  - It's the professional standard for a reason. 
+  - For Word documents, leverage the version history that's built into tools like Google Docs or OneDrive.
 
 
 # Summary
