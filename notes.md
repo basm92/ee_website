@@ -51,3 +51,5 @@ Bigger picture:
     - What after next year?
 
 -Redesign last year:
+
+- Also: fix a lot of stuff in lec6 binary outcomes
