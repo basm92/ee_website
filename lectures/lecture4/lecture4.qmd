@@ -173,7 +173,73 @@ where $\gamma_0$ is the variance, $Var(Y_t)$.
   - It provides a visual summary of the persistence in a time series. We can see how quickly the correlations die out.
   - Correlograms usually include confidence bands. Autocorrelations that fall outside these bands are considered statistically different from zero.
 
-(Todo: Insert a sample correlogram plot here, showing bars for lags 1, 2, 3... and confidence bands)
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-height: 3
+#| fig-width: 6
+
+# Number of lags for the correlogram
+k <- 9
+n <- 100
+
+# Create a sequence of lags from 1 to k
+lags <- 1:k
+
+# Simulate the autocorrelation values. 
+# A common pattern is an exponential decay, typical of an AR(1) process.
+# Let's simulate an ACF from a process with phi = 0.8.
+# The ACF for an AR(1) at lag k is phi^k.
+acf_values <- 0.8^lags
+
+# Create a data frame, which is the standard input for ggplot
+acf_df <- data.frame(
+  Lag = lags,
+  ACF = acf_values
+)
+
+#Confidence Bounds
+# This tests the null hypothesis that the autocorrelation at a given lag is zero.
+conf_limit <- 1.96 / sqrt(n)
+
+# Create the plot object
+correlogram_plot <- ggplot(data = acf_df, aes(x = Lag, y = ACF)) +
+  
+  # Add the horizontal lines for the significance bounds (in blue)
+  geom_hline(yintercept = conf_limit, linetype = "dashed", color = "blue") +
+  geom_hline(yintercept = -conf_limit, linetype = "dashed", color = "blue") +
+  
+  # Add the vertical lines (segments) from y=0 to the ACF value
+  # This is the classic look of a correlogram
+  geom_segment(aes(xend = Lag, yend = 0), linewidth = 1) +
+  
+  # Add points at the top of the segments (optional but common)
+  geom_point(color = "black", size = 3) +
+  
+  # Add a solid line at y=0 for reference
+  geom_hline(yintercept = 0, color = "black") +
+
+  # Set the x-axis to only show integer lags
+  scale_x_continuous(breaks = 1:k) +
+  
+  # Set the y-axis limits
+  coord_cartesian(ylim = c(-1, 1)) +
+  
+  # Add informative labels and a title
+  labs(
+    title = "Simulated Correlogram (ACF Plot)",
+    subtitle = paste("k =", k, "lags, assumed n =", n),
+    x = "Lag",
+    y = "Autocorrelation"
+  ) +
+  
+  # Use a clean theme
+  theme_minimal()
+
+# Print the plot to the screen
+print(correlogram_plot)
+```
+
 
 # Modeling a Single Time Series
 
@@ -393,7 +459,7 @@ $$
   - If the true shocks came from a Normal distribution $N(0, \sigma^2_u)$, how likely was it to get this specific sequence of inferred shocks? The joint probability of observing this sequence is called the Likelihood.
   - We try to find the most likely $\mu$ and $\theta$ that could have generated the actual data.[^1]
   
-- Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. Yt is affected by ut and ut-1, but Yt+1 will not be affected by ut.
+- Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. $Y_t$ is affected by $u_t$ and $u_{t-1}$, but $Y_{t+1}$ will not be affected by $u_t$.
 - The coefficient $\theta$ determines the extent to which a past shock affects the current observation.
 
 [^1]: More about this in Lecture 6. 
@@ -401,7 +467,7 @@ $$
 ## The Autoregressive Moving Average (ARMA) Model
 
 - **Combining AR and MA:** We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.
-- For example, an ARMA(1,1) Model: $Y_t = \alpha + \rho Y_{t-1} + u_t + \theta u_{t=1}$
+- For example, an ARMA(1,1) Model: $Y_t = \alpha + \rho Y_{t-1} + u_t + \theta u_{t-1}$
 - ARMA models are very flexible and can capture a wide range of time series dynamics.
 
 
@@ -417,20 +483,62 @@ $$
 
 - This model posits a contemporaneous relationship between X and Y.
 - Question: Can we estimate this with OLS and trust the results?
-- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of :
+- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of finite variance:
   
   $$
-    Cov(X_t, \epsilon_t) = 0
+    \text{Var}(X_t) = \sigma^2
   $$
     
-## The Problem of Spurious Regression
+## When does OLS work?
 
 - If $X$ is stationary, e.g. $X \sim AR(1)$ with $|\rho|<1$, this is a valid approach. 
 
-- However, in different situations, OLS may give a **deceptive relationship:**
+:::{.callout-tip title="Example: Finite Expectation Variance of $X$ when $X \sim AR(1)$"}
+Let $X_t = \rho X_{t-1} + u_t$. Using the definition for $X_{t-1}$, we find that $X_t = \rho (\rho X_{t-2} + u_t$). 
+
+After recursively substituting, past values of $X_t$, we can express $X_t$ as:
+
+$$
+X_t = \rho^k X_{t-k} + \sum_{j=0}^{k-1} u_{t-j}
+$$
+As $k \rightarrow \infty$, we end up with $X_t = \sum_{j=0}^{\infty} \rho^j u_j$. 
+
+Taking the expected value of this, we immediately see that $E[X_t]=0$.
+
+:::
+
+## When does OLS work? (Cont.)
+
+- As for the variance:
+
+:::{style="font-size: 0.7em;"}
+
+:::{.callout-tip title="Example: Finite Expectation Variance of $X$ when $X \sim AR(1)$"}
+
+  $$
+    \begin{align}
+    \text{Var}(X_t) &= \text{Var}(\sum_{j=0}^\infty \rho^j u_{t-j}) \\
+    &= \sum_{j=0}^\infty \text{Var}(\rho^j u_{t-j}) \quad \text{ Uncorrelated $u_t$} \\
+    &= \sum_{j=0}^\infty \rho^{2j} \text{Var}(u_{t-j}) \quad \text{Constant term in Var} \\
+    &= \sigma^2_u \sum_{j=0}^\infty \rho^{2j} \quad \quad \text{Constant variance of $u_t$} \\
+    \end{align}
+  $$
+
+Since $\sum_{j=0}^\infty \rho^{2j}=\frac{1}{1-\rho^2}$ if $|\rho|<1$, the variance is equal to $\frac{\sigma^2_u}{1-\rho^2}$.  
+
+:::
+
+:::
+
+## The Problem of Spurious Regression
+
+- OLS might also work in other cases where $X_t$ is stationary, or when $X_t$ and $Y_t$ are cointegrated.[^2]
+- However, in most situations, OLS may give a **deceptive relationship:**
   - A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.
 - This often happens when both variables have a strong trend (are non-stationary), and especially, when $X$ is non-stationary. 
   - The trend can be deterministic (predictable) or stochastic (random).
+
+[^2]: This means roughly that $X_t$ and $Y_t$ follow a common trend, but it is outside the scope of this lecture. 
 
 ## Spurious Regression is Non-Stationarity
 
@@ -461,27 +569,27 @@ The variance depends on time t and grows without bound. This is a clear violatio
 
 ## Failure of Reliable Estimation
 
-- Imagine two independent and unrelated random walks, $Yt = Yt-1 + u_t$ and $Xt = Xt-1 + v_t$, where $u_t$ and $v_t$ are independent white noise processes.
+- Imagine two independent and unrelated random walks, $Y_t = Y_{t-1} + u_t$ and $X_t = X_{t-1} + v_t$, where $u_t$ and $v_t$ are independent white noise processes.
 
 - By construction, the true $\beta$ in a regression of $Y_t$ on $X_t$ is zero.
 
 - When we run $Y_t= \alpha + \beta X_t + u_t$,  we know $Var(Y_t)=Var(X_t)=t\times \sigma^2_u$. 
+  - $\hat{\beta}=\frac{\text{Cov}(X,Y)}{\text{Var}(X)}$. 
 
-Todo: fix this argument
-
-- We also know that the OLS coefficient is $\hat{\beta}=\frac{\text{Cov}(X,Y)}{\text{Var}(X)}$. 
- - When $T \rightarrow \infty$ , the denominator term tends to infinity. 
- - Since this is in the denominator, we might get unusually large $\beta$ coefficients and $t$-statistics. 
+- Since both $Y_t$ and $X_t$ are non-stationary, both the numerator and the denominator converge to a random variable, not to a particular number. 
+  - Hence, the OLS coefficient is **inconsistent**. 
 
 
 ## Consequences of Spurious Regression
 
-- Hence, if you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
+- Since the OLS estimator converges to a random variable with variance tending to infinity, if you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
   - You will likely find a **high R-squared**.
   - The **t-statistics** for the estimated coefficients will likely be **significant**.
   - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
 
-## Slide 11: Detecting Spurious Regression
+## Detecting Spurious Regression
+
+- **Rejection of the BG Test:** A key indicator of spurious regression is a rejection of the Breusch-Godfrey test.
 
 :::{.callout-note title="Definition: Breusch-Godfrey Test"}
 The BG test assesses whether the error term, $\epsilon_t$, follows an AR(p) process. You, the researcher, choose the number of lags (p) to test for. The assumed model for the error is:
@@ -489,9 +597,6 @@ $$\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + \dots + \rho_p \e
 
 where $v_t$ is a white noise term. $H_0: \rho_1, \dots, \rho_p=0$, and $H_A$ is that at least one $\rho$ coefficient is non-zero: there is serial correlation up to some order $p$. 
 :::
-
-- **Rejection of the BG Test:** A key indicator of spurious regression is a rejection of the Breusch-Godfrey test. 
-- **Rule of Thumb:** If the R-squared from the regression is greater than the DW statistic, you should be highly suspicious of a spurious relationship.
 
 ## Breusch-Godfrey Test
 
@@ -501,7 +606,7 @@ The BG test is performed in three simple steps:
 - Run the Main Regression: First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals,
 - Run an Auxiliary Regression. Run a new regression where the residual $e_t$ is the dependent variable. The independent variables are:
   - All the original regressors from the main model. 
-  - The lagged residuals up to order $p$: e_{t-1}, \dots, e_{t-p}
+  - The lagged residuals up to order $p$: $e_{t-1}, \dots, e_{t-p}$. 
 - Obtain the R-squared: Calculate the R-squared from this auxiliary regression. 
 
 ---
@@ -514,6 +619,9 @@ The BG test is performed in three simple steps:
   
 :::
 
+## Example BG Test
+
+Todo. 
 
 ## Avoiding Spurious Regression
 
@@ -544,17 +652,22 @@ $\beta_s (s > 0)$: The **dynamic multipliers** - the effect of a one-unit change
 
 $$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 
-- **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., β0 + β1).
-- **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the β coefficients: **Σ βs**.
+- **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., $\beta_0 + \beta_1$).
+- **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the $\beta$ coefficients: $\sum \beta_S$.
 
 ## Slide 27: The Koyck (Geometric) Distributed Lag Model
 
-*   **The Problem of Infinite Lags:** Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
-*   **Koyck's Assumption:** The Koyck model assumes that the coefficients (βs) decline geometrically: βs = β0λ^s, where 0 < λ < 1.
+- Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
+- The Koyck model assumes that the coefficients decline geometrically: $\beta_s = \beta_0 \lambda^s$, where $0 < \lambda < 1$.
 *   **A Simpler Form:** This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated:
-    **Yt = α(1-λ) + β0Xt + λYt-1 + vt** (This is a form of an ARDL model).
 
-## Slide 28: The Autoregressive Distributed Lag (ARDL) Model
+  $$
+    Y_t = \alpha(1-\lambda) + \beta_0 X_t + \lambda Y_{t-1} + v_t
+  $$
+
+- This is a form of an ARDL model.. 
+
+## The Autoregressive Distributed Lag (ARDL) Model
 
 *   **A General and Powerful Model:** The ARDL model includes lags of both the dependent variable and the explanatory variable(s).
 
@@ -570,7 +683,43 @@ $$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j
 
 ## Interpretation ARDL Coefficients
 
-To do. 
+- The individual coefficients represent direct, short-term impacts before feedback effects occur.
+
+- **Impact Multiplier ($\beta_0$)**: The immediate effect of a change in $X_t$ on $Y_t$.
+  - **Derivation**: $\frac{\partial Y_t}{\partial X_t} = \beta_0$
+
+- **Delay Multipliers ($\beta_j$)**: The effect of past changes in $X$ on current $Y$.
+  - **Interpretation**: A one-unit increase in $X_{t-j}$ is associated with a change of **$\beta_j$** units in today's $Y_t$.
+
+- **Autoregressive Coefficients ($\phi_i$)**: Measure the persistence or inertia in the process.
+  - **Interpretation**: **$\phi_i$** captures the proportion of $Y_{t-i}$ that is carried over to $Y_t$. It describes how quickly the variable returns to its equilibrium after a shock.
+
+
+## Long-Run Multiplier (LRM) Derivation & Interpretation
+
+- The LRM shows the total effect on Y after a permanent change in X has fully worked through the system.
+
+- **Derivation (via Equilibrium Condition)**:
+  - In a long-run steady state, we assume variables are constant:
+    - $Y_t = Y_{t-1} = \dots = Y_{eq}$
+    - $X_t = X_{t-1} = \dots = X_{eq}$
+
+  - Substitute this into the ARDL equation (assuming $E[u_t]=0$):
+    - $Y_{eq} = c + \sum \phi_i Y_{eq} + \sum \beta_j X_{eq}$
+
+  - Solve for $Y_{eq}$:
+    - $Y_{eq} (1 - \sum \phi_i) = c + (\sum \beta_j) X_{eq}$
+    - $Y_{eq} = \frac{c}{1 - \sum \phi_i} + \left( \frac{\sum \beta_j}{1 - \sum \phi_i} \right) X_{eq}$
+    
+## Long-Run Multiplier (LRM) Derivation & Interpretation (Cont.)
+
+- **The Long-Run Multiplier ($\theta$)**:
+  - The coefficient on $X_{eq}$ in the long-run equation is the LRM:
+    $$ \theta = \text{LRM} = \frac{\text{Total effect of X}}{\text{Persistence of Y}} = \frac{\sum_{j=0}^{q} \beta_j}{1 - \sum_{i=1}^{p} \phi_i} $$
+
+- **Interpretation**: A **permanent** one-unit increase in $X$ is associated with a total **long-run change of $\theta$ units** in $Y$, after all dynamic adjustments are complete.
+
+- **Key Takeaway**: The ARDL model powerfully separates the **immediate impacts** ($\beta_j$) from the **total equilibrium effect** ($\theta$), which accounts for the feedback from Y's own past values.
 
 
 ## Other Topics in Time Series Econometrics
