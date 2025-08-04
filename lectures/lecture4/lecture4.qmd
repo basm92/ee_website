@@ -493,7 +493,7 @@ $$
 
 - If $X$ is stationary, e.g. $X \sim AR(1)$ with $|\rho|<1$, this is a valid approach. 
 
-:::{.callout-tip title="Example: Finite Expectation Variance of $X$ when $X \sim AR(1)$"}
+:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
 Let $X_t = \rho X_{t-1} + u_t$. Using the definition for $X_{t-1}$, we find that $X_t = \rho (\rho X_{t-2} + u_t$). 
 
 After recursively substituting, past values of $X_t$, we can express $X_t$ as:
@@ -513,7 +513,7 @@ Taking the expected value of this, we immediately see that $E[X_t]=0$.
 
 :::{style="font-size: 0.7em;"}
 
-:::{.callout-tip title="Example: Finite Expectation Variance of $X$ when $X \sim AR(1)$"}
+:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
 
   $$
     \begin{align}
@@ -1071,6 +1071,8 @@ ardl ln_rm ln_inc, maxlags(4)
 estat ec
 ```
 
+:::
+
 
 ## Other Topics in Time Series Econometrics
 
@@ -1090,13 +1092,18 @@ estat ec
   -  **Moving Average models**: Explain a variable using past random shocks.
 
 - **The Linear Model**: We focused on the possibility of using OLS on bivariate time series data. 
-  - We ran into the problem of **spurious regression:** a misleading relationship between two non-stationary time series.
+  - We saw some cases (where $X_t$ is stationary) in which it is allowed to estimate $Y_t = \alpha + \beta X_t + u_t$
+  - If we have **stationary** errors, this might be a sensible reason that this assumption is justified. 
+  - However, if not, we run into the problem of **spurious regression:** a misleading relationship between two non-stationary time series.
 
 
 ## What did we do? (Cont.)
 
-**Distributed Lag (DL) Models:**
-  - We focused on models that investigate the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects. These models make it more likely that the error term is white noise. 
+- **Distributed Lag (DL) Models:**
+  - To model a more realistic dynamic structure, we focused on models that investigate the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects. These models make it more likely that the error term is white noise. 
+
+- **Autoregressive Distributed Lag Models**:
+  - A generalization of distributed lag models, also integrating autoregressive components. A model like this has the ability to separate feedback effects from long-run impacts of $X$. 
   
 
 
