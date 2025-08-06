@@ -1169,8 +1169,58 @@ legend("topright", legend = c("F(1,10)", "F(5,10)", "F(10,10)", "F(20,50)"),
 
 - **Graphical Intuition:** This model generates two **parallel regression lines**. They have the same slope ($\beta_2$), but are separated vertically by a distance of $\beta_1$.
 
-```{r}
 
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# For reproducibility
+set.seed(42)
+
+# 1. Define parameters for our data simulation
+n <- 200 # Total number of observations
+beta0 <- 20 # Base intercept (predicted wage for a male with 0 education)
+beta1_gender <- -3 # The wage "penalty" for being female
+beta2_educ <- 2.5 # The return to one year of education
+
+# 2. Create the base data frame
+wage_data <- tibble(
+  # Create 100 males and 100 females
+  gender = factor(rep(c("Male", "Female"), each = n/2)),
+  # Give each person a random number of education years
+  education = runif(n, min = 0, max = 8)
+)
+
+# 3. Create the dependent variable (wage)
+# We build the "true" relationship into the data, plus some random noise
+wage_data <- wage_data %>%
+  mutate(
+    # Create a numeric dummy variable for the formula
+    is_female = ifelse(gender == "Female", 1, 0),
+    
+    # Calculate wage based on the PARALLEL lines model
+    # Wage = b0 + b1*Female + b2*Educ + noise
+    wage = beta0 + (beta1_gender * is_female) + (beta2_educ * education) + rnorm(n, mean = 0, sd = 4)
+  )
+
+model_parallel <- lm(wage ~ education + gender, data = wage_data)
+
+ggplot(wage_data, aes(x = education, y = wage, color = gender)) +
+  geom_point(alpha = 0.7) + # Plot the raw data points
+  geom_smooth(method = "lm", se = FALSE, size = 1.2) + # Add the regression lines
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title = "Dummy Variable as an Intercept Shift",
+    subtitle = "Model: wage ~ education + gender",
+    x = "Years of Education",
+    y = "Predicted Wage",
+    color = "Gender"
+  ) +
+  theme_minimal(base_size = 14)
 
 ```
 
@@ -1203,6 +1253,42 @@ $wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot 
 - **$\beta_2$ (Main Effect of Continuous Variable):** The effect of an additional year of education on wages *for the reference group (males) only*.
 - **$\beta_1$ (Main Effect of Dummy):** The difference in expected wages between females and males when `Educ` = 0. This is the difference in the intercepts. This coefficient is often not meaningful on its own if `Educ=0` is not a relevant value in the data.
 - **$\beta_3$ (Interaction Coefficient):** The **difference in the slopes**. It measures by how much the effect of an additional year of education differs for females compared to males. This is often the coefficient of primary interest.
+
+## Visualization
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+# Define a coefficient for the interaction effect
+beta3_interaction <- -0.5 # Return to education is $0.50 lower for women
+
+# Add a new wage variable to our data frame
+wage_data <- wage_data %>%
+  mutate(
+    # Wage = b0 + b1*Female + b2*Educ + b3*Female*Educ + noise
+    wage_interact = beta0 + (beta1_gender * is_female) + 
+                    (beta2_educ * education) + 
+                    (beta3_interaction * is_female * education) + 
+                    rnorm(n, mean = 0, sd = 4)
+  )
+
+# Model 2: With an interaction term
+# The `*` is a shortcut for `education + gender + education:gender`
+model_interact <- lm(wage_interact ~ education * gender, data = wage_data)
+ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
+  geom_point(alpha = 0.7) + # Plot the raw data points
+  geom_smooth(method = "lm", se = FALSE, size = 1.2) + # Add the regression lines
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title = "Interaction Effects Allowing for Different Slopes",
+    subtitle = "Model: wage ~ education * gender",
+    x = "Years of Education",
+    y = "Predicted Wage",
+    color = "Gender"
+  ) +
+  theme_minimal(base_size = 14)
+```
 
 ## Total Effect Under Interaction 
 
