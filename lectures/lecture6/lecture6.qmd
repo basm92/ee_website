@@ -43,13 +43,15 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## What do we do today?
 
-- We have seen _cross sectional_ and _time series_ data
+- Introduce binary outcome data and a straightforward way of analyzing it: the **linear probability model** (LPM).
 
-- This lecture, we will talk about methods used when we can _combine_ features of cross-sectional and time-series data
+- Talk about various shortcomings of the LPM, and introduces several alternatives, in particular, **logistic regression** and the **probit model**. 
 
-- We will introduce two workhorse econometrics models, the Fixed Effects (FE) model, and the Random Effects (RE) model
+- Introduce an alternative method to OLS, namely **maximum likelihood estimation** (MLE). 
 
-- We discuss a special case of panel data in the form of _event studies_. 
+- Discuss and contrast pitfalls of these models. 
+
+- Talk about more general ways to deal with **truncated** and **selected data**, such as the Tobit and Heckman models. 
 
 # Introduction
 
@@ -511,7 +513,7 @@ $$
     \frac{\partial P(y=1 | x_i)}{\partial x_i} = F'(\beta x_i) \cdot \beta = f(\beta x_i) \cdot \beta
   $$
 
-- This means that the change in the probability does not only depend on $\beta$, but also on the values of the independent variabels $x_i$ and the function $F'$. 
+- This means that the change in the probability does not only depend on $\beta$, but also on the values of the independent variables $x_i$ and the function $F'$. 
 - So, how do we get meaningful interpretations?
 
 ## Interpretation Method 1: Marginal Effect at the Mean
@@ -594,84 +596,84 @@ If $\hat{\beta}_k = -0.5$, then $e^{-0.5} \approx 0.61$. A one-unit increase in 
 
 - Interaction effects in probit/logit models are also not straightforward: 
 
-:::{.callout-tip title="Interaction Effects in Logit/Probit"}
+- Suppose our model has two independent variables and an interaction effect, i.e. $P(y | x_1, x_2) = F(\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2)$. 
 
-Suppose our model has two independent variables and an interaction effect, i.e. $P(y | x_1, x_2) = F(\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2)$. 
+- We already know the marginal effect (ME) of $x_1$ on the conditional probability is the partial derivative of $P(y=1 | X)$ with respect to $x_1$: 
 
-We already know the marginal effect (ME) of $x_1$ on the conditional probability is the partial derivative of `P(y=1 | X)` with respect to $x_1$: 
+  $$
+    ME_{x_1} = f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_1 + \beta_3 x_2)
+  $$
 
-$ME_{x_1} = f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_1 + \beta_3 x_2)$
+- Note that the marginal effect of $x_1$ is not constant; it depends on the value of $x_2$ (due to the $\beta_3 x_2$ term) and on the values of *all* variables through the $f(\cdot)$ term.
 
-Note that the marginal effect of `x₁` is not constant; it depends on the value of `x₂` (due to the $\beta_3 x_2$ term) and on the values of *all* variables through the $f(\cdot)$ term.
-
-:::
 
 ## Interaction Terms (Cont.)
 
-:::{.callout-tip title="Interaction Effects in Logit/Probit (Cont.)"}
+- The interaction effect is defined as the change in the marginal effect of one variable, $x_1$, as the other variable, $x_2$, changes. Hence, we have to look for the **cross-partial derivative**:
 
-The interaction effect is defined as the change in the marginal effect of one variable, `x₁`, as the other variable, `x₂`, changes. This is the **cross-partial derivative**:
+  $$
+    \text{Interaction Effect (IE)} = \frac{\partial (ME_{x_1})}{\partial x_2} = \frac{\partial^2 P(Y|x_1, x_2)}{\partial x_2 \partial x_1}
+  $$
 
-`Interaction Effect (IE) = ∂(ME_{x₁})/∂x₂ = ∂²P/∂x₂∂x₁`
+- We differentiate $ME(x_1)$ with respect to $x_2$ using the product rule:
 
-We differentiate `ME_{x₁}` with respect to `x₂` using the product rule, where `u = g(Z)` and `v = (β₁ + β₃x₂)`:
+  $$
+    \frac{\beta_1 + \beta_3 x_2} {\partial x_2} = \beta_3
+  $$
+  
+- and:
 
-`IE = [∂g(Z)/∂x₂] ⋅ (β₁ + β₃x₂) + g(Z) ⋅ [∂(β₁ + β₃x₂)/∂x₂]`
+  $$
+    \frac{\partial f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2)}{\partial x_2} = f'(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_2 + \beta_3 x_1) 
+  $$
 
-Let's compute each component:
-1.  `∂(β₁ + β₃x₂)/∂x₂ = β₃`
-2.  `∂g(Z)/∂x₂` requires the chain rule again: `[dg(Z)/dZ] ⋅ [∂Z/∂x₂] = g'(Z) ⋅ (β₂ + β₃x₁)`
+- Hence, according to the product rule, 
+  
+  $$
+  \begin{align}
+    \text{IE} = [f'(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_2 + \beta_3 x_1)] (\beta_1 + \beta_3 x_2) + \\ f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \beta_3.
+  \end{align}
+  $$
 
-Substituting these back into the product rule equation:
+## Analysis of the result
 
-`IE = [ g'(Z) ⋅ (β₂ + β₃x₁) ] ⋅ (β₁ + β₃x₂) + g(Z) ⋅ β₃`
+- This formal result is profoundly different from the simple coefficient $\beta_3$ in the LPM. It consists of two parts:
 
-Rearranging to clarify the components:
+  1.  **$f(.)\beta_3$:**
+    - The "direct" effect, which is the interaction coefficient $\beta_3$ scaled by the PDF `f(.)`. This part's sign is determined by the sign of $\beta_3$, but its magnitude depends on all covariates. 
 
-`IE = g(Z)β₃ + g'(Z)(β₁ + β₃x₂)(β₂ + β₃x₁)`
+  2.  **$f'(.)(\beta_1 + \beta_3 x_2)(\beta_2 + \beta_3 x_1)$:** 
+    - The "non-linearity" or "functional form" effect. This term arises purely because $f(.)$ is not a constant. **Critically, this term exists even if $\beta_3= 0$**. In that case, the interaction effect would be $f'(.) \beta_1 \beta_2$, which is generally non-zero. This means that an interaction effect on the probabilities is an inherent feature of non-linear models, regardless of whether an interaction term is included in the linear index $X$. 
 
-:::
-
-#### **4. Analysis of the Result**
-
-This formal result is profoundly different from the coefficient `β₃`. It consists of two parts:
-
-1.  **`g(Z)β₃`:** The "direct" effect, which is the interaction coefficient `β₃` scaled by the PDF `g(Z)`. This part's sign is determined by the sign of `β₃`, but its magnitude depends on all covariates `X` through `Z`.
-
-2.  **`g'(Z)(β₁ + β₃x₂)(β₂ + β₃x₁)`:** The "non-linearity" or "functional form" effect. This term arises purely because `g(Z)` is not a constant. **Critically, this term exists even if `β₃ = 0`**. In that case, the interaction effect would be `g'(Z)β₁β₂`, which is generally non-zero. This means that an interaction effect on the probabilities is an inherent feature of non-linear models, regardless of whether an interaction term is included in the linear index `Z`.
-
-**Conclusion:** The sign, magnitude, and even statistical significance of the true interaction effect on the probability can differ from that of the coefficient `β₃`. One cannot simply inspect `β₃` to understand the interaction.
+- **Conclusion:** The sign, magnitude, and even statistical significance of the true interaction effect on the probability can differ from that of the coefficient $\beta_3$. One cannot simply inspect $\beta_3$ to understand the interaction.
 
 ## Contrast with the Linear Probability Model (LPM)
 
-- For the LPM, the model is $P(y=1 | X) = \alpha_0 + \alpha_1 x_1 + \alpha_2 x_2 + \alpha_3 x_1 x_2$. 
+- This insight was originally discovered by Ai and Norton (2003). 
 
+- For the LPM, the model is $P(y=1 | X) = \alpha_0 + \alpha_1 x_1 + \alpha_2 x_2 + \alpha_3 x_1 x_2$. 
 - In the LPM, the interaction effect on the probability is precisely and unambiguously equal to the coefficient on the interaction term, $\alpha_3$.
   - This starkly contrasts with the result from the probit/logit model, highlighting the interpretational complexity introduced by non-linearity.
 
 
-## Panel Data and Fixed Effects
-
-
-
 ## Goodness-of-Fit and Testing
 
-How well does our model fit the data?
+- How well does our model fit the data?
 
-*   **Percent Correctly Predicted:**
-    *   If $\hat{p}_i > 0.5$, predict $y=1$. If $\hat{p}_i \le 0.5$, predict $y=0$.
-    *   Compare predictions to actual outcomes. What percentage did we get right?
-    *   Intuitive, but sensitive to the 0.5 cutoff.
+- **Percent Correctly Predicted:**
+  - If $\hat{p}_i > 0.5$, predict $y=1$. If $\hat{p}_i \le 0.5$, predict $y=0$.
+  - Compare predictions to actual outcomes. What percentage did we get right?
+  - Intuitive, but sensitive to the 0.5 cutoff.
 
-*   **Pseudo R-Squared:**
-    *   Several versions exist, like **McFadden's R-squared**.
-    *   $R^2_{McF} = 1 - \frac{\ln L_{full}}{\ln L_{null}}$ (where $L_{null}$ is from a model with only an intercept).
-    *   Ranges from 0 to 1, but values are much lower than OLS R-squared. A value of 0.2-0.4 can indicate a very good fit. **Do not compare to OLS R-squared!**
+- **Pseudo R-Squared:**
+  - Several versions exist, like **McFadden's R-squared**.
+  - $R^2_{McF} = 1 - \frac{\ln L_{full}}{\ln L_{null}}$ (where $L_{null}$ is from a model with only an intercept).
+  - Ranges from 0 to 1, but values are much lower than OLS R-squared. A value of 0.2-0.4 can indicate a very good fit. **Do not compare to OLS R-squared!**
 
-*   **Likelihood Ratio (LR) Test:**
-    *   Tests the joint significance of a set of variables (like the F-test in OLS).
-    *   Compares the log-likelihood of the restricted model to the unrestricted (full) model.
-    *   $LR = 2(\ln L_{full} - \ln L_{restricted})$ which follows a $\chi^2$ distribution.
+- **Likelihood Ratio (LR) Test:**
+  - Tests the joint significance of a set of variables (like the F-test in OLS).
+  - Compares the log-likelihood of the restricted model to the unrestricted (full) model.
+  - $LR = 2(\ln L_{full} - \ln L_{restricted})$ which follows a $\chi^2$ distribution.
 
 ## Choosing Between Probit and Logit
 
@@ -686,6 +688,7 @@ How well does our model fit the data?
 
 ## Logit and Probit in Software
 
+To do
 
 
 ## The Big Picture: Generalized Linear Models (GLM)
@@ -707,6 +710,119 @@ A GLM has three components:
 | **Probit** | Bernoulli | Probit ($\Phi^{-1}(p) = \eta$) |
 
 This framework unifies many different regression models!
+
+# Limited Dependent Variable Models
+
+### **Slide 1: Beyond OLS - Dealing with Truncated and Selected Data**
+
+**The Core Problem: A Biased Sample**
+
+Standard Ordinary Least Squares (OLS) relies on the crucial assumption that the expected value of the error term, conditional on the explanatory variables, is zero: **E[u | X] = 0**.
+
+This assumption is violated when our sample is not randomly drawn from the population of interest. This can happen in two common ways:
+
+1.  **Censoring:** The dependent variable has a "floor" or "ceiling." We observe the explanatory variables for everyone, but the dependent variable is clustered at a limit value (e.g., zero) for a part of the sample.
+2.  **Sample Selection (or Incidental Truncation):** We are missing data on the dependent variable for a non-random subset of our observations. We don't even see the "zero"—the data is simply not there.
+
+In both cases, running OLS on the observed data leads to biased and inconsistent parameter estimates. We need models that explicitly account for the non-random nature of the sample.
+
+**Today's Models:**
+*   **The Tobit Model:** For censored data.
+*   **The Heckman Model:** For sample selection bias.
+
+---
+
+### **Slide 2: The Tobit Model (Censored Dependent Variable)**
+
+**When to Use It?**
+When the dependent variable is continuous over a certain range but has a significant number of observations "piled up" at a lower (or upper) limit.
+*   **Classic Example:** Annual hours worked. Many individuals choose not to work, so their hours are 0. For those who do work, the hours are positive and continuous.
+*   **Other Examples:** Household expenditure on a durable good (e.g., a car); a firm's R&D spending.
+
+**The Analytical Framework**
+
+The Tobit model assumes a single underlying decision process. We model a **latent (unobserved) variable**, y*, which represents the true desired level or propensity.
+
+1.  **Latent Variable Model:**
+    $y_i^* = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
+    *   $y_i^*$ can be thought of as the "desired hours of work" or "propensity to spend." It can be negative.
+
+2.  **Observation Rule:** We only observe the actual outcome, $y_i$, which is a censored version of $y_i^*$.
+    *   $y_i = y_i^*$   if   $y_i^* > 0$
+    *   $y_i = 0$       if   $y_i^* \leq 0$
+
+**Why OLS Fails**
+*   **OLS on positives only:** If we drop the zero-outcome observations, we induce selection bias. We are only looking at a group for whom the error term $u_i$ was large enough to push $y_i^*$ above zero. This means $E[u_i | y_i > 0] \neq 0$, biasing the coefficients.
+*   **OLS on all data (including zeros):** The relationship between $X$ and the *observed* $y_i$ is non-linear. The conditional expectation $E[y_i | X]$ is a complex function, not the simple linear form $β_0 + β_1X_1 + ...$. OLS will incorrectly estimate the linear relationship, typically attenuating the coefficients towards zero.
+
+**The Solution: Maximum Likelihood Estimation (MLE)**
+
+We construct a likelihood function that accounts for the two types of observations:
+*   For an observation where **$y_i = 0$**, its contribution to the likelihood is the probability that $y_i^* \leq 0$.
+    *   $P(y_i^* \leq 0) = P(u_i \leq -(β_0 + β_1X_{1i} + ...)) = \Phi(-\frac{β_0 + β_1X_{1i} + ...}{σ})$
+*   For an observation where **$y_i > 0$**, its contribution is the probability density of observing that specific value of $y_i$.
+    *   This is the standard normal probability density function (PDF), evaluated at $y_i$.
+
+MLE finds the parameter values ($β_0, β_1, ..., σ$) that maximize the joint probability (the product of these individual likelihoods) of observing our actual sample.
+
+**Key Interpretation:** The estimated $β$ coefficients measure the effect of an X-variable on the *latent variable y*^*, **not** on the observed outcome $y$. To find the effect on the observed outcome, one must calculate marginal effects, which are more complex.
+
+---
+
+### **Slide 3: The Heckman Model (Sample Selection Bias)**
+
+**When to Use It?**
+When the dependent variable is missing for a group of observations due to a systematic selection process.
+*   **Classic Example:** Wage determination. We only observe wages ($y_i$) for individuals who are employed. The decision to work is likely not random and may be correlated with the factors that determine wages.
+*   **Other Examples:** The returns to a college education (we only observe wages for graduates); the effect of a training program on productivity (we only observe productivity for those who completed the program).
+
+**The Analytical Framework**
+
+The Heckman model assumes **two distinct processes**: a selection process and an outcome process.
+
+1.  **Selection Equation (Probit Model):** A latent variable $s_i^*$ determines whether we observe the outcome.
+    *   $s_i^* = γ_0 + γ_1Z_{1i} + γ_2Z_{2i} + ... + v_i$, where $v_i \sim N(0, 1)$
+    *   We observe the outcome $y_i$ only if $s_i^* > 0$ (e.g., the offered wage exceeds the reservation wage).
+
+2.  **Outcome Equation:** The model for the variable of interest, $y_i$.
+    *   $y_i = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
+    *   This equation is only estimated for the selected sample (i.e., when $s_i^* > 0$).
+
+**The Source of Bias**
+The bias arises if the unobserved factors in the two equations are correlated: **Corr($u_i, v_i$) = ρ ≠ 0**.
+*   If ρ > 0, people with unobservably high wage potential ($u_i > 0$) are also more likely to work ($v_i > 0$).
+*   OLS on the selected sample (workers) suffers from omitted variable bias. The conditional expectation of the error is no longer zero:
+    $E[y_i | X_i, \text{sample is selected}] = β_0 + β_1X_{1i} + ... + E[u_i | s_i^* > 0]$
+    The term $E[u_i | s_i^* > 0]$ is non-zero if ρ ≠ 0 and is a function of the Z variables.
+
+**The Solution: Heckman's Two-Step Procedure**
+
+**Step 1: Estimate the Selection Equation.**
+*   Run a Probit model of the selection decision (e.g., working vs. not working) on the **full sample**. The regressors are the Z variables.
+*   From the Probit results, calculate the **Inverse Mills Ratio (IMR)** for each observation, often denoted $\lambda_i$.
+    *   $\lambda_i = \frac{\phi(γ_0 + γ_1Z_{1i} + ...)}{\Phi(γ_0 + γ_1Z_{1i} + ...)}$ (where $\phi$ is the normal PDF, $\Phi$ is the normal CDF).
+    *   The IMR is a measure of the "selection hazard" — the likelihood of being selected into the sample, given the Z variables. It acts as a proxy for the omitted term $E[u_i | s_i^* > 0]$.
+
+**Step 2: Estimate the Corrected Outcome Equation.**
+*   Run OLS on the outcome equation using **only the selected sample** (those for whom we observe $y_i$).
+*   Include the calculated IMR ($\lambda_i$) as an additional explanatory variable:
+    $y_i = β_0 + β_1X_{1i} + ... + β_{\lambda}\lambda_i + \text{error}$
+*   The coefficient on the IMR, $β_{\lambda}$, is an estimate of $ρ \cdot σ_u$. A statistically significant $t$-test on this coefficient is a direct test for sample selection bias.
+
+**Crucial Point - The Exclusion Restriction:** For robust identification, there must be at least one variable in the selection equation (Z) that is **not** in the outcome equation (X). This variable should influence the selection decision but not the outcome itself (e.g., number of young children may affect the decision to work but not the potential wage rate).
+
+---
+### **Slide 4: Tobit vs. Heckman - A Summary**
+
+| Feature                   | Tobit Model                                                                                             | Heckman Model                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **The Problem**           | **Censoring**                                                                                           | **Selection Bias** (Incidental Truncation)                                                                         |
+| **Dependent Variable ($y_i$)** | Observed for all individuals, but "piled up" at a limit value (e.g., 0) for a subset of the sample.  | **Missing** for a non-random subset of the sample.                                                                 |
+| **Underlying Process**    | **One decision process.** The same factors (X variables) and parameters ($β$) determine both the probability of being at the limit and the value if above the limit. | **Two distinct processes.** One process for selection (driven by Z variables) and another for the outcome (driven by X variables). |
+| **Model Structure**       | One equation for a latent variable $y^*$.                                                               | Two equations: a **selection equation** (Probit) and an **outcome equation** (linear model).                             |
+| **Key Question to Ask**   | Are the zeros a legitimate outcome of the same choice? (e.g., "I choose to spend $0 on a car").          | Do the zeros (or missing values) represent a separate barrier preventing me from observing the outcome? (e.g., "I can't observe the wage of someone who isn't working"). |
+| **Identification**        | Identified by the non-linearity of the likelihood function (normality assumption).                      | Relies heavily on an **exclusion restriction**: a variable in the selection equation that is not in the outcome equation. |
+| **Estimation**            | Maximum Likelihood Estimation (MLE).                                                                    | Two-step procedure (Probit then OLS with IMR) or Full Information Maximum Likelihood (FIML).                     |
 
 # Summary
 

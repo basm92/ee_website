@@ -38,10 +38,8 @@ To implement:
 - Stats 2
 - LM 3
 - TS 4 
-  Here also: 
-    - clustered standard errors
-    - heteroskedasticity-robust stuff
-    - dummy variables, maybe control variables
+  - model selection?
+  - forecasting?
 - Panel Data (FE) / Controls 5
 - Binary Outcomes 6
 - PO / Diff-in-diff 7
