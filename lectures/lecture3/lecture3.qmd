@@ -1282,7 +1282,6 @@ ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
   scale_color_brewer(palette = "Set1") +
   labs(
     title = "Interaction Effects Allowing for Different Slopes",
-    subtitle = "Model: wage ~ education * gender",
     x = "Years of Education",
     y = "Predicted Wage",
     color = "Gender"
@@ -1686,7 +1685,7 @@ The variance of the OLS slope estimator is $\text{Var}(\hat{\beta}) = \frac{\sig
 
 :::{.callout-note title="Linearity and Normality of the OLS Estimator"}
 
-Since $\hat{\beta}$ is a linear combination of the $\epsilon_i\$ (which are normally distributed), $\hat{\beta}$ is also normally distributed:
+Since $\hat{\beta}$ is a linear combination of the $\epsilon_i$ (which are normally distributed), $\hat{\beta}$ is also normally distributed:
 
 $$
 \hat{\beta} \sim N\left(\beta, \text{Var}(\hat{\beta})\right)
