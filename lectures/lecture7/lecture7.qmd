@@ -43,6 +43,15 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## What do we do today?
 
+- Introduce the concept of **potential outcomes** and the fundamental problem of causal inference.
+
+- Look at difference-in-differences (DiD) as a key method to solve that problem.
+
+- Theoretically analyze the DiD estimator and link it to the **average treatment effect on the treated**, a key parameter of interest, through potential outcomes.
+
+- Introduce the implementation of DiD through linear regression.
+
+- Consider extensions of the basic DiD design. 
 
 # Potential Outcomes
 
