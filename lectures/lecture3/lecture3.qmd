@@ -588,6 +588,45 @@ The effect of the *13th* year of education ($x=12 \to x=13$) is:
 This captures the *diminishing returns* to education on wage.
 :::
 
+## Dummy Variables
+
+- A dummy variable (or indicator variable), $D_i$, is a special variable: a binary variable that takes the value 1 if an observation `i` belongs to a specific category, and 0 otherwise. 
+  - This allows us to incorporate qualitative information (e.g., gender, policy status, geographic region) into a regression model.
+
+:::{.callout-tip title="Example: Wage Conditional on Gender Dummy"}
+
+Consider a regression of wage on a single dummy variable for gender:
+
+  $$
+    wage_i = \beta_0 + \beta_1 Female_i + \epsilon_i
+  $$
+  
+where $Female_i = 1$ if person `i` is female, and $Female_i = 0$ if male.
+
+:::
+
+## Interpretation 
+
+- To interpret the coefficients, we take the conditional expectation of `wage` for each group:
+
+:::{.callout-tip title="Example: Wage on Gender (Cont.)"}
+- **For Males ($Female_i = 0$):**
+  - $E[wage_i | Female_i=0] = \beta_0 + \beta_1(0) = \beta_0$
+  - The expected wage for the reference group (males) is simply the intercept, $\beta_0$.
+
+- **For Females ($Female_i = 1$):**
+  - $E[wage_i | Female_i=1] = \beta_0 + \beta_1(1) = \beta_0 + \beta_1$
+  - The expected wage for the treatment group (females) is $\beta_0 + \beta_1$.
+:::
+
+- The coefficient $\beta_1$ represents the **difference** in the expected outcome between the two groups:
+
+  $$
+    E[wage_i | Female_i=1] - E[wage_i | Female_i=0] = (\beta_0 + \beta_1) - \beta_0 = \beta_1
+  $$
+
+- Now, $\beta_1$ is the average difference in wages between females and males.
+
 ## Summary of Interpretations
 
 :::{style="font-size: 1.2em;"}
@@ -598,15 +637,12 @@ This captures the *diminishing returns* to education on wage.
 | **Log-Level** | $\log(y) = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $(100 \times \hat{\beta}_1)\%$ change in $y$. |
 | **Level-Log** | $y = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $(\hat{\beta}_1/100)$ unit change in $y$. |
 | **Log-Log** | $\log(y) = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $\hat{\beta}_1\%$ change in $y$. |
+| **Polynomial** | $y = \beta_0 + \beta_1 x + \beta^2 x^2 + \dots$ | A 1-unit change in $x$ leads to a variable change in $y$. |
+| **Dummies** | $y = \beta_0 + \beta_1 D_i$ | A change in the dummy from 0 to 1 leads to a $\beta_1$ change in $y$. |
 
 :::
 
-## Interaction Effects
-
-
-## Dummy Variables
-
-
+# Goodness of Fit
 
 ## Goodness-of-Fit
 
@@ -1104,6 +1140,87 @@ legend("topright", legend = c("F(1,10)", "F(5,10)", "F(10,10)", "F(20,50)"),
 
 :::
 
+# Interactions and Dummies in MLR
+
+## Dummies in Multiple Regression 
+
+- The power of dummy variables becomes clear when we add other regressors. Let's add years of education (`Educ`) to our model:
+
+  $$
+    wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \epsilon_i
+  $$
+
+- We again analyze the regression equation for each group, now holding `Educ` constant.
+  - **For Males ($Female_i = 0$):**
+    - $E[wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
+    - This is the wage-education profile for males. It's a line with intercept $\beta_0$ and slope $\beta_2$.
+  - **For Females ($Female_i = 1$):**
+    - $E[wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i = (\beta_0 + \beta_1) + \beta_2 Educ_i$
+    - This is the wage-education profile for females. It's a line with a **different intercept**, $(\beta_0 + \beta_1)$, but the **same slope**, $\beta_2$.
+
+## Reinterpreting Dummies
+
+- $\beta_0$: The intercept for the reference group (males). It is the predicted wage for a male with zero years of education.
+- $\beta_1$: The difference in the intercept between females and males. It is the predicted wage difference between a female and a male *who have the same level of education*.
+- $\beta_2$: The slope of the wage-education profile. It represents the change in wage for an additional year of education, and this model **constrains** that effect to be the same for both men and women.
+
+
+## Visualization
+
+- **Graphical Intuition:** This model generates two **parallel regression lines**. They have the same slope ($\beta_2$), but are separated vertically by a distance of $\beta_1$.
+
+```{r}
+
+
+```
+
+
+## Interaction Effects
+
+- The standard linear regression model  $\text{wage}_i = \beta_0 + \beta_1 \text{gender}_i + \beta_2 \text{educ}_i + \epsilon_i$ assumes the effect of education on wages ($\beta_2$) is identical for men and women. 
+
+- What if an extra year of education has a different return for females than for males? To allow for this, we must let the slope differ between the groups. We do this by adding an **interaction term**.
+
+- The interaction term is simply the product of the dummy variable and the continuous variable.
+$wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i) + \epsilon_i$
+
+- Once more, we derive the regression line for each group.
+  - **For Males ($Female_i = 0$):** The dummy and interaction term are both zero.
+    - $E[wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
+    - The intercept is $\beta_0$ and the slope is $\beta_2$. This is the baseline profile.
+
+  - **For Females ($Female_i = 1$):**
+    - $E[wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i + \beta_3 (1 \cdot Educ_i)$
+    - Group the terms by the constant and the variable `Educ`:
+    - $E[wage_i | Female_i=1, Educ_i] = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) Educ_i$
+    - For females, the intercept is $(\beta_0 + \beta_1)$ and the slope is $(\beta_2 + \beta_3)$.
+
+## Interpreting Interaction Terms
+
+- The interpretation of the "main effects" ($\beta_1$ and $\beta_2$) changes fundamentally when an interaction term is present.
+
+- **$\beta_0$ (Intercept):** The expected wage for the reference group (males) when `Educ` = 0.
+- **$\beta_2$ (Main Effect of Continuous Variable):** The effect of an additional year of education on wages *for the reference group (males) only*.
+- **$\beta_1$ (Main Effect of Dummy):** The difference in expected wages between females and males when `Educ` = 0. This is the difference in the intercepts. This coefficient is often not meaningful on its own if `Educ=0` is not a relevant value in the data.
+- **$\beta_3$ (Interaction Coefficient):** The **difference in the slopes**. It measures by how much the effect of an additional year of education differs for females compared to males. This is often the coefficient of primary interest.
+
+## Total Effect Under Interaction 
+
+- The effect of a variable is no longer a single coefficient but may be a function of another variable.
+
+:::{.callout-tip title="Example: Education Gender Interaction"}
+- **The marginal effect of Education for Females is:**
+    $\frac{\partial E[wage_i | Female_i=1, Educ_i]}{\partial Educ_i} = \beta_2 + \beta_3$
+
+- **The wage differential between Females and Males is:**
+    $E[wage|F=1] - E[wage|F=0] = ((\beta_0 + \beta_1) + (\beta_2 + \beta_3)Educ_i) - (\beta_0 + \beta_2 Educ_i) = \beta_1 + \beta_3 Educ_i$
+    The wage gap is no longer constant; it depends on the level of education.
+    
+:::
+
+- Hypothesis Testing: 
+  - To test if education has a different effect for females, the null hypothesis is $H_0: \beta_3 = 0$.
+  - To test if gender has any effect on wages at all, you must test if the lines are identical, which requires a joint test: $H_0: \beta_1 = 0 \text{ and } \beta_3 = 0$. This is done with an F-test.
 
 # Understanding Statistical Output
 
