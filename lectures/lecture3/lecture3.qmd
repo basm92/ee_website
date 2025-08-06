@@ -601,6 +601,13 @@ This captures the *diminishing returns* to education on wage.
 
 :::
 
+## Interaction Effects
+
+
+## Dummy Variables
+
+
+
 ## Goodness-of-Fit
 
 - How well does our estimated line explain the variation in our dependent variable, $y$?
@@ -1163,6 +1170,236 @@ reg wage educ expr
 - exper: $\hat{\beta}_2 \approx 0.16$: Holding education constant, one more year of experience is associated with a $0.16/hr increase in wages, on average.
 - The R-squared increased relative to the simple model, suggesting this model explains more variation in wages.
 - The t-statistics tell us whether these coefficients are statistically distinguishable from zero.
+
+# Robust Standard Errors
+
+## OLS Variance
+
+- Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Assuming the regressors $x_i$ are non-stochastic, we have:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right)
+  $$
+
+- To evaluate the variance of the sum, we must make assumptions about the error terms, $\epsilon_i$. The **Linear Model** imposes two key assumptions on the errors:
+  1.  **No serial correlation:** The errors are uncorrelated across observations. Mathematically, $Cov(\epsilon_i, \epsilon_j) = 0$ for all $i \neq j$.
+  2.  **Homoskedasticity:** The errors have a constant variance. Mathematically, $Var(\epsilon_i) = \sigma^2$ for all $i$.
+
+## OLS with Homoskedasticity
+
+- Under the no-serial-correlation assumption, the variance of the sum is simply the sum of the variances:
+
+  $$
+    Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N Var\left((x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i)
+  $$
+
+- Now, we impose the **homoskedasticity** assumption ($Var(\epsilon_i) = \sigma^2$). Since $\sigma^2$ is a constant, we can factor it out of the summation:
+
+  $$
+    = \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \sigma^2 \sum_{i=1}^N (x_i - \bar{x})^2
+  $$
+
+- Plugging this back into our original expression for $Var(\hat{\beta}_1)$ gives the famous result:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{\sigma^2 \sum (x_i - \bar{x})^2}{\left(\sum (x_i - \bar{x})^2\right)^2} = \frac{\sigma^2}{\sum (x_i - \bar{x})^2}
+  $$
+
+
+## The Problem of Heteroskedasticity
+
+- The assumption of homoskedasticity ("same scatter") is often violated in economic data. **Heteroskedasticity** occurs when the variance of the error term is *not* constant across observations.
+
+  -  **Formal Definition:** $Var(\epsilon_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
+  - **Intuitive Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
+
+- If we ignore this and use the classical formula, our inference can be severely misleading.
+
+## Derivation of HC SEs
+
+- Let's re-derive the variance of $\hat{\beta}_1$ under the more realistic assumption of heteroskedasticity, while still maintaining the no-serial-correlation assumption.
+
+- We return to the step just before we imposed homoskedasticity:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i)
+  $$
+
+- Now, we substitute $Var(\epsilon_i) = \sigma_i^2$:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \sigma_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
+  $$
+  
+- This is the **true variance of the OLS estimator in the presence of heteroskedasticity**.
+
+## Estimation of HC REs
+
+- The challenge is that we cannot compute the true variance because we do not know the individual error variances, $\sigma_i^2$.
+
+- The insight (White, 1980) is to use the squared OLS residual for each observation, $\hat{\epsilon}_i^2 = (y_i - \hat{y}_i)^2$, as an estimator for the unobserved error variance, $\sigma_i^2$. 
+
+- We construct the estimator by taking the correct formula for the variance and "plugging in" $\hat{\epsilon}_i^2$ for $\sigma_i^2$. This gives the **heteroskedasticity-robust variance estimator**, also alled the **White estimator** or **HC estimator**:
+
+  $$
+    \widehat{Var}_{HC}(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \hat{\epsilon}_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
+  $$
+
+- The square root of this value is the **heteroskedasticity-robust standard error** (or HC-robust SE).
+
+## Summary HC Robust SE
+
+- **What it Corrects For:** 
+  - HC-robust standard errors correct for heteroskedasticity. They do **not** correct for serial correlation (which requires clustered SEs) or omitted variable bias.
+- **When to Use:**
+  - In cross-sectional data analysis, heteroskedasticity is the rule rather than the exception. The modern consensus among econometricians is to use HC-robust standard errors **by default**.
+  - The cost of using them when errors are truly homoskedastic is minimal in large samples, while the cost of failing to use them when heteroskedasticity is present is high (invalid inference).
+- **Efficiency:** 
+  - It's crucial to remember that OLS is still unbiased and consistent under heteroskedasticity. However, it is not efficient. HC-robust standard errors fix the *inference* (t-tests, p-values), but they do not make the OLS *estimator* itself more efficient. For that, you would need a different estimation method like Weighted Least Squares (WLS).
+
+# Clustered Standard Errors
+
+## OLS Variance
+
+- We have previously seen that, to perform inference (t-tests, confidence intervals), we need the variance of the OLS estimator, $Var(\hat{\beta}_1)$.
+
+  $$
+    Var(\hat{\beta}_1) = Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})\epsilon_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right)
+  $$
+
+- The crucial step is calculating $Var(\sum (x_i - \bar{x})\epsilon_i)$. The variance of a sum of random variables is the sum of their variances plus twice the sum of all unique pairwise covariances:
+
+  $$
+    Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i) + \sum_{i \neq j} (x_i - \bar{x})(x_j - \bar{x}) Cov(\epsilon_i, \epsilon_j)
+  $$
+
+## Classical Assumptions
+
+- The **Classical Linear Model (CLM)** makes two critical assumptions here:
+
+  1.  **Homoskedasticity:** $Var(\epsilon_i) = \sigma^2$ for all $i$.
+  2.  **No serial correlation:** $Cov(\epsilon_i, \epsilon_j) = 0$ for all $i \neq j$.
+
+- Under these assumptions, the second term (the sum of covariances) vanishes entirely. The formula simplifies beautifully:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \frac{\sigma^2 \sum (x_i - \bar{x})^2}{\left(\sum (x_i - \bar{x})^2\right)^2} = \frac{\sigma^2}{\sum (x_i - \bar{x})^2}
+  $$
+
+- This is the familiar, standard OLS variance formula. Our standard errors are the square root of an estimate of this quantity.
+
+##  Intra-Cluster Correlation
+
+- In many economic datasets, the assumption that $Cov(\epsilon_i, \epsilon_j) = 0$ is unrealistic.   
+- Examples are students nested within schools, individuals within states, or firms over time (panel data). 
+
+- Unobserved factors at the group level can induce correlation among the error terms within that group.
+
+- This structure is called **clustered data**.
+
+## Notation Clustered SE's
+
+- Let's introduce notation for clusters. Let $g$ index the cluster (e.g., a school) and $i$ index the individual within the cluster. An observation is denoted by $gi$. Our model is now:
+
+  $$
+    y_{gi} = \beta_0 + \beta_1 x_{gi} + \epsilon_{gi}
+  $$
+
+- The key feature of clustered data is the assumed error structure:
+  - $Cov(\epsilon_{gi}, \epsilon_{gj}) \neq 0$ for $i \neq j$ (Correlation **within** a cluster $g$)
+  - $Cov(\epsilon_{gi}, \epsilon_{g'j}) = 0$ for $g \neq g'$ (No correlation **between** clusters)
+
+- If we ignore this structure and use the standard OLS formula, we are incorrectly zeroing out all the covariance terms in the variance calculation. 
+  - If these covariance terms are, on average, positive (which is common), we will systematically underestimate the true variance of $\hat{\beta}_1$. This leads to standard errors that are too small. 
+
+## Deriving the Cluster-Robust Variance
+
+- Let's re-derive the variance of $\hat{\beta}_1$ under the clustering assumption. We start again from:
+
+  $$
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi}\right)
+  $$
+
+- where $G$ is the number of clusters and $N_g$ is the size of cluster $g$.
+
+- Let's focus on the variance term. We can rewrite the sum over individuals as a sum over clusters of within-cluster sums:
+
+  $$
+    Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right) \right)
+  $$
+  
+- Since errors are uncorrelated *across* clusters, the variance of this sum is the sum of the variances:
+
+  $$
+    = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)
+  $$
+  
+## Deriving Cluster-Robust Variance (Cont.)
+
+- Now, let's expand the variance term for a *single* cluster $g$. This is where the non-zero covariances appear:
+
+  $$
+    Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right) = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})^2 Var(\epsilon_{gi}) + \sum_{i \neq j \in g} (x_{gi} - \bar{x})(x_{gj} - \bar{x}) Cov(\epsilon_{gi}, \epsilon_{gj})
+  $$
+
+- This expression is the complete variance for cluster $g$. 
+  - Notice that it includes all the pairwise covariance terms within the cluster. 
+  - The total variance for the numerator of $\hat{\beta}_1$ is the sum of these terms over all $G$ clusters.
+
+## The Cluster-Robust Estimator
+
+- We cannot directly calculate the true variance because the error terms $\epsilon_{gi}$ and their variances/covariances are unknown. We must estimate it from the data using the OLS residuals, 
+  
+  $$
+    \hat{\epsilon}_{gi} = y_{gi} - \hat{y}_{gi}
+  $$
+
+- Let's define a score for each observation: $u_{gi} = (x_{gi} - \bar{x})\hat{\epsilon}_{gi}$.
+- Let the sum of these scores within a cluster be $u_g = \sum_{i=1}^{N_g} u_{gi} = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi}$.
+
+## The Cluster-Robust Estimator (Cont.)
+
+- The variance expression we derived for a single cluster, $Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)$, can be thought of as the expected value of the squared sum, $E\left[ \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)^2 \right]$. ^[Since the expectation of the error term conditional on $X$ is zero, the variance is equal to the expectation squared.]
+
+- A natural estimator for this quantity is simply the squared sum of the estimated scores for that cluster: $(u_g)^2 = \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2$.
+
+- By summing this quantity over all clusters, we get an estimate of the total variance of the numerator of $\hat{\beta}_1$:
+
+  $$
+    \widehat{Var}\left(\text{numerator}\right) = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2
+  $$
+
+## The Cluster-Robust Estimator (Cont.)
+
+- Plugging this back into our main variance formula for $\hat{\beta}_1$, we get the **cluster-robust variance estimator**:
+
+  $$
+    V\hat{a}r_C(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \left[ \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2 \right]
+  $$
+  
+- A small-sample correction factor, $\frac{G}{G-1}\frac{N-k}{N-1}$, is typically applied, but the core formula above is the key insight.
+
+## Comparison and Intuition
+
+- Let's compare this to the **heteroskedasticity-robust estimator**:
+
+  $$
+    V\hat{a}r_W(\hat{\beta}_1) = \frac{1}{\left(\sum_i (x_i - \bar{x})^2\right)^2} \left[ \sum_{i=1}^N (x_i - \bar{x})^2 \hat{\epsilon}_i^2 \right]
+  $$
+
+- The HC estimator assumes observations are independent but allows their variances to differ. It estimates the variance contribution of each observation $i$ and sums them up.
+- The Clustered estimator relaxes the independence assumption *within* clusters. 
+  - It calculates a total score for each cluster (`sum inside`), squares that total (`square outside`), and then sums these squared cluster-level totals. 
+  - This procedure implicitly accounts for all the covariance terms within each cluster without having to estimate each one separately.
+
+## When to Cluster
+
+- **When to Cluster:** 
+  - Cluster standard errors when you suspect the error terms are correlated within groups. This is common with panel data, data from multi-stage surveys, or when a policy is applied at a group level (e.g., a state-level law).
+- **What Level to Cluster at:** 
+  - You should cluster at the level at which the unobserved components are shared. If you have students in classrooms within schools, and you suspect shocks at both the classroom and school level, you should cluster at the broader level (school), as this allows for correlation within classrooms *and* between classrooms within the same school.
+- **Consequences of Failure to Cluster:** 
+  - If intra-cluster correlation exists and you use standard OLS standard errors, your standard errors will be biased downwards. This will make you overly confident in your results and lead to spurious findings of statistical significance.
 
 # Summary
 
