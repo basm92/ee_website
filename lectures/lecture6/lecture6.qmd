@@ -691,111 +691,255 @@ If $\hat{\beta}_k = -0.5$, then $e^{-0.5} \approx 0.61$. A one-unit increase in 
 To do
 
 
-## The Big Picture: Generalized Linear Models (GLM)
-
-Probit and Logit aren't just one-off tricks. They are part of a larger family of models called **Generalized Linear Models (GLM)**.
-
-A GLM has three components:
-1.  **Random Component:** The probability distribution of the dependent variable.
-    *   *Example:* Bernoulli for Binary, Normal for OLS, Poisson for count data.
-2.  **Systematic Component:** A linear predictor.
-    *   *Example:* $\eta_i = \beta_0 + \beta_1 x_{1i} + ...$ (this is the same for all models).
-3.  **Link Function, g(·):** Connects the expected value of y to the linear predictor.
-    *   $g(E[y_i]) = \eta_i$
-
-| Model | Distribution (Random) | Link Function |
-| :--- | :--- | :--- |
-| **OLS** | Normal | Identity ($E[y] = \eta$) |
-| **Logit** | Bernoulli | Logit ($\ln(\frac{p}{1-p}) = \eta$) |
-| **Probit** | Bernoulli | Probit ($\Phi^{-1}(p) = \eta$) |
-
-This framework unifies many different regression models!
-
 # Limited Dependent Variable Models
 
-### **Slide 1: Beyond OLS - Dealing with Truncated and Selected Data**
+## Dealing with Truncated and Selected Data
 
-**The Core Problem: A Biased Sample**
+- In many situations, we might have a **biased sample**. 
+  - Standard Ordinary Least Squares (OLS) relies on the crucial assumption that the expected value of the error term, conditional on the explanatory variables, is zero: $E[u | X] = 0$. 
+  - This assumption is violated when our sample is not randomly drawn from the population of interest. 
+- This can happen in two common ways:
+  1.  **Censoring:** 
+    - The dependent variable has a "floor" or "ceiling." We observe the explanatory variables for everyone, but the dependent variable is clustered at a limit value (e.g., zero) for a part of the sample.
+  2.  **Sample Selection (or Incidental Truncation):** 
+    - We are missing data on the dependent variable for a non-random subset of our observations. We don't even see the "zero"—the data is simply not there.
 
-Standard Ordinary Least Squares (OLS) relies on the crucial assumption that the expected value of the error term, conditional on the explanatory variables, is zero: **E[u | X] = 0**.
+- In both cases, running OLS on the observed data leads to biased and inconsistent parameter estimates. 
+  - We need models that explicitly account for the non-random nature of the sample.
 
-This assumption is violated when our sample is not randomly drawn from the population of interest. This can happen in two common ways:
+## The Tobit Model (Censored Dependent Variable)
 
-1.  **Censoring:** The dependent variable has a "floor" or "ceiling." We observe the explanatory variables for everyone, but the dependent variable is clustered at a limit value (e.g., zero) for a part of the sample.
-2.  **Sample Selection (or Incidental Truncation):** We are missing data on the dependent variable for a non-random subset of our observations. We don't even see the "zero"—the data is simply not there.
+- The Tobit model is used when the dependent variable is continuous over a certain range but has a significant number of observations "piled up" at a lower (or upper) limit.
 
-In both cases, running OLS on the observed data leads to biased and inconsistent parameter estimates. We need models that explicitly account for the non-random nature of the sample.
+:::{.callout-tip title="Example: Censored Data"}
+Annual hours worked. Many individuals choose not to work, so their hours are 0. For those who do work, the hours are positive and continuous.
 
-**Today's Models:**
-*   **The Tobit Model:** For censored data.
-*   **The Heckman Model:** For sample selection bias.
+Household expenditure on a durable good (e.g., a car).
 
----
+A firm's R&D spending.
+:::
 
-### **Slide 2: The Tobit Model (Censored Dependent Variable)**
+## Latent Variable Framework 
 
-**When to Use It?**
-When the dependent variable is continuous over a certain range but has a significant number of observations "piled up" at a lower (or upper) limit.
-*   **Classic Example:** Annual hours worked. Many individuals choose not to work, so their hours are 0. For those who do work, the hours are positive and continuous.
-*   **Other Examples:** Household expenditure on a durable good (e.g., a car); a firm's R&D spending.
+- The Tobit model assumes a single underlying decision process. Just as in the logit/probit case, we model a **latent (unobserved) variable**, $y^*$, which represents the true desired level or propensity.
 
-**The Analytical Framework**
+  $$
+    y_i^* = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i, \text{ where } u_i \sim N(0, \sigma^2)
+  $$
 
-The Tobit model assumes a single underlying decision process. We model a **latent (unobserved) variable**, y*, which represents the true desired level or propensity.
+- $y_i^*$ can be thought of as the "desired hours of work" or "propensity to spend." It can be negative.
 
-1.  **Latent Variable Model:**
-    $y_i^* = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
-    *   $y_i^*$ can be thought of as the "desired hours of work" or "propensity to spend." It can be negative.
+- **Observation Rule:** We only observe the actual outcome, $y_i$, which is a censored version of $y_i^*$.
+  - $y_i = y_i^*$   if   $y_i^* > 0$
+  - $y_i = 0$       if   $y_i^* \leq 0$
 
-2.  **Observation Rule:** We only observe the actual outcome, $y_i$, which is a censored version of $y_i^*$.
-    *   $y_i = y_i^*$   if   $y_i^* > 0$
-    *   $y_i = 0$       if   $y_i^* \leq 0$
+## Why OLS Fails
 
-**Why OLS Fails**
-*   **OLS on positives only:** If we drop the zero-outcome observations, we induce selection bias. We are only looking at a group for whom the error term $u_i$ was large enough to push $y_i^*$ above zero. This means $E[u_i | y_i > 0] \neq 0$, biasing the coefficients.
-*   **OLS on all data (including zeros):** The relationship between $X$ and the *observed* $y_i$ is non-linear. The conditional expectation $E[y_i | X]$ is a complex function, not the simple linear form $β_0 + β_1X_1 + ...$. OLS will incorrectly estimate the linear relationship, typically attenuating the coefficients towards zero.
+- **OLS on positives only:** If we drop the zero-outcome observations, we induce selection bias. 
+  - We are only looking at a group for whom the error term $u_i$ was large enough to push $y_i^*$ above zero. 
+  - This means $E[u_i | y_i > 0] \neq 0$, biasing the coefficients.
+- **OLS on all data (including zeros):** 
+  - The relationship between $X$ and the *observed* $y_i$ is non-linear. The conditional expectation $E[y_i | X]$ is a complex function, not the simple linear form $\beta_0 + \beta_1 X_1 + \dots$. 
+  - OLS will incorrectly estimate the linear relationship, typically attenuating the coefficients towards zero.
 
-**The Solution: Maximum Likelihood Estimation (MLE)**
+## Solution: Maximum Likelihood Estimation
 
-We construct a likelihood function that accounts for the two types of observations:
-*   For an observation where **$y_i = 0$**, its contribution to the likelihood is the probability that $y_i^* \leq 0$.
-    *   $P(y_i^* \leq 0) = P(u_i \leq -(β_0 + β_1X_{1i} + ...)) = \Phi(-\frac{β_0 + β_1X_{1i} + ...}{σ})$
-*   For an observation where **$y_i > 0$**, its contribution is the probability density of observing that specific value of $y_i$.
-    *   This is the standard normal probability density function (PDF), evaluated at $y_i$.
+- We construct a likelihood function that accounts for the two types of observations:
+  - For an observation where **$y_i = 0$**, its contribution to the likelihood is the probability that $y_i^* \leq 0$.
+  - $P(y_i^* \leq 0) = P(u_i \leq -(\beta_0 + \beta_1 X_{1i} + ...)) = \Phi(-\frac{\beta_0 + \beta_1 X_{1i} + ...}{\sigma})$
+  - For an observation where **$y_i > 0$**, its contribution is the probability density of observing that specific value of $y_i$.
+  - This is the standard normal probability density function (PDF), evaluated at $y_i$.
 
-MLE finds the parameter values ($β_0, β_1, ..., σ$) that maximize the joint probability (the product of these individual likelihoods) of observing our actual sample.
+- Hence, the likelihood is:
 
-**Key Interpretation:** The estimated $β$ coefficients measure the effect of an X-variable on the *latent variable y*^*, **not** on the observed outcome $y$. To find the effect on the observed outcome, one must calculate marginal effects, which are more complex.
+  $$
+    \prod_{i=1}^N \Phi \left(-\frac{\beta_0 + \beta_1 X_{1i}}{\sigma}\right)^{I(Y_i = 0)} \cdot \phi \left(\frac{Y_j - [\beta_0 + \beta_1 X_{i1} + \dots]}{\sigma}\right)^{I(Y_i >0)}
+  $$
+  
+- MLE finds the parameter values ($\beta_0, \beta_1, ..., \sigma$) that maximize the joint probability (the product of these individual likelihoods) of observing our actual sample.
 
----
+## Interpretation 
 
-### **Slide 3: The Heckman Model (Sample Selection Bias)**
+- The estimated $β$ coefficients measure the effect of an X-variable on the *latent variable* $y^*$, **not** on the observed outcome $y$. 
+- For observations above the censoring point, the marginal effect is:
+    $$
+      \frac{\partial E(y_i∣y_i>0,x_i)}{\partial x_j}=\beta_j \cdot Pr(y_i > 0| x_i)
+    $$
 
-**When to Use It?**
-When the dependent variable is missing for a group of observations due to a systematic selection process.
-*   **Classic Example:** Wage determination. We only observe wages ($y_i$) for individuals who are employed. The decision to work is likely not random and may be correlated with the factors that determine wages.
-*   **Other Examples:** The returns to a college education (we only observe wages for graduates); the effect of a training program on productivity (we only observe productivity for those who completed the program).
+  - This means the effect of $x_j$ on the observed $y_i$ (for uncensored data) is attenuated by the probability of being uncensored.
+- Effect on the Expected Value of the Observed Variable ($E[y_i]$):
+  - The overall marginal effect (for both censored and uncensored observations) is:
+  $\frac{\partial E[y_i | x_i]}{x_j} =\beta_j \Phi(\frac{\beta_0 + \beta_1 x_{i1} + \dots}{\sigma})$
+  - Hence, to find the effect on the observed outcome, one must calculate marginal effects, which are more complex.
+  
+## Visualization
 
-**The Analytical Framework**
+```{python}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+from scipy.optimize import minimize
+from scipy.stats import norm
 
-The Heckman model assumes **two distinct processes**: a selection process and an outcome process.
+# --- 1. Set Simulation Parameters ---
+np.random.seed(42) # for reproducibility
+n_obs = 200        # Number of observations
+beta_0 = -5        # True intercept
+beta_1 = 10        # True slope
+sigma = 5          # Standard deviation of the error term
+censor_point = 0   # The point at which the data is left-censored/truncated
 
-1.  **Selection Equation (Probit Model):** A latent variable $s_i^*$ determines whether we observe the outcome.
-    *   $s_i^* = γ_0 + γ_1Z_{1i} + γ_2Z_{2i} + ... + v_i$, where $v_i \sim N(0, 1)$
-    *   We observe the outcome $y_i$ only if $s_i^* > 0$ (e.g., the offered wage exceeds the reservation wage).
+# --- 2. Simulate Data ---
+# Generate independent variable X
+X = np.random.uniform(low=0, high=2, size=n_obs)
+X_with_const = sm.add_constant(X) # Add a constant for matrix multiplication
 
-2.  **Outcome Equation:** The model for the variable of interest, $y_i$.
-    *   $y_i = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
-    *   This equation is only estimated for the selected sample (i.e., when $s_i^* > 0$).
+# Generate the error term
+epsilon = np.random.normal(loc=0, scale=sigma, size=n_obs)
 
-**The Source of Bias**
-The bias arises if the unobserved factors in the two equations are correlated: **Corr($u_i, v_i$) = ρ ≠ 0**.
-*   If ρ > 0, people with unobservably high wage potential ($u_i > 0$) are also more likely to work ($v_i > 0$).
-*   OLS on the selected sample (workers) suffers from omitted variable bias. The conditional expectation of the error is no longer zero:
-    $E[y_i | X_i, \text{sample is selected}] = β_0 + β_1X_{1i} + ... + E[u_i | s_i^* > 0]$
-    The term $E[u_i | s_i^* > 0]$ is non-zero if ρ ≠ 0 and is a function of the Z variables.
+# Generate the latent (unobserved) dependent variable y*
+# This is the true relationship we want to uncover
+y_latent = beta_0 + beta_1 * X + epsilon
 
-**The Solution: Heckman's Two-Step Procedure**
+# Generate the observed dependent variable y by censoring it at 0
+# Any value of y_latent below the censor_point becomes the censor_point
+y_observed = np.maximum(censor_point, y_latent)
+
+# Create a pandas DataFrame for easier handling
+df = pd.DataFrame({
+    'X': X,
+    'y_latent': y_latent,
+    'y_observed': y_observed
+})
+
+# --- 3. Estimate OLS on Truncated Data ---
+# To simulate truncated data, we simply drop all censored observations
+df_truncated = df[df['y_observed'] > censor_point].copy()
+
+# Estimate the OLS model
+ols_model = sm.OLS(df_truncated['y_observed'], sm.add_constant(df_truncated['X']))
+ols_results = ols_model.fit()
+ols_beta_0, ols_beta_1 = ols_results.params
+
+# --- 4. Estimate Tobit Model using Maximum Likelihood Estimation (MLE) ---
+# The Tobit log-likelihood function has two parts:
+# 1. For non-censored observations (y > 0): the log of the normal PDF
+# 2. For censored observations (y = 0): the log of the normal CDF
+
+def tobit_log_likelihood(params, X, y, censor_point):
+    # Unpack parameters
+    beta = params[:-1]
+    # We estimate log(sigma) to ensure sigma is always positive
+    sigma_mle = np.exp(params[-1])
+
+    # Separate observed and censored data
+    observed_mask = y > censor_point
+    censored_mask = ~observed_mask
+    
+    # Linear prediction
+    y_pred = X @ beta
+
+    # Log-likelihood for observed part
+    ll_observed = np.sum(norm.logpdf(y[observed_mask], loc=y_pred[observed_mask], scale=sigma_mle))
+    
+    # Log-likelihood for censored part
+    ll_censored = np.sum(norm.logcdf(censor_point, loc=y_pred[censored_mask], scale=sigma_mle))
+    
+    # Total log-likelihood (we return the negative because we are minimizing)
+    return -(ll_observed + ll_censored)
+
+# Initial guess for the optimization (using OLS results can be a good start)
+initial_guess = [ols_beta_0, ols_beta_1, np.log(np.std(df_truncated['y_observed']))]
+
+# Minimize the negative log-likelihood function
+# We use the full (censored) dataset for Tobit
+tobit_results = minimize(
+    fun=tobit_log_likelihood,
+    x0=initial_guess,
+    args=(X_with_const, df['y_observed'], censor_point),
+    method='L-BFGS-B' # A robust optimization algorithm
+)
+
+# Extract estimated Tobit parameters
+tobit_beta_0, tobit_beta_1 = tobit_results.x[:2]
+tobit_sigma = np.exp(tobit_results.x[2])
+
+# --- 5. Plot the Results ---
+plt.style.use('seaborn-v0_8-whitegrid')
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Scatter plot of the OBSERVED data
+# Color the censored points differently to make them visible
+ax.scatter(df['X'][df['y_observed'] > censor_point], df['y_observed'][df['y_observed'] > censor_point], 
+           alpha=0.6, label='Observed Data (y > 0)')
+ax.scatter(df['X'][df['y_observed'] == censor_point], df['y_observed'][df['y_observed'] == censor_point], 
+           color='gray', alpha=0.6, label='Censored Data (y = 0)')
+
+# Create a range of X values for plotting the lines
+x_plot = np.linspace(df['X'].min(), df['X'].max(), 100)
+
+# Plot the TRUE underlying relationship
+y_true = beta_0 + beta_1 * x_plot
+ax.plot(x_plot, y_true, 'k--', linewidth=2.5, label=f'True Relationship (Latent)')
+
+# Plot the OLS regression line
+y_ols = ols_beta_0 + ols_beta_1 * x_plot
+ax.plot(x_plot, y_ols, 'r-', linewidth=2, label='OLS on Truncated Data (Biased)')
+
+# Plot the Tobit regression line (which estimates the latent relationship)
+y_tobit = tobit_beta_0 + tobit_beta_1 * x_plot
+ax.plot(x_plot, y_tobit, 'g-', linewidth=2, label='Tobit Model (Unbiased)')
+
+# Add a horizontal line at the censoring point
+ax.axhline(censor_point, color='black', linestyle=':', linewidth=1)
+
+# Formatting
+ax.set_title('Tobit vs. OLS on Left-Truncated Data', fontsize=16)
+ax.set_xlabel('Independent Variable (X)', fontsize=12)
+ax.set_ylabel('Dependent Variable (Y)', fontsize=12)
+ax.legend(loc='upper left', fontsize=11)
+ax.set_ylim(df['y_observed'].min() - 5, df['y_observed'].max() + 5);
+ax.set_xlim(df['X'].min() - 0.1, df['X'].max() + 0.1);
+
+plt.show()
+```
+
+## The Heckman Model (Sample Selection Bias)
+
+- The Heckman model is used when the dependent variable is missing for a group of observations due to a systematic selection process.
+
+:::{.callout-tip title="Example: Missing DV"}
+
+Wage determination. We only observe wages ($y_i$) for individuals who are employed. The decision to work is likely not random and may be correlated with the factors that determine wages.
+
+The returns to a college education (we only observe wages for graduates); the effect of a training program on productivity (we only observe productivity for those who completed the program).
+:::
+
+## Model Set-Up
+
+- The Heckman model assumes **two distinct processes**: a selection process and an outcome process.
+
+- **Selection Equation (Probit Model):** A latent variable $s_i^*$ determines whether we observe the outcome.
+  - $s_i^* = γ_0 + γ_1Z_{1i} + γ_2Z_{2i} + ... + v_i$, where $v_i \sim N(0, 1)$
+  - We observe the outcome $y_i$ only if $s_i^* > 0$ (e.g., the offered wage exceeds the reservation wage).
+
+- **Outcome Equation:** The model for the variable of interest, $y_i$.
+  - $y_i = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
+  - This equation is only estimated for the selected sample (i.e., when $s_i^* > 0$).
+
+## Why OLS Fails
+
+- The bias arises if the unobserved factors in the two equations are correlated: $Corr(u_i, v_i) = \rho \neq 0$. 
+  - If $\rho>0$, people with unobservably high wage potential ($u_i > 0$) are also more likely to work ($v_i > 0$).
+- OLS on the selected sample (workers) suffers from omitted variable bias. The conditional expectation of the error is no longer zero:
+  - $E[y_i | X_i, \text{sample is selected}] = β_0 + β_1X_{1i} + ... + E[u_i | s_i^* > 0]$
+  - The term $E[u_i | s_i^* > 0]$ is non-zero if $\rho \neq 0$ and is a function of the $Z$ variables.
+
+## Solution: Heckman's Two-Step Procedure
 
 **Step 1: Estimate the Selection Equation.**
 *   Run a Probit model of the selection decision (e.g., working vs. not working) on the **full sample**. The regressors are the Z variables.
@@ -828,18 +972,18 @@ The bias arises if the unobserved factors in the two equations are correlated: *
 
 ## What did we do?
 
-1.  **Binary outcomes are everywhere.** Standard OLS (the LPM) is a simple starting point but is fundamentally flawed (out-of-range predictions, bad errors).
+- **Binary outcomes are everywhere.** 
+  - Standard OLS (the LPM) is a simple starting point but is flawed (out-of-range predictions, bad errors) in some ways, but good (interaction effects, integration with panel data) in others.
 
-2.  **Probit and Logit** are the standard solutions. They are derived from a **latent variable** model and use a non-linear CDF to constrain predictions between 0 and 1.
+- **Probit and Logit**:
+  - These are the standard solutions. They are derived from a **latent variable** model and use a non-linear CDF to constrain predictions between 0 and 1.
 
-3.  They are estimated using **Maximum Likelihood Estimation (MLE)**, which finds the parameters that make the observed data most probable.
+- **Maximum Likelihood Estimation (MLE)**: 
+  - We looked at these models are estimated, MLE, which finds the parameters that make the observed data most probable.
 
-4.  **Interpretation is key!**
-    *   Raw coefficients are not marginal effects.
-    *   Use **Average Marginal Effects (AMEs)** to talk about changes in probability.
-    *   Use **Odds Ratios** for Logit models for a multiplicative interpretation.
+- **Interpretation**: 
+  - We found that raw coefficients are not marginal effects, we can use **Average Marginal Effects (AMEs)** to talk about changes in probability. In logit, we can use use **Odds Ratios** for Logit models for a multiplicative interpretation.
 
-5.  These models are special cases of the powerful **Generalized Linear Model (GLM)** framework.
 
 # The End
 
