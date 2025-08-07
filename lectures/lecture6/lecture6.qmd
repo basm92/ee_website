@@ -916,7 +916,9 @@ plt.show()
 
 Wage determination. We only observe wages ($y_i$) for individuals who are employed. The decision to work is likely not random and may be correlated with the factors that determine wages.
 
-The returns to a college education (we only observe wages for graduates); the effect of a training program on productivity (we only observe productivity for those who completed the program).
+The returns to a college education (we only observe wages for graduates).
+
+The effect of a training program on productivity (we only observe productivity for those who completed the program).
 :::
 
 ## Model Set-Up
@@ -941,32 +943,135 @@ The returns to a college education (we only observe wages for graduates); the ef
 
 ## Solution: Heckman's Two-Step Procedure
 
-**Step 1: Estimate the Selection Equation.**
-*   Run a Probit model of the selection decision (e.g., working vs. not working) on the **full sample**. The regressors are the Z variables.
-*   From the Probit results, calculate the **Inverse Mills Ratio (IMR)** for each observation, often denoted $\lambda_i$.
-    *   $\lambda_i = \frac{\phi(γ_0 + γ_1Z_{1i} + ...)}{\Phi(γ_0 + γ_1Z_{1i} + ...)}$ (where $\phi$ is the normal PDF, $\Phi$ is the normal CDF).
-    *   The IMR is a measure of the "selection hazard" — the likelihood of being selected into the sample, given the Z variables. It acts as a proxy for the omitted term $E[u_i | s_i^* > 0]$.
+- **Step 1: Estimate the Selection Equation.**
+  - Run a Probit model of the selection decision (e.g., working vs. not working) on the **full sample**. The regressors are the $Z$ variables.
+  - From the Probit results, calculate the **Inverse Mills Ratio (IMR)** for each observation, often denoted $\lambda_i$:
+  - $\lambda_i = \frac{\phi(γ_0 + γ_1Z_{1i} + ...)}{\Phi(γ_0 + γ_1Z_{1i} + ...)}$ (where $\phi$ is the normal PDF, $\Phi$ is the normal CDF).
+  - The IMR is a measure of the "selection hazard" — the likelihood of being selected into the sample, given the Z variables. It acts as a proxy for the omitted term $E[u_i | s_i^* > 0]$.
 
-**Step 2: Estimate the Corrected Outcome Equation.**
-*   Run OLS on the outcome equation using **only the selected sample** (those for whom we observe $y_i$).
-*   Include the calculated IMR ($\lambda_i$) as an additional explanatory variable:
-    $y_i = β_0 + β_1X_{1i} + ... + β_{\lambda}\lambda_i + \text{error}$
-*   The coefficient on the IMR, $β_{\lambda}$, is an estimate of $ρ \cdot σ_u$. A statistically significant $t$-test on this coefficient is a direct test for sample selection bias.
+## Solution: Heckman's Two-Step Procedure (Cont.)
 
-**Crucial Point - The Exclusion Restriction:** For robust identification, there must be at least one variable in the selection equation (Z) that is **not** in the outcome equation (X). This variable should influence the selection decision but not the outcome itself (e.g., number of young children may affect the decision to work but not the potential wage rate).
+- **Step 2: Estimate the Corrected Outcome Equation.**
+  - Run OLS on the outcome equation using **only the selected sample** (those for whom we observe $y_i$).
+  - Include the calculated IMR ($\lambda_i$) as an additional explanatory variable:
+  - $y_i = β_0 + β_1X_{1i} + ... + β_{\lambda}\lambda_i + \text{error}$
+  - The coefficient on the IMR, $β_{\lambda}$, is an estimate of $ρ \cdot σ_u$. A statistically significant $t$-test on this coefficient is a direct test for sample selection bias.
 
----
-### **Slide 4: Tobit vs. Heckman - A Summary**
+- **Crucial Point - The Exclusion Restriction:** 
+  - For robust identification, there must be at least one variable in the selection equation (Z) that is **not** in the outcome equation (X). 
+  - This variable should influence the selection decision but not the outcome itself (e.g., number of young children may affect the decision to work but not the potential wage rate).
 
-| Feature                   | Tobit Model                                                                                             | Heckman Model                                                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **The Problem**           | **Censoring**                                                                                           | **Selection Bias** (Incidental Truncation)                                                                         |
-| **Dependent Variable ($y_i$)** | Observed for all individuals, but "piled up" at a limit value (e.g., 0) for a subset of the sample.  | **Missing** for a non-random subset of the sample.                                                                 |
-| **Underlying Process**    | **One decision process.** The same factors (X variables) and parameters ($β$) determine both the probability of being at the limit and the value if above the limit. | **Two distinct processes.** One process for selection (driven by Z variables) and another for the outcome (driven by X variables). |
-| **Model Structure**       | One equation for a latent variable $y^*$.                                                               | Two equations: a **selection equation** (Probit) and an **outcome equation** (linear model).                             |
-| **Key Question to Ask**   | Are the zeros a legitimate outcome of the same choice? (e.g., "I choose to spend $0 on a car").          | Do the zeros (or missing values) represent a separate barrier preventing me from observing the outcome? (e.g., "I can't observe the wage of someone who isn't working"). |
-| **Identification**        | Identified by the non-linearity of the likelihood function (normality assumption).                      | Relies heavily on an **exclusion restriction**: a variable in the selection equation that is not in the outcome equation. |
-| **Estimation**            | Maximum Likelihood Estimation (MLE).                                                                    | Two-step procedure (Probit then OLS with IMR) or Full Information Maximum Likelihood (FIML).                     |
+## Visualization 
+
+```{python}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from heckman import Heckman
+import matplotlib.pyplot as plt
+
+# --- 1. Data Generation with Selection Bias ---
+
+# Set parameters
+np.random.seed(42)
+n_obs = 2000
+beta = np.array([5, 2])    # True coefficients for the outcome equation [intercept, slope]
+gamma = np.array([0.5, 1, 1.5]) # True coefficients for the selection equation
+rho = 0.7                  # Correlation between errors of outcome and selection equations
+
+# Generate independent variables
+# The "instrument" z1 affects selection but not the outcome y
+x0 = np.ones(n_obs)
+x1 = np.random.uniform(-5, 5, n_obs)
+z1 = np.random.normal(0, 1, n_obs) # This is our instrumental variable
+
+# Create the design matrices
+# Outcome equation depends on intercept and x1
+X = np.column_stack((x0, x1))
+# Selection equation depends on intercept, x1, and the instrument z1
+Z = np.column_stack((x0, x1, z1))
+
+# Generate correlated errors for the two equations
+cov_matrix = np.array([[1, rho], [rho, 1]])
+errors = np.random.multivariate_normal([0, 0], cov_matrix, size=n_obs)
+error_outcome = errors[:, 0]  # Error for the outcome equation (v)
+error_selection = errors[:, 1] # Error for the selection equation (u)
+
+# Generate the latent (unobserved) outcome variable
+y_latent = X @ beta + error_outcome
+
+# Generate the latent selection variable and the observed selection decision
+selection_latent = Z @ gamma + error_selection
+selection = selection_latent > 0  # We only observe y if selection_latent is positive
+
+# Create the observed y, which has missing values (NaN) due to selection
+y_observed = y_latent.copy()
+y_observed[~selection] = np.nan # Set y to NaN for unselected observations
+
+# Create a pandas DataFrame for easier handling
+df = pd.DataFrame({
+    'x1': x1,
+    'z1': z1,
+    'y_observed': y_observed,
+    'selection': selection.astype(int)
+})
+
+# --- 2. Model Fitting ---
+
+# a) OLS Model (on selected data only)
+df_selected = df.dropna()
+X_selected = sm.add_constant(df_selected['x1'])
+
+ols_model = sm.OLS(df_selected['y_observed'], X_selected)
+ols_results = ols_model.fit()
+
+# b) Heckman Selection Model
+# The model needs the full dataset (with NaNs in y)
+# Outcome equation: y_observed ~ 1 + x1
+# Selection equation: selection ~ 1 + x1 + z1
+outcome_exog = sm.add_constant(df['x1'])
+selection_exog = sm.add_constant(df[['x1', 'z1']])
+
+heckman_model = Heckman(df['y_observed'], outcome_exog, selection_exog=selection_exog)
+heckman_results = heckman_model.fit()
+
+# --- 3. Plotting the Results ---
+
+plt.style.use('seaborn-v0_8-whitegrid')
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Scatter plot of the OBSERVED data
+ax.scatter(df_selected['x1'], df_selected['y_observed'], alpha=0.3, label='Observed Data (Selected Sample)')
+
+# Generate a smooth range of x values for plotting the lines
+x_plot = np.linspace(-5, 5, 100)
+X_plot = sm.add_constant(x_plot)
+
+# 1. Plot the TRUE line
+y_true = X_plot @ beta
+ax.plot(x_plot, y_true, 'r-', lw=3, label=f'True Relationship (Slope={beta[1]:.2f})')
+
+# 2. Plot the OLS line
+y_ols = ols_results.predict(X_plot)
+ax.plot(x_plot, y_ols, 'k--', lw=2, label=f'OLS Fit (Biased Slope={ols_results.params[1]:.2f})')
+
+# 3. Plot the Heckman line
+# The coefficients are stored in heckman_results.beta
+y_heckman = X_plot @ heckman_results.beta
+ax.plot(x_plot, y_heckman, 'g-.', lw=3, label=f'Heckman Fit (Corrected Slope={heckman_results.beta[1]:.2f})')
+
+# Final plot adjustments
+ax.set_title('OLS vs. Heckman Model for Selection Bias', fontsize=16)
+ax.set_xlabel('Independent Variable (x1)', fontsize=12)
+ax.set_ylabel('Dependent Variable (y)', fontsize=12)
+ax.legend(fontsize=11)
+plt.show()
+```
+
 
 # Summary
 
