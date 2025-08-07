@@ -703,10 +703,10 @@ $$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_
 
 ## Interpretation of the Results
 
-- After running the regression, you will get a set of coefficients `δ_k` which are typically plotted on a graph:
-- **Testing Pre-Trends (`k < 0`):** The coefficients `δ_{-K}, ..., δ_{-2}` test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.
-- **The Effect at Impact (`k = 0`):** `δ_0` shows the immediate effect of the treatment in the event period itself.
-- **Dynamic Post-Treatment Effects (`k > 0`):** `δ_1, δ_2, ..., δ_L` show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+- After running the regression, you will get a set of coefficients $\delta_k$ which are typically plotted on a graph:
+- **Testing Pre-Trends (`k < 0`):** The coefficients $\delta_{-K}, \dots, \delta_{-2}$ test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.^[The parameter $\delta_{-1}$ serves as the reference category, the "normalized difference".]
+- **The Effect at Impact (`k = 0`):** $\delta_0$ shows the immediate effect of the treatment in the event period itself.
+- **Dynamic Post-Treatment Effects (`k > 0`):** $\delta_1, \delta_2, \dots, \delta_L$ show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
 
 ## Event Study Visualization
 
