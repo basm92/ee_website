@@ -41,3 +41,11 @@
 .slide-logo {
   max-height: 5.2rem !important;
 }
+
+.reveal .hey pre.sourceCode code {
+  max-height: 200px !important;
+}
+
+.reveal .hey pre code {
+  max-height: 200px !important;
+}

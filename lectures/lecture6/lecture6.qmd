@@ -688,7 +688,89 @@ If $\hat{\beta}_k = -0.5$, then $e^{-0.5} \approx 0.61$. A one-unit increase in 
 
 ## Logit and Probit in Software
 
-To do
+:::{.callout-tip title="Example: Bertrand and Mullainathan (2004)"}
+The paper "Are Emily and Greg More Employable Than Lakisha and Jamal?" is a Field Experiment on Labor Market Discrimination".
+
+They sent thousands of fictitious resumes to real job openings in Boston and Chicago, randomly assigning either a "White-sounding" name or an "African American-sounding" name to otherwise identical resumes.
+
+The study found that resumes with "White-sounding" names received 50% more callbacks for interviews than those with "African American-sounding" names. This racial gap in callbacks was consistent across various occupations, industries, and employer sizes. 
+
+The paper provides strong evidence of persistent racial discrimination in the hiring process.
+:::
+
+## Logit and Probit in Software - Example
+
+- R/Python/Stata have excellent options to run both logistic regression and probit models. Below are some examples on the basis of the Bertrand and Mullainathan (2004) dataset. 
+
+:::{.panel-tabset .hey}
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+df <- haven::read_dta('../../tutorials/datafiles/lakisha_aer.dta')
+# LPM
+model <- lm(call~ race + sex + C(occupbroad), data=df)
+summary(model)
+# Logit
+model <- glm(call ~ race + sex + C(occupbroad), data=df, family=binomial(link="logit"))
+summary(model)
+# Probit
+model <- glm(call ~ race + sex + C(occupbroad), data=df, family=binomial(link="probit"))
+summary(model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pandas as pd
+import statsmodels.formula.api as smf
+
+df = pd.read_stata('../../tutorials/datafiles/lakisha_aer.dta')
+# LPM
+model = smf.ols(formula="call ~ race + sex + C(occupbroad)", data=df)
+results = model.fit()
+print(results.summary())
+
+# Logit
+model = smf.logit(formula="call ~ race + sex + C(occupbroad)", data=df)
+results = model.fit()
+print(results.summary())
+
+# Probit
+model = smf.probit(formula="call ~ race + sex + C(occupbroad)", data=df)
+results = model.fit()
+print(results.summary())
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+#| collapse: true
+* Load the dataset
+use "../../tutorials/datafiles/lakisha_aer.dta", clear
+
+* LPM (Linear Probability Model)
+regress call race sex i.occupbroad
+
+* Logit
+logit call race sex i.occupbroad
+
+* Probit
+probit call race sex i.occupbroad
+```
+
+:::
 
 
 # Limited Dependent Variable Models
@@ -957,8 +1039,8 @@ The effect of a training program on productivity (we only observe productivity f
   - $y_i = β_0 + β_1X_{1i} + ... + β_{\lambda}\lambda_i + \text{error}$
   - The coefficient on the IMR, $β_{\lambda}$, is an estimate of $ρ \cdot σ_u$. A statistically significant $t$-test on this coefficient is a direct test for sample selection bias.
 
-- **Crucial Point - The Exclusion Restriction:** 
-  - For robust identification, there must be at least one variable in the selection equation (Z) that is **not** in the outcome equation (X). 
+- **The Exclusion Restriction:** 
+  - For identification of the IMR $\lambda$, there must be at least one variable in the selection equation ($Z$) that is **not** in the outcome equation ($Z$). 
   - This variable should influence the selection decision but not the outcome itself (e.g., number of young children may affect the decision to work but not the potential wage rate).
 
 ## Visualization 
@@ -967,105 +1049,99 @@ The effect of a training program on productivity (we only observe productivity f
 #| echo: false
 #| fig-align: 'center'
 #| fig-width: 8
-
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from heckman import Heckman
+from scipy.stats import norm
 import matplotlib.pyplot as plt
 
-# --- 1. Data Generation with Selection Bias ---
+# --- 1. Data Generation with STRONGER Selection Bias ---
 
 # Set parameters
 np.random.seed(42)
 n_obs = 2000
-beta = np.array([5, 2])    # True coefficients for the outcome equation [intercept, slope]
-gamma = np.array([0.5, 1, 1.5]) # True coefficients for the selection equation
-rho = 0.7                  # Correlation between errors of outcome and selection equations
+beta = np.array([5, 2])       # True coefficients for outcome eq: y = 5 + 2*x1
+gamma = np.array([0.5, 1, 1.5])  # True coefficients for selection eq.
+
+# ------------------------------------------------------------------- #
+#       KEY CHANGE: Increase rho to strengthen the selection bias     #
+rho = 0.95 # Previous value was 0.7
+# ------------------------------------------------------------------- #
 
 # Generate independent variables
-# The "instrument" z1 affects selection but not the outcome y
 x0 = np.ones(n_obs)
 x1 = np.random.uniform(-5, 5, n_obs)
-z1 = np.random.normal(0, 1, n_obs) # This is our instrumental variable
+z1 = np.random.normal(0, 1, n_obs) # Instrument
 
 # Create the design matrices
-# Outcome equation depends on intercept and x1
 X = np.column_stack((x0, x1))
-# Selection equation depends on intercept, x1, and the instrument z1
 Z = np.column_stack((x0, x1, z1))
 
-# Generate correlated errors for the two equations
+# Generate strongly correlated errors for the two equations
 cov_matrix = np.array([[1, rho], [rho, 1]])
 errors = np.random.multivariate_normal([0, 0], cov_matrix, size=n_obs)
-error_outcome = errors[:, 0]  # Error for the outcome equation (v)
-error_selection = errors[:, 1] # Error for the selection equation (u)
+error_outcome = errors[:, 0]
+error_selection = errors[:, 1]
 
-# Generate the latent (unobserved) outcome variable
+# Generate the latent outcome and selection decision
 y_latent = X @ beta + error_outcome
-
-# Generate the latent selection variable and the observed selection decision
 selection_latent = Z @ gamma + error_selection
-selection = selection_latent > 0  # We only observe y if selection_latent is positive
+selection = selection_latent > 0
 
-# Create the observed y, which has missing values (NaN) due to selection
+# Create the observed y with missing values
 y_observed = y_latent.copy()
-y_observed[~selection] = np.nan # Set y to NaN for unselected observations
+y_observed[~selection] = np.nan
 
-# Create a pandas DataFrame for easier handling
+# Create a DataFrame
 df = pd.DataFrame({
-    'x1': x1,
-    'z1': z1,
-    'y_observed': y_observed,
-    'selection': selection.astype(int)
+    'x1': x1, 'z1': z1, 'y_observed': y_observed, 'selection': selection.astype(int)
 })
 
-# --- 2. Model Fitting ---
+# --- 2. Model Fitting (No changes needed here) ---
 
-# a) OLS Model (on selected data only)
-df_selected = df.dropna()
-X_selected = sm.add_constant(df_selected['x1'])
-
-ols_model = sm.OLS(df_selected['y_observed'], X_selected)
+# a) OLS Model (on selected data)
+df_selected = df.dropna().copy()
+X_ols = sm.add_constant(df_selected['x1'])
+ols_model = sm.OLS(df_selected['y_observed'], X_ols)
 ols_results = ols_model.fit()
 
-# b) Heckman Selection Model
-# The model needs the full dataset (with NaNs in y)
-# Outcome equation: y_observed ~ 1 + x1
-# Selection equation: selection ~ 1 + x1 + z1
-outcome_exog = sm.add_constant(df['x1'])
-selection_exog = sm.add_constant(df[['x1', 'z1']])
+# b) Manual Heckman Two-Step Estimator
+# STAGE 1: Probit
+Z_probit = sm.add_constant(df[['x1', 'z1']])
+probit_model = sm.Probit(df['selection'], Z_probit)
+probit_results = probit_model.fit(disp=0) # disp=0 suppresses convergence messages
+linear_prediction = probit_results.predict(Z_probit)
+imr = norm.pdf(linear_prediction) / norm.cdf(linear_prediction)
+df_selected['imr'] = imr[df_selected.index]
 
-heckman_model = Heckman(df['y_observed'], outcome_exog, selection_exog=selection_exog)
-heckman_results = heckman_model.fit()
+# STAGE 2: OLS with IMR
+X_heckman = sm.add_constant(df_selected[['x1', 'imr']])
+heckman_stage2_model = sm.OLS(df_selected['y_observed'], X_heckman)
+heckman_results = heckman_stage2_model.fit()
 
-# --- 3. Plotting the Results ---
+
+# --- 3. Plotting the Results (No changes needed here) ---
 
 plt.style.use('seaborn-v0_8-whitegrid')
 fig, ax = plt.subplots(figsize=(12, 8))
-
-# Scatter plot of the OBSERVED data
 ax.scatter(df_selected['x1'], df_selected['y_observed'], alpha=0.3, label='Observed Data (Selected Sample)')
-
-# Generate a smooth range of x values for plotting the lines
 x_plot = np.linspace(-5, 5, 100)
 X_plot = sm.add_constant(x_plot)
 
-# 1. Plot the TRUE line
+# True line
 y_true = X_plot @ beta
 ax.plot(x_plot, y_true, 'r-', lw=3, label=f'True Relationship (Slope={beta[1]:.2f})')
 
-# 2. Plot the OLS line
+# OLS line
 y_ols = ols_results.predict(X_plot)
 ax.plot(x_plot, y_ols, 'k--', lw=2, label=f'OLS Fit (Biased Slope={ols_results.params[1]:.2f})')
 
-# 3. Plot the Heckman line
-# The coefficients are stored in heckman_results.beta
-y_heckman = X_plot @ heckman_results.beta
-ax.plot(x_plot, y_heckman, 'g-.', lw=3, label=f'Heckman Fit (Corrected Slope={heckman_results.beta[1]:.2f})')
+# Heckman line
+heckman_coeffs = heckman_results.params[['const', 'x1']]
+y_heckman = X_plot @ heckman_coeffs
+ax.plot(x_plot, y_heckman, 'g-.', lw=3, label=f'Heckman Fit (Corrected Slope={heckman_coeffs[1]:.2f})')
 
-# Final plot adjustments
-ax.set_title('OLS vs. Heckman Model for Selection Bias', fontsize=16)
+ax.set_title('OLS vs. Heckman with Selection Bias', fontsize=16)
 ax.set_xlabel('Independent Variable (x1)', fontsize=12)
 ax.set_ylabel('Dependent Variable (y)', fontsize=12)
 ax.legend(fontsize=11)
