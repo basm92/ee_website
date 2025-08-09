@@ -42,7 +42,7 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Agenda 
 
-- Data Wrangling
+- Data Wrangling and Cleaning
   - Importing Data
   - Merging Datasets
   - Pivoting
@@ -58,6 +58,137 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Motivation
 
+# Data Wrangling & Cleaning
+
+## Importing Data
+
+- Most of the data you'll receive is in a structured format
+
+- Pay attention to _delimiters_, if you parse something like this:
+
+- It isn't because the data is corrupted. It's just because the function you have used doesn't recognize the data format
+
+## Merging Datasets
+
+## Long and Wide Datasets
+
+- Statistical packages usually assume your data is in a particular format, known as the _long format_:
+
+```{python}
+#| echo: false
+import pandas as pd
+
+# Create a sample long-format dataset
+data_long = {
+    'Company': ['Company A', 'Company A', 'Company B', 'Company B', 'Company C', 'Company C'],
+    'Year': [2023, 2024, 2023, 2024, 2023, 2024],
+    'Revenue': [100, 110, 200, 210, 150, 160],
+    'Expenses': [80, 85, 150, 155, 120, 125]
+}
+df_long = pd.DataFrame(data_long)
+print(df_long)
+```
+
+- Long Format:
+  - In a long format, each row represents a single observation for a specific variable. For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
+
+- Wide Format: 
+  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
+
+## Pivoting Datasets
+
+- It often occurs that your data is in a slightly different format. Most often, your data is in a _wide format_:
+
+```{python}
+#| echo: false
+# Pivot from long to wide format
+df_wide = df_long.pivot(index='Company', columns='Year', values=['Revenue', 'Expenses'])
+df_wide.columns = ['_'.join(map(str, col)) for col in df_wide.columns]
+df_wide.reset_index(inplace=True)
+print(df_wide)
+```
+
+## Pivoting Wider and Longer
+
+- Fortunately, it's possible to _reshape_ `DataFrames` so as to switch between these formats at your convenience. 
+
+- From Wide to Long:
+
+:::{.panel-tabset .hey}
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+library(tidyverse, quietly=TRUE)
+print(py$df_wide)
+long_condensed <- py$df_wide |>
+  pivot_longer(cols = contains(c('2023', '2024')), 
+               names_to = 'variable',
+               values_to = 'value')
+
+print(long_condensed)
+long_final <- long_condensed |>
+  separate_wider_delim(variable, delim="_", names=c('variable', 'year'))
+
+print(long_final)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+df_melted = pd.melt(df_wide, id_vars=['Company'], var_name='Metric_Year', value_name='Value')
+print(df_melted)
+# Split the 'Metric_Year' column into 'Metric' and 'Year'
+df_melted[['Metric', 'Year']] = df_melted['Metric_Year'].str.split('_', expand=True)
+df_melted.drop(columns='Metric_Year', inplace=True)
+print(df_melted)
+```
+
+### Stata
+
+:::
+
+- From Long to Wide:
+
+:::{.panel-tabset .hey}
+
+### R 
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+py$df_long |>
+  pivot_wider(names_from="Year",
+              values_from=c("Revenue", "Expenses"))
+
+```
+
+### Python  
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+df_wide = df_long.pivot(index='Company', columns='Year', values=['Revenue', 'Expenses'])
+print(df_wide)
+df_wide.columns = ['_'.join(map(str, col)) for col in df_wide.columns]
+df_wide.reset_index(inplace=True)
+print(df_wide)
+
+```
+
+### Stata
+
+
+:::
 
 # Regression Tables
 
