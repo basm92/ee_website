@@ -70,7 +70,7 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Merging Datasets
 
-## Long and Wide Datasets
+## Standard (Long) Format
 
 - Statistical packages usually assume your data is in a particular format, known as the _long format_:
 
@@ -89,11 +89,15 @@ df_long = pd.DataFrame(data_long)
 print(df_long)
 ```
 
+## Long and Wide Datasets
+
 - Long Format:
-  - In a long format, each row represents a single observation for a specific variable. For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
+  - In a long format, each row represents a single observation for a specific variable. 
+  - For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
 
 - Wide Format: 
-  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
+  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. 
+  - For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
 
 ## Pivoting Datasets
 
@@ -115,6 +119,7 @@ print(df_wide)
 - From Wide to Long:
 
 :::{.panel-tabset .hey}
+
 ### R
 
 ```{r}
@@ -141,7 +146,7 @@ print(long_final)
 #| echo: true
 #| code-fold: true
 #| collapse: true
-
+print(df_wide)
 df_melted = pd.melt(df_wide, id_vars=['Company'], var_name='Metric_Year', value_name='Value')
 print(df_melted)
 # Split the 'Metric_Year' column into 'Metric' and 'Year'
@@ -154,7 +159,9 @@ print(df_melted)
 
 :::
 
+:::{style="font-size: 0.9em;"}
 - From Long to Wide:
+:::
 
 :::{.panel-tabset .hey}
 
@@ -164,7 +171,7 @@ print(df_melted)
 #| echo: true
 #| collapse: true
 #| code-fold: true
-
+print(py$df_long)
 py$df_long |>
   pivot_wider(names_from="Year",
               values_from=c("Revenue", "Expenses"))
@@ -177,6 +184,7 @@ py$df_long |>
 #| echo: true
 #| code-fold: true
 #| collapse: true
+print(df_long)
 df_wide = df_long.pivot(index='Company', columns='Year', values=['Revenue', 'Expenses'])
 print(df_wide)
 df_wide.columns = ['_'.join(map(str, col)) for col in df_wide.columns]
@@ -190,11 +198,30 @@ print(df_wide)
 
 :::
 
+## Merging Datasets
+
+- Another common operation you might have to perform is _merging datasets_
+
+
+
 # Regression Tables
 
-## Standard format
 
-- After the introduction, the regression tables are probably the most important thing in your thesis. If you take away only one thing from this lecture, you must know that:
+## Regression Tables
+
+- Regression tables will probably be some of the most important stuff in your thesis.
+
+- They often form your central evidence, confirming or rejecting your hypothesis, answering your research question. 
+
+- Anyone who reads your thesis farther than the introduction will probably look at them. 
+
+- This is why **regression tables have to be formatted nicely**. 
+
+- Fortunately, R/Python/Stata all have nice libraries allowing you to generate regression tables. 
+
+- Hence, **you should never manually create a regression table, ever**. 
+
+## Example Format
 
 ::::{.columns}
 
@@ -229,28 +256,15 @@ summary(model)
 ::::
 
 
-
-## Regression Tables
-
-- Regression tables will probably be some of the most important stuff in your thesis.
-
-- They often form your central evidence, confirming or rejecting your hypothesis, answering your research question. 
-
-- Anyone who reads your thesis farther than the introduction will probably look at them. 
-
-- This is why **regression tables have to be formatted nicely**. 
-
-- Fortunately, R/Python/Stata all have nice libraries allowing you to generate regression tables. 
-
-- Hence, **you should never manually create a regression table, ever**. 
-
 ## Regression Tables (Cont.)
 
-- Regression tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, statistical significance. 
+- Regression tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, indicate statistical significance. 
 
 - They should also have an informative title. 
 - Variable names should be properly and informatively formatted
   - In human-readable text, so "GDP per capita", not `gdp_per_capita`. 
+- If you use fixed effects, these should be incorporate in the table in a specific way (see examples that follow). 
+- As a rule, you should also report the number of observations and (some equivalent of an) R-squared. 
   
 ## Regression Tables in R/Python/Stata
 
@@ -260,7 +274,79 @@ summary(model)
 
 ### R
 
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+- In R, the best option is to use the `modelsummary` and `tinytable` libraries to create regression tables and descriptive statistics. The documentation for these libraries is available [here](https://modelsummary.com/) and [here](https://vincentarelbundock.github.io/tinytable/) respectively. These both also work very well with the `fixest` package. 
+
+```{r}
+#| echo: true
+library(fixest)
+library(tibble)
+library(modelsummary)
+library(tinytable)
+# Estimate 6 models at once with "vs" fixed effects
+models <- feols(c(carb, mpg) ~ csw(cyl, disp, cyl:disp) | vs, data=mtcars)
+table1 <- modelsummary(models,
+             stars=c("*"=0.1, "**"=0.05, "***"=0.01),
+             gof_map = tibble(
+                raw=c("nobs", "r2.within", "FE: vs"),
+                clean=c("N", "Within R sq.", "VS FE"),
+                fmt=c(0, 2, 0))
+             ) |> 
+  setNames(c("", rep("carb", 3), rep("mpg", 3)))
+
+table1
+```
+
+- This table can be saved (exported to e.g. Word) by using the `save_tt()` function:
+
+```{r}
+#| echo: true
+#| eval: false
+save_tt(table1, "table1.docx")
+```
+
+:::
+
 ### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+- In Python, the best option is to use the `pyfixest` package for regression tables and descriptive statistics. The documentation for regression tables is available [here](https://py-econometrics.github.io/pyfixest/table-layout.html). 
+
+```{python}
+#| echo: true
+import pyfixest as pf
+data = r.mtcars
+models = pf.feols("carb + mpg ~ csw(cyl, disp, cyl:disp) | vs", data=data)
+table = pf.etable(models,
+  signif_code=[0.01, 0.05, 0.1],
+  digits=3,
+  show_se_type=False,
+  labels={
+    "carb": "Carb",
+    "mpg": "Miles Per Gallon",
+    "cyl": "Cyl",
+    "disp": "Disp", 
+    "vs": "VS FE"
+}
+  )
+
+table
+```
+
+- This can also be exported in various ways, for example, to Word, using the `GT` library:
+
+```{python}
+#| echo: true
+#| eval: false
+from great_tables import GT
+GT.write_raw_html(table, filename="table1.html")
+```
+
+
+:::
+
 
 ### Stata
 
