@@ -1000,12 +1000,7 @@ Now we have $k$ explanatory variables.
 
   - `lm(y ~ x1 + x2, data=df)` in R
   - `reg y x1 x2` in Stata
-  - Python:
-  
-```
-from sklearn.linear_model import LinearRegression
-LinearRegression().fit(X, y)
-```
+  - `pf.feols(y ~ x1 + x2, data=df)` after `import pyfixest as pf` in Python.^[Some previous examples use the `statsmodels` package in Python, which is the standard way. However, the `pyfixest` package is easier and more straightforward.] 
 
 ## Variance of OLS Estimators in MLR
 

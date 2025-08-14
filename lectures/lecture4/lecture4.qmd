@@ -505,7 +505,7 @@ np.random.seed(123)
 data = np.random.randn(100)
 
 # Fit ARMA(1,1) model
-arma_model = sm.tsa.ARMA(data, order=(1, 1))
+arma_model = sm.tsa.ARIMA(data, order=(1,0,1))
 arma_results = arma_model.fit()
 
 # Print summary
