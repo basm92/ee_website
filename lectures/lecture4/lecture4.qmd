@@ -466,14 +466,78 @@ $$
 
 ## The Autoregressive Moving Average (ARMA) Model
 
-- **Combining AR and MA:** We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.
+- We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.
 - For example, an ARMA(1,1) Model: $Y_t = \alpha + \rho Y_{t-1} + u_t + \theta u_{t-1}$
-- ARMA models are very flexible and can capture a wide range of time series dynamics.
+- ARMA models are usually very flexible and can capture a wide range of time series dynamics. This is how they are implemented in Python/R/Stata:
 
+:::{.panel-tabset}
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+# Generate sample data
+set.seed(123)
+data <- rnorm(100)
+
+# Fit ARMA(1,1) model
+arma_model <- arima(data, order = c(1, 0, 1))  # (p, d, q) where d=0 for ARMA
+
+# Print summary
+summary(arma_model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import numpy as np
+import statsmodels.api as sm
+
+# Generate sample data
+np.random.seed(123)
+data = np.random.randn(100)
+
+# Fit ARMA(1,1) model
+arma_model = sm.tsa.ARMA(data, order=(1, 1))
+arma_results = arma_model.fit()
+
+# Print summary
+print(arma_results.summary())
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| code-fold: true
+
+* Generate sample data  
+set obs 100  
+set seed 123  
+gen y = rnormal()  
+
+* Estimate ARMA(1,1)  
+arima y, ar(1) ma(1)  
+
+* Display results  
+estimates table  
+```
+
+
+:::
 
 # Relationship Between Time Series
 
 ## Linear Model in Time Series
+
+- The starting point for a relationship between time series is often the linear model. 
 
 - The model form is identical to its cross-sectional counterpart:
 
@@ -563,7 +627,7 @@ Since the $u_i$ are uncorrelated (white noise), the variance of the sum is the s
     \end{align}
   $$
 
-The variance depends on time t and grows without bound. This is a clear violation of stationarity.
+The variance depends on time $t$ and grows without bound. This is a clear violation of stationarity.
 
 :::
 
@@ -895,7 +959,7 @@ $$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 
 - Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
 - The Koyck model assumes that the coefficients decline geometrically: $\beta_s = \beta_0 \lambda^s$, where $0 < \lambda < 1$.
-*   **A Simpler Form:** This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated:
+- This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated:
 
   $$
     Y_t = \alpha(1-\lambda) + \beta_0 X_t + \lambda Y_{t-1} + v_t
@@ -905,7 +969,7 @@ $$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 
 ## The Autoregressive Distributed Lag (ARDL) Model
 
-*   **A General and Powerful Model:** The ARDL model includes lags of both the dependent variable and the explanatory variable(s).
+- ARDL models are a class of models that include lags of both the dependent variable and the explanatory variable(s).
 
 :::{.callout-note title="Definition: ARDL Model"}
 
@@ -914,8 +978,8 @@ An ARDL(p,q) model is defined as follows:
 $$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j \cdot X_{t-m}) \text{ [from m=0 to q]} + u_t$$
 :::
 
-- It includes both autoregressive and distributed lag terms. 
-- ARDL models are very flexible and can be used to estimate both short-run and long-run effects..
+- It includes both autoregressive (lags of the DV) and distributed lag (lags of the IV) terms. 
+- ARDL models are very flexible and can be used to estimate both short-run and long-run effects.
 
 ## Interpretation ARDL Coefficients
 
@@ -955,7 +1019,7 @@ $$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j
 
 - **Interpretation**: A **permanent** one-unit increase in $X$ is associated with a total **long-run change of $\theta$ units** in $Y$, after all dynamic adjustments are complete.
 
-- **Key Takeaway**: The ARDL model powerfully separates the **immediate impacts** ($\beta_j$) from the **total equilibrium effect** ($\theta$), which accounts for the feedback from Y's own past values.
+- The ARDL model powerfully separates the **immediate impacts** ($\beta_j$) from the **total equilibrium effect** ($\theta$), which accounts for the feedback from Y's own past values.
 
 ## Estimating ARDL Models
 
@@ -1105,8 +1169,4 @@ estat ec
 - **Autoregressive Distributed Lag Models**:
   - A generalization of distributed lag models, also integrating autoregressive components. A model like this has the ability to separate feedback effects from long-run impacts of $X$. 
   
-
-
-
-
 # The End

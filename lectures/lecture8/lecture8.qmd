@@ -21,7 +21,7 @@ resources:
 #| message: false
 #| echo: false
 
-library(ggplot2)
+library(tidyverse)
 library(gridExtra)
 library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
@@ -44,19 +44,34 @@ use_python("/home/bas/anaconda3/bin/python")
 
 - Data Wrangling and Cleaning
   - Importing Data
-  - Merging Datasets
   - Pivoting
-  - String Matching and subset search
-- Data Cleaning
+  - Merging Datasets
+  - String Matching
 - Summary Tables
 - Regression Tables
   - Standard Errors and Fit Statistics
 - Visualization
-- Project Organization
+- Project and Code Organization
 
 # Motivation
 
-## Motivation
+## Motivation: Why Data Cleaning? 
+
+
+- In practice, you almost never get a dataset that is entirely ready to analyze. 
+- Including for your MSc thesis, where you might have to query, put together, clean and analyze data from various sources. 
+- To successfully put all of these data together, you need to know the basis of data cleaning in your preferred programming language. 
+- In addition, you want your thesis to have **reliable results**: 
+  - Dirty data (missing values, outliers, inconsistencies) can distort econometric models, leading to incorrect conclusions. Proper cleaning ensures robustness.
+- Data cleaning also makes your thesis **reproducible**: we expect replicable analyses.
+  - Clean, well-documented data allows others to verify your findings.
+
+## Motivation: Why Project & Code Management?
+
+- An empirical economics project such as a thesis is much easier and less frustrating if you think about project and code management up front. 
+- Avoid Chaos: A well-organized folder structure (raw data, cleaned data, scripts, outputs) prevents lost files and version disasters.
+- Collaboration & Transparency: clear code (with comments!) make it easier for advisors and others to help and for you to revisit your work weeks/months later.
+- Scalability: Modular code (e.g., separate scripts for data prep, analysis, and visuals) lets you tweak one part without breaking everything.
 
 # Data Wrangling & Cleaning
 
@@ -68,11 +83,30 @@ use_python("/home/bas/anaconda3/bin/python")
 
 - It isn't because the data is corrupted. It's just because the function you have used doesn't recognize the data format
 
-## Merging Datasets
+## Importing Data through API
+
+- You can also think about importing data through dedicated libraries or through submitting requests to servers from Python or R 
+
+
+# Pivoting
+
+## Long and Wide Datasets
+
+- There generally exist two often-ocurring formats for financial and economic data. 
+
+- Long Format:
+  - In a long format, each row represents a single observation for a specific variable. 
+  - For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
+
+- Wide Format: 
+  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. 
+  - For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
+
+
 
 ## Standard (Long) Format
 
-- Statistical packages usually assume your data is in a particular format, known as the _long format_:
+- Statistical packages usually assume your data is in the _long format_:
 
 ```{python}
 #| echo: false
@@ -89,15 +123,6 @@ df_long = pd.DataFrame(data_long)
 print(df_long)
 ```
 
-## Long and Wide Datasets
-
-- Long Format:
-  - In a long format, each row represents a single observation for a specific variable. 
-  - For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
-
-- Wide Format: 
-  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. 
-  - For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
 
 ## Pivoting Datasets
 
@@ -200,8 +225,261 @@ print(df_wide)
 
 ## Merging Datasets
 
-- Another common operation you might have to perform is _merging datasets_
+- Another common operation you might have to perform is _merging datasets_, also referred to as _joining datasets_.
+- If you acquire your data from different sources, you have to combine them somehow.
+- Merging datasets involves combining two (or more) datasets on the basis of common **keys** or **identifiers**. 
+- For example, you might have these two datasets, out of which you want to create a dataset including `name`, `band` and `instrument` :^[Borrowed from [here](https://dplyr.tidyverse.org/reference/mutate-joins.html)]
 
+::::{.columns}
+
+:::{.column}
+```{r}
+#| echo: false
+band_members
+```
+:::
+
+:::{.column}
+
+```{r}
+#| echo: false
+band_instruments
+```
+
+:::
+
+::::
+
+## Different Types of Joins
+
+- There are different types of "joins" you can perform. 
+
+- `join` functions usually take (at least) two arguments, and add columns from the `y` dataframe (the second argument) to the `x` dataframe (the first argument), matching observations based on the keys. 
+
+- The logic of this operation is **exactly the same**, no matter you do it in R, Python or Stata.
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+In R, you'd use the `left_join` function from the `dplyr` package to join to datasets. `left_join` takes two arguments, data frame `x` and data frame `y`, where `x` is referred to as the left data frame, and `y` as the right data frame. 
+
+The function `left_join` keeps _all observations_ in `x`, irrespective of whether they have a match in `y`:
+
+```{r}
+#| echo: true
+#| collapse: true
+left_join(band_members, band_instruments)
+```
+
+Good practice is to also specify another argument, `by`, to explicitly instrument on the basis of what keys the join should be performed. This works in this way: `by=c('key_in_x_df' = 'key_in_y_df')`. If the keys have the same variable name in both data frames, you could use the special case `by='key_in_bothdfs'`. 
+
+```{r}
+#| echo: true
+#| collapse: true
+left_join(band_members, band_instruments, by = 'name')
+#left_join(band_members, band_instruments, by=c('name'='name')) would also work
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+In Python, you'd use the `merge` function from the `pandas` package. This function includes a whole lot of options. The function merge takes at least three arguments, the `left_df` and the `right_df`. 
+
+If the key columns have different names, you also specify the `left_on` and `right_on` arguments, as exemplified below. 
+
+If not, you could use the `on` argument and specify it like `on='common_column_name'`. 
+
+Finally, you should specify the `how` argument. If you specify `how='left'`, all observations from the left data frame will be kept. If you specify `how='inner'`, it'll only keep observations from the left data.frame for which a match can be found. For other options, check out the [pandas documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html). 
+
+```{python}
+#| echo: true
+#| collapse: true
+import pandas as pd
+
+band_members = r.band_members
+band_instruments = r.band_instruments
+merged_df = pd.merge(band_members, band_instruments, on='name', how='left')
+print(merged_df)
+```
+
+:::
+
+### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+In Stata, a join can be accomplished using the `merge` command. 
+
+```{stata}
+#| echo: true
+#| eval: false
+merge 1:1 name using band_instruments, keep(master match) nogenerate
+```
+
+- `merge 1:1 name` specifies a one-to-one merge on the variable 'name'
+
+- `using band_instruments` specifies the dataset to merge with (like `band_instruments` in R)
+
+- `keep(master match)` keeps only observations from the master dataset (left join) and matched observations
+
+- `nogenerate` suppresses creation of the _merge variable that tracks merge results
+
+- When the variable names of the variable holding the keys are different, you'd use this:
+
+```{stata}
+#| echo: true
+#| eval: false
+merge 1:1 artist_name=name using band_instruments, keep(master match) nogenerate
+```
+
+- where now, `artist_name` is the name in the master (the left) dataframe and `name` is the name of the key in the `using` dataset (i.e. `band_instruments`). 
+
+:::
+
+:::
+
+## Merging with Fuzzy Keys
+
+- Sometimes, datasets have keys that are not entirely identical. 
+- E.g. "United States" in one dataset vs. "United States of America" in another. 
+- Usually, the best strategy in this case is to look for existing identifiers. 
+  - E.g. companies usually have ISIN-numbers that are available in multiple databases. Countries have ISO codes. 
+- If that does not work, you could attempt _fuzzy matching_ or _fuzzy joining_. 
+- A fuzzy join (or approximate join) is a technique used to merge datasets based on inexact matching, such as similar strings.
+- Fuzzy joins handle inconsistencies like typos, different formats, or slight variations in data.
+
+## Implementation
+
+- This is how that works in different languages. 
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+- In R, you'd use the `fuzzyjoin` library in the following way:
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+library(fuzzyjoin)
+library(dplyr)
+
+# Sample data
+df1 <- data.frame(company = c("Apple Inc.", "Microsoft", "Google LLC"))
+df2 <- data.frame(name = c("Apple Incorporated", "Microsoft Corp", "Google Inc"))
+
+# Perform fuzzy join using string similarity (Levenshtein distance by default)
+result <- stringdist_join(
+  df1, 
+  df2, 
+  by = c("company" = "name"),
+  mode = "left",
+  method = "jw",  # Jaro-Winkler (good for company names)
+  max_dist = 0.25, # Adjust threshold (lower = stricter)
+  ignore_case = TRUE
+) %>%
+  select(company, name)  # Keep only relevant columns
+
+print(result)
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+- In Python, you'd use the `rapidfuzz` library in the following way:
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pandas as pd
+from rapidfuzz import process, fuzz
+
+def fuzzy_join(left_df, right_df, left_col, right_col, threshold=40):
+    matches = []
+    for _, left_row in left_df.iterrows():
+        # Get best match (returns (match, score, index) or None)
+        match = process.extractOne(
+            left_row[left_col], 
+            right_df[right_col], 
+            scorer=fuzz.token_set_ratio,
+            score_cutoff=threshold
+        )
+        if match:
+            matches.append((left_row[left_col], match[0], match[1]))
+        else:
+            matches.append((left_row[left_col], None, None))
+    
+    # Create DataFrame with matches
+    matched_df = pd.DataFrame(matches, columns=[left_col, right_col, "score"])
+    
+    # Merge results
+    return pd.merge(
+        left_df,
+        matched_df[[left_col, right_col]],
+        on=left_col,
+        how="left"
+    ).merge(
+        right_df,
+        left_on=right_col,
+        right_on=right_col,
+        how="left"
+    )
+
+# Example usage
+df1 = pd.DataFrame({"company": ["Apple Inc.", "Microsoft", "Google LLC", "Netflix"]})
+df2 = pd.DataFrame({"name": ["Apple Incorporated", "Microsoft Corp", "Google Inc."]})
+
+result = fuzzy_join(df1, df2, "company", "name")
+print(result)
+```
+
+:::
+
+### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
+
+- Stata has the `reclink` package (documentation [here](http://fmwww.bc.edu/repec/bocode/r/reclink.html)) that allows you to use fuzzy string matching to merge datasets:
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+
+* Install the reclink command from ssc
+ssc install reclink
+
+// Example with two datasets
+use dataset1, clear
+save temp1, replace
+
+use dataset2, clear
+save temp2, replace
+
+reclink keyvar using temp1, idmaster(id1) idusing(id2) gen(matchscore)
+```
+
+:::
+
+:::
+
+- An alternative you could exploit is use LLM's and provide them with the instruction to return a matched dataset.
+- There also exists a Python library called `recordlinkage`, available [here](https://recordlinkage.readthedocs.io/en/latest/installation.html). 
 
 
 # Regression Tables
@@ -258,14 +536,13 @@ summary(model)
 
 ## Regression Tables (Cont.)
 
-- Regression tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, indicate statistical significance. 
-
-- They should also have an informative title. 
+- Regression tables should have an informative title. 
 - Variable names should be properly and informatively formatted
   - In human-readable text, so "GDP per capita", not `gdp_per_capita`. 
-- If you use fixed effects, these should be incorporate in the table in a specific way (see examples that follow). 
+- If you use fixed effects, these should be incorporated in the table in a specific way (see examples that follow). 
 - As a rule, you should also report the number of observations and (some equivalent of an) R-squared. 
-  
+- Tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, indicate statistical significance. 
+
 ## Regression Tables in R/Python/Stata
 
 - Here are three full-fledged examples of nicely formatted regression tables. We'll go through all of the characteristics and their implementation.
@@ -349,6 +626,37 @@ GT.write_raw_html(table, filename="table1.html")
 
 
 ### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
+
+
+- Stata uses the `estout` library (documentation [here](http://repec.org/bocode/e/estout/hlp_esttab.html)) to construct regression tables. 
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+* Load and prepare data
+sysuse auto, clear  // Stata doesn't have mtcars, so using auto dataset
+encode rep78, gen(rep78_fe)  // Create fixed effect variable
+
+* Run regressions
+eststo clear
+eststo: reg price mpg weight
+eststo: reg price mpg weight i.rep78_fe  // With fixed effects
+eststo: reg price mpg weight i.rep78_fe i.foreign  // Multiple FEs
+
+* Create publication-ready table
+esttab using "regression_table.rtf", ///
+    replace label b(3) se(3) ///
+    star(* 0.10 ** 0.05 *** 0.01) ///
+    title("Automobile Price Regressions") ///
+    addnotes("Standard errors in parentheses" "*** p<0.01, ** p<0.05, * p<0.10") ///
+    indicate("Rep78 FE = *.rep78_fe*" "Foreign FE = *.foreign*")
+
+```
+
+:::
 
 :::
 
