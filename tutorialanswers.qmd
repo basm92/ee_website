@@ -4,6 +4,6 @@ title: "Tutorial Answers"
 
 Below, the tutorial solutions can be found:
 
-- [Tutorial 1](tutorials/tutorial1/tutorial1_solutions.pdf)
-- [Tutorial 2](tutorials/tutorial2/tutorial2_solutions.pdf)
-- [Tutorial 3](tutorials/tutorial3/tutorial3_solutions.pdf)
+- [Tutorial 1](tutorial_solutions/tutorial1_solutions.qmd)
+- [Tutorial 2](tutorial_solutions/tutorial2_solutions.qmd)
+- [Tutorial 3](tutorial_solutions/tutorial3_solutions.qmd)
