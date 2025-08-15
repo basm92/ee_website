@@ -1,0 +1,27 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 5: Panel Data"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial - Panel Data'
+resources:
+  - demo.pdf
+---
+
+# Tutorial 4
+
+## Recapitulation of the Lecture
+
+## Slide 1
+
+## Slide 2
+
+# Questions
