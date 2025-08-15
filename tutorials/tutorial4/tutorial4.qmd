@@ -26,64 +26,101 @@ resources:
 
 # Questions
 
-## Interpreting Stationarity
-The lecture states that for a time series to be covariance stationary, three conditions must be met (constant mean, constant variance, and constant autocovariance). Explain in your own words why a time series representing the national debt of a country, which has been consistently increasing for the last 50 years, would violate at least two of these conditions.
+## Forecasting US Economic Growth
 
-## ACF and Model Memory
-Compare and contrast the theoretical Autocorrelation Function (ACF) of an AR(1) process with $\rho = 0.9$ and an MA(1) process. How does the ACF of each model reflect the "memory" of the process, and what does this imply about how a shock in one period affects future values in each case?
+This question focuses on **univariate modeling and prediction**. You will model the fertility rate using the `FERTIL3.DTA` dataset. Import it into R/Python/Stata and 
+
+1. Fit an Autoregressive, AR(p), model. Use an information criterion (like the AIC or BIC/SIC) to select the optimal number of lags, `p`.
+
+2. Using the autoregressive specification you've found, compute (by hand) a forcast of two periods into the future. 
+
+2. Generate a forecast from your fitted model for 10 periods after the end of the dataset. 
+
+3. What happens to the forecast after a certain number of periods?
+
+
+## Investigating Stationarity and Spurious Regression
+
+This question tests your ability to identify **non-stationary data and avoid spurious regression**. You will investigate the relationship between housing inventory (the dependent variable) and population size (the independent variable) from the `HSEINV.DTA` dataset. 
+
+1. Run a simple OLS regression with the Housing Inventory (`inv`) as the dependent variable and Population (`pop`) as the independent variable.
+
+2. Report the R-squared value and the t-statistic (or p-value) for the `inv` coefficient. What would a naive interpretation of these results suggest about the relationship between these two variables?
+
+3. Run the Breusch-Godfrey test with `order=1` and report the $p$-value. What does this suggest? 
+
+4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
+
+## Derivation of the Unconditional Mean of an AR(1) Process
+
+The lecture notes mention that for a stationary AR(1) process, $Y_t = \alpha + \rho Y_{t-1} + u_t$ (with $|\rho|<1$), the unconditional mean is $E(Y_t) = \frac{\alpha}{1-\rho}$.
+
+Prove this result.
+
+*Hint: Start by taking the expected value of both sides of the AR(1) equation. Then, use the stationarity assumption, which implies that $E(Y_t) = E(Y_{t-1}) = \mu$, and solve for $\mu$.*
+
+## Statistical Properties of an MA(1) Process
+
+Consider the Moving Average model of order 1, or MA(1):
+$Y_t = \mu + u_t + \theta u_{t-1}$
+where $u_t$ is a white noise process with mean 0 and variance $\sigma^2_u$.
+
+Derive the following properties for the MA(1) process:
+
+  1. The mean: $E(Y_t)$
+  2. The variance: $Var(Y_t) = \gamma_0$
+  3. The first-order autocovariance: $Cov(Y_t, Y_{t-1}) = \gamma_1$
+  4. The second-order autocovariance: $Cov(Y_t, Y_{t-2}) = \gamma_2$
+  5. Based on your result for (d), what can you conclude about the "memory" of an MA(1) process?
+
+## Proving the Stationarity of a Differenced Random Walk
+
+A random walk, $Y_t = Y_{t-1} + u_t$, is the classic example of a non-stationary process. The lecture suggests that differencing the data can induce stationarity.
+
+Show that the first difference of a random walk, defined as $\Delta Y_t = Y_t - Y_{t-1}$, is a stationary process.
+
+*Hint: To prove stationarity, you must show that $\Delta Y_t$ satisfies the three conditions: constant mean, constant variance, and constant autocovariance that depends only on the lag.*
+
+## The Koyck Transformation
+
+The lecture introduces the Koyck (Geometric) Distributed Lag model, which transforms an infinite lag model into a simple autoregressive form.
+
+Start with the infinite lag model where the coefficients decline geometrically:
+$$Y_t = \alpha + \beta_0 X_t + \beta_0 \lambda X_{t-1} + \beta_0 \lambda^2 X_{t-2} + \dots + u_t$$
+
+Show all the algebraic steps required to transform this equation into the ARDL form:
+$$Y_t = \alpha(1-\lambda) + \beta_0 X_t + \lambda Y_{t-1} + v_t$$
+where $v_t = u_t - \lambda u_{t-1}$.
+
+*Hint: Write out the equation for $Y_{t-1}$, multiply it by $\lambda$, and then subtract this new equation from the original equation for $Y_t$.*
+
+## Calculating the Long-Run Multiplier for a Specific ARDL Model
+
+The lecture provides the general formula for the Long-Run Multiplier (LRM). Now, apply that logic to a specific case. Consider the following ARDL(2,1) model:
+
+$$Y_t = 10 + 0.5 Y_{t-1} + 0.2 Y_{t-2} + 2.0 X_t - 0.8 X_{t-1} + u_t$$
+
+**Task:** Calculate the Long-Run Multiplier for this model.
+
+  1. First, derive the algebraic expression for the LRM using the equilibrium condition where $Y_t = Y_{t-1} = Y_{t-2} = Y_{eq}$ and $X_t = X_{t-1} = X_{eq}$.
+  2. Second, substitute the numerical coefficients from the model to find the value of the LRM.
+  3. Provide a one-sentence interpretation of the numerical value you calculated.
 
 ## The Random Walk Hypothesis
+
 The lecture defines a random walk as an AR(1) model with $\rho=1$. If the daily price of a stock is believed to follow a random walk, what is the single best piece of information you could use to forecast its price for tomorrow? Explain why a shock (e.g., unexpected good news) on a given day has a "permanent" effect on the future price path of the stock.
-
-## Spurious Regression Intuition
-
-Imagine you run a regression of the annual number of babies born in Canada on the annual number of storks spotted in Germany over the last 30 years. Both series have a slight upward trend. Based on the lecture's discussion of spurious regression, what results would you expect to see for the R-squared value and the t-statistic of the "storks" coefficient? Why would these results be misleading?
 
 ## The Role of the Breusch-Godfrey Test
 
-You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and suspect the relationship might be spurious. You run a Breusch-Godfrey test with an order of p=2 and get a very small p-value (e.g., 0.001). What is the null hypothesis of this test, and what does this result tell you about the error term $\epsilon_t$? How does this finding support the concern about a spurious regression?
+You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and suspect the relationship might be spurious. You run a Breusch-Godfrey test with an order of p=2 and get a very small p-value (e.g., 0.001). 
+
+What is the null hypothesis of this test, and what does this result tell you about the error term $\epsilon_t$? How does this finding support the concern about a spurious regression?
 
 ## ARDL Model Interpretation
-In an ARDL(1,1) model, $Y_t = \alpha + \rho_1 Y_{t-1} + \beta_0 X_t + \beta_1 X_{t-1} + u_t$, the long-run multiplier is given by the formula $\theta = (\beta_0 + \beta_1) / (1 - \rho_1)$. Provide an intuitive explanation for why we divide the sum of the X-coefficients by $(1 - \rho_1)$. What role does the persistence factor, $\rho_1$, play in determining the total long-run effect?
 
-## Analyzing the Simulated Correlogram
+In an ARDL(1,1) model, $Y_t = \alpha + \rho_1 Y_{t-1} + \beta_0 X_t + \beta_1 X_{t-1} + u_t$, the long-run multiplier is given by the formula $\theta = (\beta_0 + \beta_1) / (1 - \rho_1)$. 
 
-Look at the "Simulated Correlogram (ACF Plot)" in the lecture.
-a) The autocorrelation at Lag 1 is approximately 0.8. What does this value tell you about the relationship between an observation and its immediately preceding value?
-b) The plot shows the autocorrelations decaying and moving towards zero as the lag increases. Is this behavior more consistent with a stationary or a non-stationary process? Why?
+Provide an intuitive explanation for why we divide the sum of the X-coefficients by $(1 - \rho_1)$. What role does the persistence factor, $\rho_1$, play in determining the total long-run effect?
 
-## Interpreting the Simulated AR(1) Process Plot
 
-Examine the plot titled "Simulation of a Stationary AR(1) Process."
-a) The simulation was generated with $\rho=0.9$ and a theoretical mean of 20. Does the plotted series appear to be stationary? Explain your reasoning by referring to the visual characteristics of the plot (e.g., its movement around the mean).
-b) If the autoregressive parameter $\rho$ were changed from 0.9 to 0.2, how would you expect the appearance of the time series plot to change? Would it look more or less "jagged"?
 
-## Contrasting Stationary and Non-Stationary Plots
-
-Compare the "Simulation of a Stationary AR(1) Process" plot with the "Simulation of a Random Walk" plot.
-a) What is the most obvious visual difference between the two simulations?
-b) The AR(1) plot has a red dashed line indicating the theoretical mean, but the Random Walk plot does not. Based on the properties of a random walk discussed in the lecture, explain why plotting a constant mean would be inappropriate for that series.
-
-## Interpreting Breusch-Godfrey Test R Code Output
-
-In the R example for the Breusch-Godfrey test, the output for `bg_test_order1` shows a very small p-value.
-a) What specific statistical conclusion do you draw from this result?
-b) The OLS regression summary for `ols_model` shows that the coefficient on `X` is statistically significant. Given the result of the Breusch-Godfrey test, why should you be skeptical of the reliability of this significance test?
-
-## Interpreting Distributed Lag Model Coefficients
-
-Suppose you estimate the following Distributed Lag (DL) model to assess the effect of advertising spending (AD) on sales (S), both measured in thousands of dollars:
-$S_t = 20 + 1.5 AD_t + 1.1 AD_{t-1} + 0.6 AD_{t-2} + u_t$
-a) What is the immediate impact on sales of a $1,000 increase in advertising spending?
-b) What is the total, long-run effect on sales of a permanent $1,000 increase in advertising spending?
-
-## Analyzing ARDL Model Python Code
-
-In the Python code example for estimating an ARDL model, imagine the final output for the `long_run_effects` is:
-```
-LRY      1.25
-IBO     -0.80
-const    5.50
-dtype: float64
-```
-Based on this output, what would be the total expected change in the long-run equilibrium level of `LRM` if `LRY` permanently increases by one unit, assuming `IBO` remains constant?

@@ -1,0 +1,387 @@
+---
+title: "Solutions Tutorial 4"
+format: html
+---
+
+## Forecasting US Economic Growth
+
+This question focuses on **univariate modeling and prediction**. You will model the fertility rate using the `FERTIL3.DTA` dataset. Import it into R/Python/Stata and 
+
+1. Fit an Autoregressive, AR(p), model. Use the Akaike information criterion to select the optimal number of lags, `p`.
+
+```{r}
+#| echo: True
+library(haven)
+fertil <- read_dta("../tutorials/datafiles/FERTIL3.DTA")
+# Estimate a number of models (up to 8)
+# Using AIC with ar() function
+ar_model <- ar(fertil$gfr, aic=TRUE, order.max=10)
+ar_model$order  # Optimal order based on AIC
+```
+
+2. Using the autoregressive specification you've found, compute (by hand) a forcast of two periods into the future. 
+
+Since the optimal order is 8, we need 8 observations to make our prediction for the next period: 
+
+```{r}
+#| echo: true
+# Get the necessary ingredients for the forecasts
+p <- ar_model$order
+coeffs <- ar_model$ar
+intercept <- ar_model$x.mean * (1 - sum(coeffs))
+last_values <- tail(fertil$gfr, p) # Get the last p observations needed for the forecast
+
+# Forecast for period T+1
+# Formula: forecast = intercept + (coeff_1 * Y_T) + (coeff_2 * Y_{T-1}) + ...
+forecast_1 <- intercept + sum(coeffs * rev(last_values))
+forecast_1
+# Forecast for period T+2
+# We need to update the "last_values" vector by prepending our first forecast
+# and dropping the oldest observation.
+new_values <- c(forecast_1, last_values[-p])
+forecast_2 <- intercept + sum(coeffs * new_values)
+forecast_2
+```
+
+2. Generate a forecast from your fitted model for 10 periods after the end of the dataset. 
+
+This can also be done using the `predict()` function in R:
+
+```{r}
+#| echo: true
+predict(ar_model, n.ahead = 10)$pred
+```
+
+3. What happens to the forecast after a certain number of periods?
+
+The forecast starts to convert towards the mean of the AR process. 
+
+## Investigating Stationarity and Spurious Regression
+
+1. Run a simple OLS regression with the Housing Inventory (`inv`) as the dependent variable and Population (`pop`) as the independent variable.
+
+```{r}
+#| echo: true
+library(haven)
+housing <- haven::read_dta("../tutorials/datafiles/HSEINV.DTA")
+model <- lm(inv ~ pop, data = housing)
+```
+
+2. Report the R-squared value and the t-statistic (or p-value) for the `inv` coefficient. What would a naive interpretation of these results suggest about the relationship between these two variables?
+
+```{r}
+#| echo: true
+summary(model)
+```
+
+3. Run the Breusch-Godfrey test with `order=1` and report the $p$-value. What does this suggest? 
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+#| 
+library(lmtest, quietly=T)
+bgtest(inv ~ pop, order=1, data=housing)
+```
+
+This suggest that there is serial autocorrelation. The model is likely misspecified. 
+
+4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
+
+```{r}
+model2 <- lm(inv ~ pop + lpop + linv, data=housing)
+bgtest(inv ~ pop + lpop + linv, order=1, data=housing)
+```
+
+After controlling for the lagged housing inventory and lagged population, there seems to be no autocorrelation in the errors. The `inv` series thus seems to follow an ARDL(1,1) model. 
+
+## Derivation of the Unconditional Mean of an AR(1) Process
+
+The task is to prove that for a stationary AR(1) process, $Y_t = \alpha + \rho Y_{t-1} + u_t$ (with $|\rho|<1$), the unconditional mean is $E(Y_t) = \frac{\alpha}{1-\rho}$.
+
+**Proof:**
+
+1.  **Start with the AR(1) equation:**
+    $$
+    Y_t = \alpha + \rho Y_{t-1} + u_t
+    $$
+
+2.  **Take the expected value of both sides:**
+    $$
+    E(Y_t) = E(\alpha + \rho Y_{t-1} + u_t)
+    $$
+
+3.  **Use the linearity of the expectation operator:**
+    $$
+    E(Y_t) = E(\alpha) + E(\rho Y_{t-1}) + E(u_t)
+    $$
+
+4.  **Apply the properties of the model's components:**
+    *   The expected value of a constant is the constant itself: $E(\alpha) = \alpha$.
+    *   The expected value of the white noise error term is zero: $E(u_t) = 0$.
+    *   We can pull the constant $\rho$ out of the expectation: $E(\rho Y_{t-1}) = \rho E(Y_{t-1})$.
+
+    Substituting these in gives:
+    $$
+    E(Y_t) = \alpha + \rho E(Y_{t-1})
+    $$
+
+5.  **Invoke the stationarity assumption:**
+    For a stationary process, the mean is constant over time. This implies that the expected value of the series at time $t$ is the same as at time $t-1$. Let's call this constant mean $\mu$.
+    $$
+    E(Y_t) = E(Y_{t-1}) = \mu
+    $$
+
+6.  **Substitute $\mu$ into the equation and solve:**
+    $$
+    \mu = \alpha + \rho \mu
+    $$
+    $$
+    \mu - \rho \mu = \alpha
+    $$
+    $$
+    \mu(1 - \rho) = \alpha
+    $$
+    $$
+    \mu = \frac{\alpha}{1 - \rho}
+    $$
+This completes the proof.
+
+
+## Statistical Properties of an MA(1) Process
+
+Consider the MA(1) process: $Y_t = \mu + u_t + \theta u_{t-1}$, where $u_t$ is white noise with $E(u_t)=0$ and $Var(u_t)=\sigma^2_u$.
+
+**1. The Mean: $E(Y_t)$**
+$$
+\begin{align}
+E(Y_t) &= E(\mu + u_t + \theta u_{t-1}) \\
+&= E(\mu) + E(u_t) + E(\theta u_{t-1}) \\
+&= \mu + 0 + \theta E(u_{t-1}) \\
+&= \mu + 0 + 0 = \mu
+\end{align}
+$$
+The mean of an MA(1) process is simply $\mu$.
+
+**2. The Variance: $Var(Y_t) = \gamma_0$**
+Since variance is unaffected by a constant mean, we look at $Var(u_t + \theta u_{t-1})$. Because $u_t$ and $u_{t-1}$ are from a white noise process, they are uncorrelated. Therefore, the variance of their sum is the sum of their variances.
+$$
+\begin{align}
+Var(Y_t) &= Var(u_t + \theta u_{t-1}) \\
+&= Var(u_t) + Var(\theta u_{t-1}) \\
+&= Var(u_t) + \theta^2 Var(u_{t-1}) \\
+&= \sigma^2_u + \theta^2 \sigma^2_u \\
+&= (1 + \theta^2)\sigma^2_u
+\end{align}
+$$
+The variance of an MA(1) process is $\gamma_0 = (1 + \theta^2)\sigma^2_u$.
+
+**3. The First-Order Autocovariance: $Cov(Y_t, Y_{t-1}) = \gamma_1$**
+$$
+\begin{align}
+\gamma_1 &= Cov(Y_t, Y_{t-1}) = E[(Y_t - \mu)(Y_{t-1} - \mu)] \\
+&= E[(u_t + \theta u_{t-1})(u_{t-1} + \theta u_{t-2})] \\
+&= E[u_t u_{t-1} + \theta u_t u_{t-2} + \theta u_{t-1}^2 + \theta^2 u_{t-1}u_{t-2}] \\
+&= E[u_t u_{t-1}] + \theta E[u_t u_{t-2}] + \theta E[u_{t-1}^2] + \theta^2 E[u_{t-1}u_{t-2}]
+\end{align}
+$$
+Using the white noise properties ($E[u_t u_s] = 0$ for $t \neq s$ and $E[u_t^2] = \sigma^2_u$):
+$$
+\gamma_1 = 0 + \theta(0) + \theta(\sigma^2_u) + \theta^2(0) = \theta \sigma^2_u
+$$
+
+**4. The Second-Order Autocovariance: $Cov(Y_t, Y_{t-2}) = \gamma_2$**
+$$
+\begin{align}
+\gamma_2 &= Cov(Y_t, Y_{t-2}) = E[(Y_t - \mu)(Y_{t-2} - \mu)] \\
+&= E[(u_t + \theta u_{t-1})(u_{t-2} + \theta u_{t-3})] \\
+&= E[u_t u_{t-2} + \theta u_t u_{t-3} + \theta u_{t-1} u_{t-2} + \theta^2 u_{t-1}u_{t-3}] \\
+&= E[u_t u_{t-2}] + \theta E[u_t u_{t-3}] + \theta E[u_{t-1} u_{t-2}] + \theta^2 E[u_{t-1}u_{t-3}]
+\end{align}
+$$
+Since all time indices in the cross-products are different, every expected value is zero.
+$$
+\gamma_2 = 0 + 0 + 0 + 0 = 0
+$$
+
+**5. Conclusion about the "Memory" of an MA(1) Process**
+The result that the autocovariance is zero for all lags of 2 or more ($\gamma_k = 0$ for $k \geq 2$) shows that an MA(1) process has a **finite memory of only one period**. A random shock at time $t-2$ (or earlier) has no correlation with the value of the series at time $t$. The effect of a shock completely vanishes from the process after two periods.
+
+
+## Proving the Stationarity of a Differenced Random Walk
+
+A random walk is given by $Y_t = Y_{t-1} + u_t$. The first difference is $\Delta Y_t = Y_t - Y_{t-1}$.
+
+1.  **Express the differenced series in its simplest form:**
+    Substitute the definition of the random walk into the differencing equation:
+    $$
+      \Delta Y_t = (Y_{t-1} + u_t) - Y_{t-1} = u_t
+    $$
+    This shows that the first difference of a random walk is simply a white noise process, $u_t$.
+
+2.  **Check the three conditions for stationarity for $\Delta Y_t$:**
+
+  - **Condition 1: Constant Mean**
+    The mean of the differenced series is:
+    $$
+    E(\Delta Y_t) = E(u_t) = 0
+    $$
+    
+    The mean is 0, which is constant for all $t$.
+
+  - **Condition 2: Constant Variance**
+    The variance of the differenced series is:
+    $$
+      Var(\Delta Y_t) = Var(u_t) = \sigma^2_u
+    $$
+    
+    The variance is $\sigma^2_u$, which is constant for all $t$.
+
+  - **Condition 3: Constant Autocovariance**
+    The autocovariance of the differenced series at lag $k > 0$ is:
+    $$
+      Cov(\Delta Y_t, \Delta Y_{t-k}) = Cov(u_t, u_{t-k})
+    $$
+    
+  By the definition of a white noise process, the covariance between error terms at different points in time is zero.
+        
+  $$
+    Cov(u_t, u_{t-k}) = 0 \quad \text{for all } k > 0
+  $$
+        
+  The autocovariance is always 0 for any positive lag, so it depends only on the lag $k$ and not on the time $t$.
+
+Since the differenced series $\Delta Y_t$ satisfies all three conditions of covariance stationarity, we have shown that differencing a random walk induces stationarity.
+
+
+## The Koyck Transformation
+
+**Derivation:**
+
+1.  **Start with the infinite lag model (Equation 1):**
+    $$
+    Y_t = \alpha + \beta_0 X_t + \beta_0 \lambda X_{t-1} + \beta_0 \lambda^2 X_{t-2} + \dots + u_t
+    $$
+
+2.  **Lag Equation 1 by one period to get the expression for $Y_{t-1}$ (Equation 2):**
+    $$
+    Y_{t-1} = \alpha + \beta_0 X_{t-1} + \beta_0 \lambda X_{t-2} + \beta_0 \lambda^2 X_{t-3} + \dots + u_{t-1}
+    $$
+
+3.  **Multiply Equation 2 by $\lambda$ to get Equation 3:**
+    $$
+    \lambda Y_{t-1} = \lambda \alpha + \beta_0 \lambda X_{t-1} + \beta_0 \lambda^2 X_{t-2} + \beta_0 \lambda^3 X_{t-3} + \dots + \lambda u_{t-1}
+    $$
+
+4.  **Subtract Equation 3 from Equation 1 ($Y_t - \lambda Y_{t-1}$):**
+    $$
+    Y_t - \lambda Y_{t-1} = (\alpha - \lambda\alpha) + \beta_0 X_t + (\beta_0\lambda X_{t-1} - \beta_0\lambda X_{t-1}) + (\beta_0\lambda^2 X_{t-2} - \beta_0\lambda^2 X_{t-2}) + \dots + (u_t - \lambda u_{t-1})
+    $$
+
+5.  **Simplify the expression:**
+    Notice that all lagged terms of X cancel out. The remaining terms are:
+    $$
+    Y_t - \lambda Y_{t-1} = \alpha(1-\lambda) + \beta_0 X_t + (u_t - \lambda u_{t-1})
+    $$
+
+6.  **Rearrange and define the new error term:**
+    Isolate $Y_t$ on the left side and define a new error term $v_t = u_t - \lambda u_{t-1}$.
+    $$
+    Y_t = \alpha(1-\lambda) + \beta_0 X_t + \lambda Y_{t-1} + v_t
+    $$
+This completes the transformation into the desired ARDL form.
+
+
+##  Calculating the Long-Run Multiplier for a Specific ARDL Model
+
+The ARDL(2,1) model is:
+$$
+Y_t = 10 + 0.5 Y_{t-1} + 0.2 Y_{t-2} + 2.0 X_t - 0.8 X_{t-1} + u_t
+$$
+
+**1. Algebraic Derivation of the LRM**
+
+*   In the long-run equilibrium, we assume variables are constant: $Y_t = Y_{t-1} = Y_{t-2} = Y_{eq}$ and $X_t = X_{t-1} = X_{eq}$. We also assume $E(u_t)=0$.
+*   Substitute these into the model:
+    $$
+    Y_{eq} = 10 + 0.5 Y_{eq} + 0.2 Y_{eq} + 2.0 X_{eq} - 0.8 X_{eq}
+    $$
+*   Group the $Y_{eq}$ and $X_{eq}$ terms:
+    $$
+    Y_{eq} - 0.5 Y_{eq} - 0.2 Y_{eq} = 10 + (2.0 - 0.8) X_{eq}
+    $$
+*   Factor out $Y_{eq}$:
+    $$
+    Y_{eq}(1 - 0.5 - 0.2) = 10 + (2.0 - 0.8) X_{eq}
+    $$
+*   The general form is $Y_{eq} = \frac{c}{1-\sum\rho_i} + \frac{\sum\beta_j}{1-\sum\rho_i} X_{eq}$. The LRM is the coefficient on $X_{eq}$:
+    $$
+    \text{LRM} = \theta = \frac{\sum\beta_j}{1-\sum\rho_i}
+    $$
+
+**2. Numerical Calculation**
+
+*   Sum of the coefficients on the explanatory variable (the $\beta$'s):
+    $$
+    \sum\beta_j = 2.0 + (-0.8) = 1.2
+    $$
+*   Sum of the coefficients on the lagged dependent variable (the $\rho$'s):
+    $$
+    \sum\rho_i = 0.5 + 0.2 = 0.7
+    $$
+*   Substitute these values into the LRM formula:
+    $$
+    \text{LRM} = \frac{1.2}{1 - 0.7} = \frac{1.2}{0.3} = 4.0
+    $$
+
+**3. Interpretation**
+
+A permanent one-unit increase in X is associated with a total long-run change of **4.0 units** in Y, after all dynamic adjustments are complete.
+
+
+## The Random Walk Hypothesis
+
+**1. Best Forecast for Tomorrow's Price:**
+If a stock's price follows a random walk ($Y_t = Y_{t-1} + u_t$), the single best piece of information to forecast its price for tomorrow is **today's price**. The mathematical forecast for tomorrow's price ($Y_{t+1}$), given all information up to today, is the conditional expectation $E(Y_{t+1}|Y_t, Y_{t-1}, ...)$. This simplifies to:
+$$
+E(Y_{t+1}|Y_t) = E(Y_t + u_{t+1}|Y_t) = Y_t + E(u_{t+1}) = Y_t + 0 = Y_t
+$$
+Therefore, the best forecast for tomorrow's value is simply today's value.
+
+**2. "Permanent" Effect of a Shock:**
+A shock $u_t$ has a permanent effect because it is fully incorporated into the level of the series from that point forward. Consider the price at time $t$: $Y_t = Y_{t-1} + u_t$. The price at time $t+1$ is $Y_{t+1} = Y_t + u_{t+1}$. The price at time $t+k$ can be written as:
+
+$$
+Y_{t+k} = Y_t + u_{t+1} + u_{t+2} + \dots + u_{t+k}
+$$
+
+Since the initial shock $u_t$ is part of the term $Y_t$, its value is carried forward indefinitely in all future values of the series. Unlike a stationary process where shocks eventually dissipate, in a random walk, a shock permanently shifts the entire future path of the series up or down.
+
+
+## The Role of the Breusch-Godfrey Test
+
+**1. Null Hypothesis:**
+The null hypothesis ($H_0$) of the Breusch-Godfrey test is that there is **no serial correlation** in the error term, $\epsilon_t$, up to the specified lag order $p$. For $p=2$, the null is explicitly $H_0: \rho_1 = 0 \text{ and } \rho_2 = 0$ in the auxiliary regression of residuals: $\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + v_t$.
+
+**2. Interpretation of the Result:**
+A very small p-value (e.g., 0.001) is less than conventional significance levels (like 0.05 or 0.01). Therefore, you **reject the null hypothesis**. This result provides strong statistical evidence that the error term $\epsilon_t$ is serially correlated.
+
+**3. Support for Spurious Regression Concern:**
+This finding strongly supports the concern that the regression is spurious. A key symptom of a spurious regression—where two unrelated, non-stationary variables are regressed on each other—is that the residuals are also highly persistent and autocorrelated. By confirming the presence of significant serial correlation in the errors, the Breusch-Godfrey test indicates that a critical assumption for valid OLS inference (uncorrelated errors) is violated. This suggests that the model is misspecified and that the apparently significant relationship between X and Y is likely a statistical artifact of them sharing a common trend, not a true economic connection.
+
+
+## ARDL Model Interpretation
+
+**Intuitive Explanation of the LRM Formula: $\theta = (\beta_0 + \beta_1) / (1 - \rho_1)$**
+
+- The numerator, $(\beta_0 + \beta_1)$, represents the **total immediate and one-period-delayed impact** of a one-unit change in X on Y. However, this is not the end of the story. The change in Y itself triggers a feedback loop because of the autoregressive term, $\rho_1 Y_{t-1}$.
+
+- The denominator, $(1 - \rho_1)$, can be interpreted as the **proportion of Y that is "new" in each period**, i.e., the part that is not simply a carry-over from the previous period. Dividing the total initial impact of X by this "new" proportion effectively scales up the initial effect to account for the full, cumulative impact after the feedback mechanism has run its course over all future periods.
+
+**Role of the Persistence Factor, $\rho_1$**
+
+The persistence factor $\rho_1$ is crucial because it dictates the **strength and duration of the feedback effect**:
+
+  - **If $\rho_1$ is close to 1 (high persistence):** The denominator $(1-\rho_1)$ becomes very small. Dividing by a small number makes the long-run multiplier **much larger** than the initial impact. This is because a shock to Y dies out very slowly, allowing the feedback effects to accumulate over many periods, leading to a large total change.
+  - **If $\rho_1$ is close to 0 (low persistence):** The denominator $(1-\rho_1)$ is close to 1. The long-run multiplier will be **very close to the initial impact** $(\beta_0 + \beta_1)$. This happens because any shock to Y dissipates quickly, so the feedback effects are weak and do not add much to the total effect.
