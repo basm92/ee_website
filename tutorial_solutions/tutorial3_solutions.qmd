@@ -25,7 +25,6 @@ The regression model is: `price = 300,000 + 1500 * sqmtr`, with R² = 0.64.
 -   The new equation would be: `price_k = 300 + 1.5 * sqmtr`
 -   The interpretation changes accordingly: The intercept is now 300 thousand euros, and each additional square meter increases the predicted price by 1.5 measured in the new units (thousands of euros).
 
-\clearpage
 
 ## Log-Log Model
 
@@ -36,7 +35,6 @@ The regression result is: `log(Sales) = 2.1 - 0.85 * log(Ad_Price)`.
 -   **Interpretation:** In a log-log model, the coefficient represents an elasticity. A **1% increase in the advertising price (`Ad_Price`) is associated with a 0.85% decrease in product sales (`Sales`)**, on average.
 -   **Economic Term:** This value is the **price elasticity of demand**. Since the absolute value is less than 1 (\|-0.85\| \< 1), we would say that the demand for the product is **inelastic** with respect to the advertising price.
 
-\clearpage
 
 ## Error Term and Residual
 
@@ -47,7 +45,6 @@ The regression result is: `log(Sales) = 2.1 - 0.85 * log(Ad_Price)`.
     -   The **OLS residual (**$e_i$ or $\hat{u}_i$) is the vertical distance between a data point ($y_i$) and the *estimated sample regression line*. It is the prediction error from our estimated model. $e_i = y_i - \hat{y}_i = y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)$
 -   **Why we can't observe** $u_i$: We cannot observe the population error term $u_i$ because we do not know the true population parameters $\beta_0$ and $\beta_1$. We can only estimate them using a sample of data, which gives us $\hat{\beta}_0$ and $\hat{\beta}_1$. Because we can calculate $\hat{\beta}_0$ and $\hat{\beta}_1$ from our sample, we can calculate the residual $e_i$ for each observation.
 
-\clearpage
 
 ## Proving a Fundamental OLS Property
 
@@ -65,7 +62,6 @@ The regression result is: `log(Sales) = 2.1 - 0.85 * log(Ad_Price)`.
 
 This proves that when the input is the sample mean of x, the predicted output is the sample mean of y. Therefore, the OLS regression line always passes through the point of sample means $(\bar{x}, \bar{y})$.
 
-\clearpage
 
 ## Unbiasedness
 
@@ -106,7 +102,6 @@ This proves that when the input is the sample mean of x, the predicted output is
 
 6.  Substitute back into the main equation: $$ E(\hat{\beta}_1|X) = \beta_1 + 0 $$ $$ E(\hat{\beta}_1|X) = \beta_1 $$ This proves that the OLS slope estimator is unbiased.
 
-\clearpage
 
 ## Omitted Variable Bias
 
@@ -129,7 +124,6 @@ This proves that when the input is the sample mean of x, the predicted output is
 
 6.  Now, take the expectation. We assume that in the population, the relationship between $x_2$ and $x_1$ is $E(x_2|x_1) = \delta_0 + \delta_1 x_1$. So $E(\hat{\delta}_1) = \delta_1$. $$ E(\hat{\gamma}_1) = E(\beta_1) + E(\beta_2 \hat{\delta}_1) + E(\text{error term}) $$ $$ E(\hat{\gamma}_1) = \beta_1 + \beta_2 E(\hat{\delta}_1) + 0 \quad (\text{since } E(u|X)=0) $$ $$ E(\hat{\gamma}_1) = \beta_1 + \beta_2 \delta_1 $$ The term $\beta_2 \delta_1$ is the **omitted variable bias**.
 
-\clearpage
 
 ## Marginal Effects
 
@@ -148,7 +142,6 @@ This proves that when the input is the sample mean of x, the predicted output is
 
 -   Thus, a 1% change in $x$ is associated with an approximate change in $y$ of $(\beta_1/100)$ units.
 
-\clearpage
 
 ## Perfect Multicollinearity
 
@@ -167,7 +160,6 @@ This proves that when the input is the sample mean of x, the predicted output is
 -   The variance of the estimator becomes: $$ Var(\hat{\beta}_1) = \frac{\sigma^2}{0} \rightarrow \infty $$
 -   Since the variance of the estimator is infinite, the OLS estimator is undefined. The OLS procedure fails because it is mathematically impossible to distinguish the unique effect of $x_1$ from the effect of $x_2$ when they are perfectly linearly related.
 
-\clearpage
 
 ## Zero Conditional Mean
 
@@ -191,7 +183,6 @@ This proves that when the input is the sample mean of x, the predicted output is
     -   $\delta_1$ is the correlation between the included variable (education) and the omitted variable (ability). This correlation is also positive ($\delta_1 > 0$).
 -   Since the bias term is the product of two positive numbers, the bias is positive. The OLS estimate $\hat{\beta}_1$ will mistakenly attribute some of the wage-increasing effect of ability to education, leading to an estimate that is larger than the true causal effect of education on wages.
 
-\clearpage
 
 ## Variance of the OLS Estimator
 
@@ -203,7 +194,6 @@ The variance formula is $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$. To increa
 
 2.  **Increase the Total Sum of Squares of x (**$SST_x$): $SST_x = \sum(x_i - \bar{x})^2$. This term measures the total variation in the explanatory variable. In your experiment, this means you should **use a wider range of fertilizer amounts (**$x$) across your different plots. Intuitively, it is easier to detect a trend line if the points are spread far apart horizontally than if they are all bunched together. More variation in $x$ provides more information to pin down the slope of the regression line.
 
-\clearpage
 
 ## R-squared
 
@@ -212,7 +202,6 @@ The variance formula is $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$. To increa
 -   A high R-squared is not the ultimate goal because it only measures **goodness-of-fit**, not **causal validity**. A model can have a very high R-squared but still suffer from severe omitted variable bias, making its coefficients unreliable for policy decisions. For example, a model predicting crime rates using ice cream sales might have a high R-squared in the summer, but the relationship is spurious.
 -   What is often more important is obtaining an **unbiased and consistent estimate of a specific coefficient** that represents a causal effect of interest. For policy, we need to know the true causal impact of changing a variable (e.g., years of education, police funding, carbon tax). This requires a model specification that is theoretically sound and minimizes biases (like OVB), even if it results in a lower R-squared. **Unbiasedness is usually more important than fit.**
 
-\clearpage
 
 ## Omitted Variable Bias
 
@@ -227,7 +216,6 @@ The variance formula is $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$. To increa
     -   **Measurement:** These variables are difficult to measure accurately. "Ability" is a complex construct, and IQ tests are controversial. "School quality" is also multifaceted and hard to summarize with a single number.
     -   **Privacy:** Data on IQ and parental income are highly sensitive and can be difficult to obtain due to privacy concerns.
 
-\clearpage
 
 ## OLS Minimization
 
@@ -241,7 +229,6 @@ The variance formula is $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$. To increa
     2.  **Penalizes Large Errors More:** Squaring gives much more weight to large errors than to small ones (e.g., an error of 2 becomes 4, but an error of 10 becomes 100). This is often desirable, as it forces the line to fit the bulk of the data well by avoiding large deviations.
     3.  **Mathematical Convenience:** The sum of squares is a smooth, differentiable function. Using calculus, we can easily derive a unique, closed-form analytical solution for the estimators $\hat{\beta}_0$ and $\hat{\beta}_1$. Minimizing the sum of absolute values (Least Absolute Deviations, or LAD) is computationally more complex and may not have a unique solution.
 
-\clearpage
 
 ## Polynomials
 

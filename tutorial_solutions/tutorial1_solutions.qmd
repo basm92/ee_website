@@ -3,7 +3,7 @@ title: "Solutions Tutorial 1"
 format: html
 ---
 
-### Events, Intersections, and Unions
+## Events, Intersections, and Unions
 
 A standard 52-card deck has 4 suits (Hearts, Diamonds, Clubs, Spades) and 13 ranks (2-10, J, Q, K, A).
 
@@ -15,9 +15,7 @@ A standard 52-card deck has 4 suits (Hearts, Diamonds, Clubs, Spades) and 13 ran
 
 4.  **P(A U B): Probability of drawing a King OR a Heart** Using the formula for the union of events: $$ P(A \cup B) = P(A) + P(B) - P(A \cap B) = \frac{4}{52} + \frac{13}{52} - \frac{1}{52} = \frac{16}{52} = \frac{4}{13} \approx 0.3077 $$
 
-\clearpage
-
-### Solution: Conditional Probability
+## Conditional Probability
 
 1.  **P(A\|B): Probability of a King, given it's a Heart** $$ P(A|B) = \frac{P(A \cap B)}{P(B)} = \frac{1/52}{13/52} = \frac{1}{13} $$ *Intuition: If we know the card is a Heart, our sample space is reduced to the 13 Hearts. Of those, only one is a King.*
 
@@ -30,7 +28,7 @@ A standard 52-card deck has 4 suits (Hearts, Diamonds, Clubs, Spades) and 13 ran
 
 \clearpage
 
-### Solution: Simulating an Experiment
+## Simulating an Experiment
 
 ``` python
 import numpy as np
@@ -72,7 +70,7 @@ print(f"P(King U Heart):  Theoretical={16/52:.4f}, Empirical={prob_A_union_B_emp
 
 \clearpage
 
-### Solution: PMF, Expected Value, and Variance
+## Solution: PMF, Expected Value, and Variance
 
 1.  **Verify PMF:** The function is a valid PMF because all probabilities are non-negative and they sum to 1: $$ 0.1 + 0.5 + 0.3 + 0.1 = 1.0 $$
 
@@ -82,9 +80,8 @@ print(f"P(King U Heart):  Theoretical={16/52:.4f}, Empirical={prob_A_union_B_emp
 
 4.  **Probability of buying more than one item:** $$ P(X > 1) = P(X=2) + P(X=3) = 0.3 + 0.1 = 0.4 $$
 
-\clearpage
 
-### Solution: The Bernoulli Distribution in Theory and Programming
+## The Bernoulli Distribution in Theory and Programming
 
 **(a) Theoretical Calculation**
 
@@ -115,9 +112,7 @@ print(f"Theoretical Var(X) = {0.0475:.6f}")
 print(f"Simulated variance = {sample_var:.6f}")
 ```
 
-\clearpage
-
-### Solution: Standardization and Z-scores
+## Standardization and Z-scores
 
 Given $R \sim N(\mu=0.12, \sigma=0.20)$.
 
@@ -129,7 +124,7 @@ Given $R \sim N(\mu=0.12, \sigma=0.20)$.
 
 \clearpage
 
-### Solution: Calculating Probabilities and Quantiles
+## Calculating Probabilities and Quantiles
 
 ``` python
 from scipy.stats import norm
@@ -160,7 +155,7 @@ print(f"4. The 5th percentile return is: {p5:.4f} (or {p5:.2%})")
 
 \clearpage
 
-### Solution: Linear Combinations of Normal Variables
+## Linear Combinations of Normal Variables
 
 **(a) Theoretical Calculation**
 
@@ -203,7 +198,7 @@ plt.show()
 
 \clearpage
 
-### Solution: Rules of Expectation and Variance
+## Rules of Expectation and Variance
 
 Given: $E[X] = 10, Var(X) = 4, E[Y] = 5, Var(Y) = 9, Cov(X, Y) = -2$.
 
@@ -219,7 +214,7 @@ Given: $E[X] = 10, Var(X) = 4, E[Y] = 5, Var(Y) = 9, Cov(X, Y) = -2$.
 
 \clearpage
 
-### Solution: Interpreting Conditional Expectation
+## Interpreting Conditional Expectation
 
 **(a) Expected income for 12 years of education** We substitute $e=12$ into the formula: $$ E[I | E=12] = 15000 + 4000(12) = 15000 + 48000 = \$63,000 $$
 

@@ -295,7 +295,7 @@ Use the `WAGE2.DTA` dataset. Import it in R/Python/Stata. Conduct a hypothesis t
 import pandas as pd
 import numpy as np
 np.random.seed(42)
-data = pd.read_stata("../datafiles/WAGE2.DTA")
+data = pd.read_stata("../tutorials/datafiles/WAGE2.DTA")
 mu_0 = 100
 ```
 
