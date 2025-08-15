@@ -16,7 +16,7 @@ resources:
   - demo.pdf
 ---
 
-# Tutorial 4
+# Tutorial 5
 
 ## Recapitulation of the Lecture
 
@@ -25,3 +25,65 @@ resources:
 ## Slide 2
 
 # Questions
+
+## The Omitted Variable Bias Problem in Pooled OLS
+
+The Pooled OLS model ignores the panel structure of the data and can suffer from omitted variable bias if unobserved individual characteristics are correlated with the regressors. The Fixed Effects model is designed to solve this problem.
+
+1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).
+2.  Estimate a **Pooled OLS** model to predict `lwage` using `exper` (experience), `expersq` (experience squared), and `union`.
+3.  Estimate a **Fixed Effects ("within")** model using the same variables.
+4.  Present the results of both models side-by-side in a single table.
+5.  **Interpret the difference:** Pay close attention to the coefficient for the `union` variable. Why is the estimated return to union membership different in the FE model compared to the Pooled OLS model? What does this suggest about how union members may differ from non-union members in ways not captured by the other variables?
+
+## Choosing Your Model 
+
+While the Fixed Effects (FE) model is robust to correlation between unobserved effects and regressors, the Random Effects (RE) model is more efficient *if* its key assumption (that this correlation is zero) holds. The Hausman test is the standard tool for making this choice.
+
+1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.
+2.  Estimate the corresponding **Fixed Effects** model with the same variables.
+3.  Perform a **Hausman test** to formally compare the two models.
+4.  **Conclude:** Based on the p-value of the test, which model should you choose? Clearly state the null hypothesis of the Hausman test and explain what your result implies about the relationship between the unobserved individual effects ($\alpha_i$) and the explanatory variables in your model.
+
+## Visualizing Unobserved Heterogeneity
+
+The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.
+
+1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
+2.  Extract the individual fixed effects from your estimated model.
+3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
+4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
+
+## Time-Invariant Variables
+
+A critical drawback of the Fixed Effects model is that it cannot estimate the coefficients of time-invariant variables. The "within" transformation, which subtracts the individual-specific mean, wipes out any variable that is constant over time for an individual.
+
+1.  Attempt to estimate a **Fixed Effects** model for `lwage` that includes both time-varying (`union`, `married`) and time-invariant (`black`, `hisp`) predictors.
+2.  Observe the model output. What happens to the coefficients for the `black` and `hisp` variables?
+3.  Now, estimate a **Random Effects** model using the exact same set of predictors.
+4.  **Explain the difference:** Why can the RE model provide estimates for `black` and `hisp` while the FE model cannot? Relate your answer directly to the underlying mathematical transformation of each estimator.
+
+## Efficiency of FD vs. FE Estimators
+
+The lecture notes that the First Difference (FD) estimator can be more efficient than the Fixed Effects (FE) estimator if the idiosyncratic error term, $\epsilon_{it}$, follows a random walk. 
+
+Let the error term be defined as $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, where $\nu_{it}$ is a white noise error. 
+
+Show mathematically how the error term in the transformed FD model ($\Delta \epsilon_{it}$) becomes non-serially correlated, while the error term in the transformed FE model ($\epsilon_{it} - \bar{\epsilon}_i$) remains serially correlated.
+
+## Interpreting the Hausman Test Statistic
+
+The Hausman test is based on the difference between the coefficient vectors from the Fixed Effects and Random Effects models, $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$. 
+
+In mathematical terms, what is the null hypothesis ($H_0$) of the Hausman test regarding the unobserved individual-specific effects, $\alpha_i$? 
+
+Why would a large, statistically significant test statistic lead you to conclude that the Random Effects estimates are inconsistent?
+
+## Random Effects and the Role of $\theta$
+
+The Random Effects model can be estimated using a transformation involving a parameter $\theta$, where $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T \sigma^2_\alpha + \sigma^2_\epsilon)}}$. Analyze the behavior of $\theta$ under two extreme scenarios:
+
+a. What happens to the value of $\theta$ as the variance of the individual-specific effect, $\sigma^2_\alpha$, approaches zero? What does the Random Effects model simplify to in this case?
+
+b. What happens to the value of $\theta$ as the number of time periods, $T$, becomes very large ($T \to \infty$)? To which other estimator does the Random Effects estimator become equivalent in this scenario?
+
