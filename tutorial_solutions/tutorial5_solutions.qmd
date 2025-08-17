@@ -1,0 +1,138 @@
+---
+title: "Solutions Tutorial 5"
+format: html
+---
+
+```{r setup}
+#| echo: false
+
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+
+## The Omitted Variable Bias Problem in Pooled OLS
+
+The Pooled OLS model ignores the panel structure of the data and can suffer from omitted variable bias if unobserved individual characteristics are correlated with the regressors. The Fixed Effects model is designed to solve this problem.
+
+1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).
+2.  Estimate a **Pooled OLS** model to predict `lwage` using `exper` (experience), `expersq` (experience squared), and `union`.
+3.  Estimate a **Fixed Effects ("within")** model using the same variables.
+4.  Present the results of both models side-by-side in a single table.
+5.  **Interpret the difference:** Pay close attention to the coefficient for the `union` variable. Why is the estimated return to union membership different in the FE model compared to the Pooled OLS model? What does this suggest about how union members may differ from non-union members in ways not captured by the other variables?
+
+
+## Choosing Your Model 
+
+While the Fixed Effects (FE) model is robust to correlation between unobserved effects and regressors, the Random Effects (RE) model is more efficient *if* its key assumption (that this correlation is zero) holds. The Hausman test is the standard tool for making this choice.
+
+1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.
+2.  Estimate the corresponding **Fixed Effects** model with the same variables.
+3.  Perform a **Hausman test** to formally compare the two models.
+4.  **Conclude:** Based on the p-value of the test, which model should you choose? Clearly state the null hypothesis of the Hausman test and explain what your result implies about the relationship between the unobserved individual effects ($\alpha_i$) and the explanatory variables in your model.
+
+
+
+## Visualizing Unobserved Heterogeneity
+
+The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.
+
+1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
+2.  Extract the individual fixed effects from your estimated model.
+3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
+4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
+
+## Time-Invariant Variables
+
+A critical drawback of the Fixed Effects model is that it cannot estimate the coefficients of time-invariant variables. The "within" transformation, which subtracts the individual-specific mean, wipes out any variable that is constant over time for an individual.
+
+1.  Attempt to estimate a **Fixed Effects** model for `lwage` that includes both time-varying (`union`, `married`) and time-invariant (`black`, `hisp`) predictors.
+2.  Observe the model output. What happens to the coefficients for the `black` and `hisp` variables?
+3.  Now, estimate a **Random Effects** model using the exact same set of predictors.
+4.  **Explain the difference:** Why can the RE model provide estimates for `black` and `hisp` while the FE model cannot? Relate your answer directly to the underlying mathematical transformation of each estimator.
+
+## Efficiency of FD vs FE Estimators
+
+- The FD error:
+  
+  The FD estimator works by differencing the equation to eliminate the fixed effect $c_i$:
+  
+  $\Delta y_{it} = \beta \Delta x_{it} + \Delta \epsilon_{it}$
+  
+  where $\Delta y_{it} = y_{it} - y_{i,t-1}$ and so on.
+  
+  Let's focus on the transformed error term, $\Delta \epsilon_{it}$:
+  
+  $\Delta \epsilon_{it} = \epsilon_{it} - \epsilon_{i,t-1}$
+  
+  Now, we substitute the definition of the random walk process for $\epsilon_{it}$:
+  
+  $\Delta \epsilon_{it} = (\epsilon_{i,t-1} + \nu_{it}) - \epsilon_{i,t-1}$
+  
+  This simplifies to:
+  
+  $\Delta \epsilon_{it} = \nu_{it}$
+  
+  Since $\nu_{it}$ is defined as white noise, it is, by definition, **not serially correlated**. Therefore, the error term in the first-differenced model satisfies the classical OLS assumption of no serial correlation.
+
+- The FE error:
+  
+  Let's analyze the transformed error term, $\tilde{\epsilon}_{it} = \epsilon_{it} - \bar{\epsilon}_i$, where $\bar{\epsilon}_i = \frac{1}{T} \sum_{s=1}^{T} \epsilon_{is}$.
+  
+  The de-meaned error at time $t$ is:
+  $\tilde{\epsilon}_{it} = \epsilon_{it} - \frac{1}{T}(\epsilon_{i1} + \epsilon_{i2} + ... + \epsilon_{iT})$
+  
+  And the de-meaned error at time $t-1$ is:
+  $\tilde{\epsilon}_{i,t-1} = \epsilon_{i,t-1} - \frac{1}{T}(\epsilon_{i1} + \epsilon_{i2} + ... + \epsilon_{iT})$
+  
+  To check for serial correlation, we need to determine if the covariance between $\tilde{\epsilon}_{it}$ and $\tilde{\epsilon}_{i,t-1}$ is zero.
+  
+  $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1}) = E[(\epsilon_{it} - \bar{\epsilon}_i)(\epsilon_{i,t-1} - \bar{\epsilon}_i)]$
+  
+  Because $\epsilon_{it}$ is a random walk, it is strongly serially correlated with its own past values. For instance, $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, and $\epsilon_{i,t-1} = \epsilon_{i,t-2} + \nu_{i,t-1}$, and so on. This means that $\epsilon_{it}$ is a sum of all past white noise shocks.
+  
+  When we de-mean this series, the transformed error $\tilde{\epsilon}_{it}$ becomes a complex combination of all the original error terms for that individual. Both $\tilde{\epsilon}_{it}$ and $\tilde{\epsilon}_{i,t-1}$ share the same subtracted mean, $\bar{\epsilon}_i$, and their non-mean components, $\epsilon_{it}$ and $\epsilon_{i,t-1}$, are themselves highly correlated. The de-meaning process does not remove the underlying correlation structure of a random walk.
+  
+  As a result, the covariance between the de-meaned errors, $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1})$, will be non-zero. The transformed error term in the FE model **remains serially correlated**.
+  
+## Interpreting the Hausman Test Statistic
+
+In mathematical terms, the null hypothesis ($H_0$) of the Hausman test is that the unobserved individual-specific effects, $\alpha_i$, are **not correlated** with the explanatory variables, $x_{it}$.
+
+This can be formally stated as:
+
+$H_0: Cov(\alpha_i, x_{it}) = 0$
+
+Under this null hypothesis, both the Fixed Effects and Random Effects estimators are consistent, but the Random Effects estimator is more efficient. The alternative hypothesis ($H_A$) is that a correlation does exist, meaning $Cov(\alpha_i, x_{it}) \neq 0$. Under the alternative, only the Fixed Effects estimator remains consistent.
+
+A large, statistically significant test statistic from a Hausman test leads to the rejection of the null hypothesis. This directly implies that the Random Effects estimates are inconsistent due to the following chain of logic:
+
+1.  **Consistency of the Estimators:**
+    *   **Fixed Effects (FE):** The FE estimator is consistent whether the individual effects ($\alpha_i$) are correlated with the regressors or not. It achieves consistency by eliminating the $\alpha_i$ term from the equation entirely (through de-meaning or first-differencing).
+    *   **Random Effects (RE):** The RE estimator's consistency *critically depends* on the assumption that the individual effects ($\alpha_i$) are uncorrelated with the regressors. This is the very condition being tested by the null hypothesis. If this assumption is violated, the RE model suffers from omitted variable bias because it fails to properly account for the influence of the correlated $\alpha_i$ term. This bias makes the RE estimator inconsistent.
+
+2.  **What the Hausman Test Measures:** The test statistic is constructed based on the difference between the coefficient vectors from the two models: $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$.
+    *   If the null hypothesis is **true** ($Cov(\alpha_i, x_{it}) = 0$), both estimators are consistent. This means as the sample size grows, both $\hat{\beta}_{FE}$ and $\hat{\beta}_{RE}$ should converge to the same true parameter values. Any difference between them should be small and statistically insignificant (due to random sampling variation).
+    *   If the null hypothesis is **false** ($Cov(\alpha_i, x_{it}) \neq 0$), the two estimators will converge to different values. The FE estimator will converge to the true $\beta$, but the RE estimator will converge to a different, biased value. Therefore, the difference $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$ will be systematic and statistically significant.
+
+3.  **Conclusion from a Significant Result:** A large and statistically significant Hausman test statistic indicates that the difference between the FE and RE coefficients is too large to be attributed to chance. Since we know the FE estimator is consistent under either scenario, the systematic difference must be due to the failure of the RE estimator. By rejecting the null hypothesis, you are concluding that the core assumption required for the RE model's consistency is violated. Therefore, the Random Effects estimates are inconsistent.
+
+## Random Effects and the Role of $\theta$
+
+1. As the variance of the individual effect approaches zero ($\sigma^2_\alpha \to 0$)
+
+*   **Behavior of $\theta$:** As $\sigma^2_\alpha \to 0$, the term $T \sigma^2_\alpha$ also goes to zero. The formula for $\theta$ becomes:
+    $\theta \to 1 - \sqrt{\frac{\sigma^2_\epsilon}{(0 + \sigma^2_\epsilon)}} = 1 - \sqrt{1} = 0$
+    The value of $\theta$ approaches **zero**.
+
+*   **Model Simplification:** The Random Effects transformation is $y_{it} - \theta \bar{y}_i$. When $\theta=0$, this becomes $y_{it} - 0 \cdot \bar{y}_i = y_{it}$. The data is left untransformed. Therefore, the Random Effects model simplifies to the **Pooled OLS** model. This is logical, as a zero variance for the individual effect implies there are no unique individual effects to control for.
+
+2. As the number of time periods becomes very large ($T \to \infty$)
+
+*   **Behavior of $\theta$:** As $T \to \infty$, the denominator $(T \sigma^2_\alpha + \sigma^2_\epsilon)$ also approaches infinity. This causes the fraction inside the square root to approach zero:
+    $\frac{\sigma^2_\epsilon}{(T \sigma^2_\alpha + \sigma^2_\epsilon)} \to 0$
+    The formula for $\theta$ thus becomes:
+    $\theta \to 1 - \sqrt{0} = 1$
+    The value of $\theta$ approaches **one**.
+
+*   **Model Equivalence:** When $\theta=1$, the Random Effects transformation $y_{it} - \theta \bar{y}_i$ becomes $y_{it} - \bar{y}_i$. This is the "de-meaning" or "within" transformation. Consequently, the Random Effects estimator becomes equivalent to the **Fixed Effects (FE) estimator**.
