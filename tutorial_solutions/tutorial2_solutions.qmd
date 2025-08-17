@@ -34,7 +34,6 @@ Illustration with Average Height:
 
 The sample mean, $\bar{x}$, is not fixed. Its value changes depending on the random sample drawn. Therefore, it is a random variable.
 
-\clearpage
 
 ## Constructing an Exact Sampling Distribution
 
@@ -80,16 +79,27 @@ e)  Is the mean of this sampling distribution equal to the true population mean?
 
 **Yes**, the mean of the sampling distribution (30) is exactly equal to the true population mean ($\mu=30$) calculated in part (a). This demonstrates that the sample mean is an unbiased estimator of the population mean.
 
-\clearpage
 
 ## Simulating a Sampling Distribution {#sec-simulation}
 
-This exercise involves simulating a sampling distribution from a highly skewed Exponential population.
+This exercise involves simulating a sampling distribution from a highly skewed Exponential population. A large population of 100,000 data points is drawn from an Exponential distribution with a mean ($\mu$) of 10. A histogram of this population data would be highly right-skewed, with most values clustered near zero and a long tail extending to the right.
 
-a)  Simulate a population A large population of 100,000 data points is drawn from an Exponential distribution with a mean ($\mu$) of 10. A histogram of this population data would be highly right-skewed, with most values clustered near zero and a long tail extending to the right.
+a) Simulate a population. 
+
+b)  Draw 5,000 different random samples from this skewed population, each containing `n=50` observations.
+
+c) Compute the mean for each of the 5,000 samples, resulting in a list of 5,000 sample means.
+
+d)  Plot a histogram of the 5,000 sample means. 
+
+:::{.panel-tabset}
+
+### Python
 
 ```{python}
 #| echo: true
+#| fig.align: 'center'
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -101,32 +111,13 @@ population_size = 100000
 population_mean = 10
 population = np.random.exponential(scale=population_mean, size=population_size)
 
-```
-
-b)  Draw 5,000 different random samples From this skewed population, we draw 5,000 separate random samples, each containing `n=50` observations.
-
-```{python}
-#| echo: true
 # b) Draw 5,000 different random samples, each with n=50 observations
 num_samples = 5000
 sample_size = 50
 samples = [np.random.choice(population, size=sample_size, replace=False) for _ in range(num_samples)]
 
-```
-
-c)  For each sample, calculate its sample mean We compute the mean for each of the 5,000 samples, resulting in a list of 5,000 sample means.
-
-```{python}
-#| echo: true
 # c) Calculate the sample mean for each sample
 sample_means = [np.mean(sample) for sample in samples]
-```
-
-d)  Plot a histogram of the 5,000 sample means (While a plot cannot be displayed here, we can describe the result).
-
-```{python}
-#| echo: true
-#| fig.align: 'center'
 
 # d) Plot a histogram of the 5,000 sample means
 plt.figure(figsize=(10, 6))
@@ -143,13 +134,101 @@ print(f"Mean of sample means: {np.mean(sample_means):.2f}")
 print(f"Standard deviation of sample means: {np.std(sample_means, ddof=1):.2f}")
 ```
 
+### R
+
+```{r}
+#| echo: true
+#| fig-align: 'center'
+
+# Set the random seed for reproducibility
+set.seed(42)
+
+# a) Simulate a population of 100,000 data points from Exponential distribution with mean 10
+population_size <- 100000
+population_mean <- 10
+population <- rexp(population_size, rate = 1/population_mean)
+
+# b) Draw 5,000 different random samples, each with n=50 observations
+num_samples <- 5000
+sample_size <- 50
+samples <- lapply(1:num_samples, function(i) sample(population, size = sample_size, replace = FALSE))
+
+# c) Calculate the sample mean for each sample
+sample_means <- sapply(samples, mean)
+
+# d) Plot a histogram of the 5,000 sample means
+par(mar = c(5, 4, 4, 2) + 0.1) # Adjust margins if needed
+hist(sample_means, breaks = 30, col = "lightblue", border = "black", 
+     main = "Sampling Distribution of the Mean (n=50)",
+     xlab = "Sample Mean", ylab = "Frequency")
+grid()
+
+# Print some statistics
+cat("Population mean:", population_mean, "\n")
+cat("Mean of sample means:", round(mean(sample_means), 2), "\n")
+cat("Standard deviation of sample means:", round(sd(sample_means), 2), "\n")
+
+```
+
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+
+clear all
+set seed 42
+
+* a) Simulate a population of 100,000 data points from Exponential distribution with mean 10
+set obs 100000
+scalar population_mean = 10
+gen population = -population_mean * ln(1-runiform())
+
+* b) Draw 5,000 different random samples, each with n=50 observations, and calculate their means
+local num_samples 5000
+local sample_size 50
+
+* Create a matrix to store sample means
+matrix sample_means = J(`num_samples', 1, .)
+
+forvalues i = 1/`num_samples' {
+    preserve
+    * Sample without replacement
+    sample `sample_size', count
+    * Calculate and store the mean
+    quietly summarize population
+    matrix sample_means[`i', 1] = r(mean)
+    restore
+}
+
+* Convert matrix to a variable for analysis
+clear
+svmat sample_means
+rename sample_means1 sample_mean
+
+* d) Plot a histogram of the 5,000 sample means
+histogram sample_mean, bin(30) ///
+    title("Sampling Distribution of the Mean (n=50)") ///
+    xtitle("Sample Mean") ytitle("Frequency") ///
+    fcolor("lightblue") lcolor("black")
+
+* Print some statistics
+summarize sample_mean
+display "Population mean: " population_mean
+display "Mean of sample means: " round(r(mean), 0.01)
+display "Standard deviation of sample means: " round(r(sd), 0.01)
+```
+
+
+:::
+
 e)  Describe the shape of the histogram of sample means.
 
 Even though the original population has a highly skewed Exponential distribution, the histogram of the 5,000 sample means will **look like a Normal distribution**. It will be bell-shaped, symmetric, and centered around the true population mean of 10.
 
 This is a direct consequence of the **Central Limit Theorem (CLT)**, which states that for a sufficiently large sample size (n=50 is large enough), the sampling distribution of the sample mean will be approximately normal, regardless of the shape of the original population distribution.
 
-\clearpage
 
 ## Applying the CLT Conceptually
 
@@ -167,13 +246,28 @@ c)  What will be the theoretical standard deviation of this sampling distributio
 
 The standard deviation of the sampling distribution is called the standard error (SE) and is calculated as $\sigma / \sqrt{n}$. $$ SE = \frac{\sigma}{\sqrt{n}} = \frac{5}{\sqrt{100}} = \frac{5}{10} = 0.5 \text{ kg} $$
 
-\clearpage
 
 ## Verifying the CLT in Python/R/Stata
 
 Using the simulation from the Exponential population with true mean $\mu=10$, true standard deviation $\sigma=10$, and sample size `n=50`.
 
 a)  From the list of 5,000 sample means you generated, calculate the *empirical mean* and the *empirical standard deviation*.
+
+b)  According to the CLT, what *should* the theoretical mean of the sampling distribution be?
+
+The theoretical mean of the sampling distribution is the population mean, $\mu=10$.
+
+c)  According to the CLT, what *should* the theoretical standard deviation of the sampling distribution (the standard error) be?
+
+The theoretical standard error (SE) is $\sigma / \sqrt{n}$. $$ \text{Theoretical SE} = \frac{\sigma}{\sqrt{n}} = \frac{10}{\sqrt{50}} \approx \frac{10}{7.071} \approx 1.414 $$
+
+d)  Compare the empirical results from part (a) with the theoretical results from parts (b) and (c). Are they close?
+
+Yes, they're almost equal. This comparison demonstrates how a simulation can empirically verify the predictions of the Central Limit Theorem.
+
+:::{.panel-tabset}
+
+### Python
 
 ```{python}
 #| echo: true
@@ -182,10 +276,12 @@ import numpy as np
 np.random.seed(42)
 
 # Parameters
-population_mean = 10  # μ
-population_std = 10   # σ (for Exponential distribution, σ = μ)
-sample_size = 50
+population_size = 100000
+population_mean = 10
+population_std = 10
 num_samples = 5000
+
+population = np.random.exponential(scale=population_mean, size=population_size)
 
 # Sample means
 samples = [np.random.choice(population, size=sample_size, replace=False) for _ in range(num_samples)]
@@ -196,28 +292,94 @@ empirical_mean = np.mean(sample_means)
 empirical_std = np.std(sample_means, ddof=1)  # Using ddof=1 for sample standard deviation
 print(f"{empirical_mean:.3f}")
 print(f"{empirical_std:.3f}")
-```
 
-b)  According to the CLT, what *should* the theoretical mean of the sampling distribution be?
-
-The theoretical mean of the sampling distribution is the population mean, $\mu=10$.
-
-c)  According to the CLT, what *should* the theoretical standard deviation of the sampling distribution (the standard error) be?
-
-```{python}
-#| echo: true
-#| # c) Theoretical standard error (CLT)
+# c) Theoretical standard error (CLT)
 theoretical_se = population_std / np.sqrt(sample_size)
 print(f"{theoretical_se:.3f}")
 ```
 
-The theoretical standard error (SE) is $\sigma / \sqrt{n}$. $$ \text{Theoretical SE} = \frac{\sigma}{\sqrt{n}} = \frac{10}{\sqrt{50}} \approx \frac{10}{7.071} \approx 1.414 $$
+### R
 
-d)  Compare the empirical results from part (a) with the theoretical results from parts (b) and (c). Are they close?
+```{r}
+#| echo: true
 
-Yes, they're almost equal. This comparison demonstrates how a simulation can empirically verify the predictions of the Central Limit Theorem.
+# Set the random seed for reproducibility (same as before)
+set.seed(42)
 
-\clearpage
+# Parameters
+population_size <- 100000
+population_mean <- 10  # μ
+population_std <- 10
+num_samples <- 5000
+
+# Generate population from exponential distribution (assuming this is what you intended)
+population <- rexp(population_size, rate = 1/population_mean)  # Exponential with mean = 10
+
+# Sample means
+samples <- lapply(1:num_samples, function(x) sample(population, size = sample_size, replace = FALSE))
+sample_means <- sapply(samples, mean)
+
+# a) Calculate empirical mean and standard deviation of sample means
+empirical_mean <- mean(sample_means)
+empirical_std <- sd(sample_means)  # sd() in R uses denominator n-1 by default
+print(sprintf("%.3f", empirical_mean))
+print(sprintf("%.3f", empirical_std))
+
+# c) Theoretical standard error (CLT)
+theoretical_se <- population_std / sqrt(sample_size)
+print(sprintf("%.3f", theoretical_se))
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+* Set the random seed for reproducibility
+set seed 42
+
+* Parameters
+local population_size = 100000
+local population_mean = 10  // μ
+local population_std = 10   // σ (for Exponential distribution, σ = μ)
+local sample_size = 50
+local num_samples = 5000
+
+* Generate population from exponential distribution
+clear
+set obs `population_size'
+gen population = -`population_mean' * ln(1 - runiform())
+
+* Create variables to store sample means
+gen sample_means = .
+
+* Generate sample means
+quietly forvalues i = 1/`num_samples' {
+    preserve
+    sample `sample_size', count
+    sum population
+    restore
+    replace sample_means = r(mean) in `i'
+}
+
+* a) Calculate empirical mean and standard deviation of sample means
+sum sample_means
+local empirical_mean = r(mean)
+local empirical_std = r(sd)  // Stata uses denominator n-1 by default
+di %6.3f `empirical_mean'
+di %6.3f `empirical_std'
+
+* c) Theoretical standard error (CLT)
+local theoretical_se = `population_std' / sqrt(`sample_size')
+di %6.3f `theoretical_se'
+
+```
+
+
+:::
+
 
 ## Formulating Hypotheses
 
@@ -290,39 +452,102 @@ Since the p-value is greater than the significance level, we **fail to reject th
 
 Use the `WAGE2.DTA` dataset. Import it in R/Python/Stata. Conduct a hypothesis test on the `IQ` variable. The null hypothesis is that `mu_0 = 100`.
 
+a)  Calculate the standard error and the Z-test statistic in Python.
+
+b)  The p-value for a two-tailed test is the area under the standard normal curve that is more extreme (on both sides) than your calculated Z-statistic. Use `scipy.stats.norm.cdf()` or `pnorm()` to find this p-value.
+
+:::{.panel-tabset}
+
+### Python
+
 ```{python}
 #| echo: true
 import pandas as pd
 import numpy as np
+from scipy.stats import norm
+
 np.random.seed(42)
 data = pd.read_stata("../tutorials/datafiles/WAGE2.DTA")
 mu_0 = 100
-```
 
-a)  Calculate the standard error and the Z-test statistic in Python.
-
-```{python}
-#| echo: true
+# a)  Calculate the standard error and the Z-test statistic in Python.
 sigma = np.std(data['IQ'])
 n = len(data['IQ'])
 
 se = sigma / np.sqrt(n)
 sample_mean = np.mean(data['IQ'])
 z = (sample_mean - mu_0) / se
-```
 
-b)  The p-value for a two-tailed test is the area under the standard normal curve that is more extreme (on both sides) than your calculated Z-statistic. Use `scipy.stats.norm.cdf()` or `pnorm()` to find this p-value.
-
-```{python}
-#| echo: true
-from scipy.stats import norm
+# b)  The p-value for a two-tailed test is the area under the standard normal curve that is more extreme (on both sides) than your calculated Z-statistic. Use `scipy.stats.norm.cdf()` or `pnorm()` to find this p-value.
 p_value = (1 - norm.cdf(z)) + norm.cdf(-z)
 print(f"The p-value is: {p_value:.3f}")
+
+# Meaning we reject the null hypothesis that the average IQ in the population is 100.
 ```
 
-Meaning we reject the null hypothesis that the average IQ in the population is 100.
+### R
 
-\clearpage
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Load required packages
+library(haven)
+library(dplyr)
+
+set.seed(42)
+data <- read_dta("../tutorials/datafiles/WAGE2.DTA")
+mu_0 <- 100
+
+# a) Calculate the standard error and the Z-test statistic in R
+sigma <- sd(data$IQ)
+n <- length(data$IQ)
+
+se <- sigma / sqrt(n)
+sample_mean <- mean(data$IQ)
+z <- (sample_mean - mu_0) / se
+
+# b) The p-value for a two-tailed test
+p_value <- (1 - pnorm(z)) + pnorm(-z)
+cat(sprintf("The p-value is: %.3f\n", p_value))
+
+# Meaning we reject the null hypothesis that the average IQ in the population is 100.
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+
+* Set random seed for reproducibility
+set seed 42
+
+* Load the data
+use "../tutorials/datafiles/WAGE2.DTA", clear
+
+* Set null hypothesis value
+scalar mu_0 = 100
+
+* a) Calculate standard error and Z-test statistic
+quietly summarize IQ
+scalar sigma = r(sd)
+scalar n = r(N)
+
+scalar se = sigma / sqrt(n)
+scalar sample_mean = r(mean)
+scalar z = (sample_mean - mu_0) / se
+
+* b) Calculate two-tailed p-value
+scalar p_value = 2 * (1 - normal(abs(z)))  // Two-tailed p-value
+
+* Display results
+di "The p-value is: " %6.3f p_value
+
+* Meaning we reject the null hypothesis that the average IQ in the population is 100.
+```
+
+:::
 
 ## Correct Interpretation
 
@@ -364,13 +589,18 @@ Given: `n=36`, $\bar{x} = 48.5$ MPG, $\sigma = 6$ MPG.
 
 a)  Calculate a 95% confidence interval for the true mean fuel efficiency.
 
-Here is a Python script demonstrating the calculation:
+b)  Now, calculate a 99% confidence interval using the same data.
+
+:::{.panel-tabset}
+
+### Python
 
 ```{python}
 #| echo: true
 import numpy as np
 from scipy.stats import norm
 
+# a)  Calculate a 95% confidence interval for the true mean fuel efficiency.
 # Given data
 x_bar = 48.5  # Sample mean
 sigma = 6     # Population standard deviation
@@ -400,15 +630,8 @@ print(f"Standard Error: {standard_error:.2f}")
 print(f"Critical Z-value: {critical_value:.3f}")
 print(f"Margin of Error: {margin_of_error:.3f}")
 print(f"95% Confidence Interval: [{lower_bound:.3f}, {upper_bound:.3f}]")
-```
 
-b)  Now, calculate a 99% confidence interval using the same data.
-
-We only need to change the confidence level and find the new critical value.
-
-```{python}
-#| echo: true
-
+# b) We only need to change the confidence level and find the new critical value.
 critical_value = norm.ppf(0.995)
 margin_of_error = critical_value * standard_error
 lower_bound = x_bar - margin_of_error
@@ -417,5 +640,101 @@ print(f"Critical Z-value: {critical_value:.3f}")
 print(f"Margin of Error: {margin_of_error:.3f}")
 print(f"95% Confidence Interval: [{lower_bound:.3f},{upper_bound:.3f}]")
 ```
+
+### R
+
+```{r}
+#| echo: true
+
+# a) Calculate a 95% confidence interval for the true mean fuel efficiency.
+# Given data
+x_bar <- 48.5  # Sample mean
+sigma <- 6     # Population standard deviation
+n <- 36        # Sample size
+confidence_level <- 0.95
+
+# 1. Point estimate is the sample mean
+point_estimate <- x_bar
+
+# 2. Calculate the standard error
+standard_error <- sigma / sqrt(n)
+
+# 3. Find the critical Z-value for a 95% CI
+# We need to leave (1 - 0.95)/2 = 0.025 in each tail.
+# So we look for the Z-value at the 0.975 percentile.
+critical_value <- qnorm(1 - (1 - confidence_level) / 2) # Equivalent to qnorm(0.975)
+
+# 4. Calculate the margin of error
+margin_of_error <- critical_value * standard_error
+
+# 5. Construct the interval
+lower_bound <- point_estimate - margin_of_error
+upper_bound <- point_estimate + margin_of_error
+
+cat("Point Estimate:", point_estimate, "\n")
+cat(sprintf("Standard Error: %.2f\n", standard_error))
+cat(sprintf("Critical Z-value: %.3f\n", critical_value))
+cat(sprintf("Margin of Error: %.3f\n", margin_of_error))
+cat(sprintf("95%% Confidence Interval: [%.3f, %.3f]\n", lower_bound, upper_bound))
+
+# b) We only need to change the confidence level and find the new critical value.
+critical_value <- qnorm(0.995)
+margin_of_error <- critical_value * standard_error
+lower_bound <- x_bar - margin_of_error
+upper_bound <- x_bar + margin_of_error
+cat(sprintf("Critical Z-value: %.3f\n", critical_value))
+cat(sprintf("Margin of Error: %.3f\n", margin_of_error))
+cat(sprintf("95%% Confidence Interval: [%.3f, %.3f]\n", lower_bound, upper_bound))
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+* a) Calculate a 95% confidence interval for the true mean fuel efficiency.
+* Given data
+scalar x_bar = 48.5  // Sample mean
+scalar sigma = 6     // Population standard deviation
+scalar n = 36        // Sample size
+scalar confidence_level = 0.95
+
+* 1. Point estimate is the sample mean
+scalar point_estimate = x_bar
+
+* 2. Calculate the standard error
+scalar standard_error = sigma / sqrt(n)
+
+* 3. Find the critical Z-value for a 95% CI
+* We need to leave (1 - 0.95)/2 = 0.025 in each tail.
+* So we look for the Z-value at the 0.975 percentile.
+scalar critical_value = invnormal(1 - (1 - confidence_level)/2) // Equivalent to invnormal(0.975)
+
+* 4. Calculate the margin of error
+scalar margin_of_error = critical_value * standard_error
+
+* 5. Construct the interval
+scalar lower_bound = point_estimate - margin_of_error
+scalar upper_bound = point_estimate + margin_of_error
+
+di "Point Estimate: " point_estimate
+di "Standard Error: " %4.2f standard_error
+di "Critical Z-value: " %4.3f critical_value
+di "Margin of Error: " %4.3f margin_of_error
+di "95% Confidence Interval: [" %4.3f lower_bound ", " %4.3f upper_bound "]"
+
+* b) We only need to change the confidence level and find the new critical value.
+scalar critical_value = invnormal(0.995)
+scalar margin_of_error = critical_value * standard_error
+scalar lower_bound = x_bar - margin_of_error
+scalar upper_bound = x_bar + margin_of_error
+di "Critical Z-value: " %4.3f critical_value
+di "Margin of Error: " %4.3f margin_of_error
+di "95% Confidence Interval: [" %4.3f lower_bound ", " %4.3f upper_bound "]"
+```
+
+:::
 
 As expected, the **99% confidence interval is wider** than the 95% confidence interval. This is because we require a wider range to be more confident that it contains the true population mean.

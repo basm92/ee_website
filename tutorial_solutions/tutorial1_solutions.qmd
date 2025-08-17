@@ -518,7 +518,6 @@ Given: $E[X] = 10, Var(X) = 4, E[Y] = 5, Var(Y) = 9, Cov(X, Y) = -2$.
 
 5.  $Var(X+Y)$ assuming independence If $X$ and $Y$ are independent, $Cov(X,Y)=0$. $$ Var(X + Y) = Var(X) + Var(Y) = 4 + 9 = 13 $$ This variance (13) is higher than the variance when the covariance was -2 (which was 9). The negative covariance implies the variables tend to move in opposite directions, which has a stabilizing (variance-reducing) effect on their sum.
 
-\clearpage
 
 ## Interpreting Conditional Expectation
 
