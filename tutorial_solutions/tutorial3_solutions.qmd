@@ -3,6 +3,72 @@ title: "Solutions Tutorial 3"
 format: html
 ---
 
+```{r setup}
+#| echo: false
+
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+## Wage Determinants
+
+
+1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
+2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
+3. Based on your regression output, provide a clear and concise interpretation for the `educ` and `union` coefficients.
+
+An additional year of `educ` is associated with a 7.8% increase in the hourly wage, everything else equal. Union members have a 13% higher hourly wage than non-union members, everything else equal. 
+
+4. Perform a hypothesis test for the `exper` coefficient to determine if it is statistically significant at the 5% significance level. State your null and alternative hypotheses, report the relevant test statistic and p-value from your model output, and conclude whether you reject or fail to reject the null hypothesis. What does this conclusion imply about the relationship between experience and the logarithm of hourly wage in this model?
+
+$H_0: \beta_\text{exper}=0$. $H_A: \beta_\text{exper}\neq 0$. $t=3.774$ and the $p$-value is 0. That means that observing a test statistic such as the one we actually observe is extremely unlikely under the null hypothesis. Therefore we reject the null hypothesis of a $\beta$-coefficient of 0. We thus think there is a non-zero relationship between experience and the log of the hourly wage. 
+
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+# 1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
+import pyfixest as pf
+import pandas as pd
+
+wages = pd.read_stata("../tutorials/datafiles/SLEEP75.DTA")
+model = pf.feols("lhrwage ~ educ + exper + union + male", data=wages)
+
+# 2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
+model.summary()
+```
+
+### R
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+
+# 1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
+library(haven); library(fixest)
+wages <- read_dta("../tutorials/datafiles/SLEEP75.DTA")
+model <- feols(lhrwage ~ educ + exper + union + male, data = wages)
+# 2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
+summary(model)
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+use "../tutorials/datafiles/SLEEP75.DTA", clear
+
+// Run the regression and display full results
+reg lhrwage educ exper union male
+
+```
+
+:::
+
 ## Housing prices
 
 The regression model is: `price = 300,000 + 1500 * sqmtr`, with R² = 0.64.

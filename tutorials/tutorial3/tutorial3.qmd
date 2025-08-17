@@ -25,7 +25,20 @@ resources:
 ## Slide 2
 
 
-# Comprehension & Application Questions
+# Questions
+
+## Wage Determinants
+
+:::{style="font-size: 0.7em;"}
+
+You are provided with a dataset named `SLEEP75.DTA`. Your task is to investigate the relationship between hourly wages and several explanatory variables using multiple linear regression. The variables of interest are:`lhrwage`- the natural logarithm of the hourly wage, `educ` - years of education, `exper` - years of potential work experience, `union`: a binary variable, where 1 indicates union membership and 0 indicates non-membership, and `male`: a binary variable, where 1 indicates male and 0 indicates female.
+
+  1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
+  2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
+  3. Based on your regression output, provide a clear and concise interpretation for the `educ` and `union` coefficients.
+  4. Perform a hypothesis test for the `exper` coefficient to determine if it is statistically significant at the 5% significance level. State your null and alternative hypotheses, report the relevant test statistic and p-value from your model output, and conclude whether you reject or fail to reject the null hypothesis. What does this conclusion imply about the relationship between experience and the logarithm of hourly wage in this model?
+  
+:::
 
 ## Housing prices
 
