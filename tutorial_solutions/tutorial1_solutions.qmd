@@ -3,6 +3,12 @@ title: "Solutions Tutorial 1"
 format: html
 ---
 
+```{r setup}
+#| echo: false
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
 ## Events, Intersections, and Unions
 
 A standard 52-card deck has 4 suits (Hearts, Diamonds, Clubs, Spades) and 13 ranks (2-10, J, Q, K, A).
@@ -30,7 +36,12 @@ A standard 52-card deck has 4 suits (Hearts, Diamonds, Clubs, Spades) and 13 ran
 
 ## Simulating an Experiment
 
-``` python
+:::{.panel-tabset}
+
+### Python
+
+``` {python}
+#| echo: true
 import numpy as np
 
 # 1. Create the deck
@@ -68,7 +79,100 @@ prob_A_union_B_emp = count_A_union_B / n_simulations
 print(f"P(King U Heart):  Theoretical={16/52:.4f}, Empirical={prob_A_union_B_emp:.4f}")
 ```
 
-\clearpage
+### R
+
+```{r}
+#| echo: true
+# 1. Create the deck
+ranks <- c('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
+suits <- c('H', 'D', 'C', 'S') # Hearts, Diamonds, Clubs, Spades
+deck <- outer(ranks, suits, FUN = paste0) |> as.vector()
+
+# 2. Simulate 100,000 draws
+n_simulations <- 100000
+draws <- sample(deck, size = n_simulations, replace = TRUE)
+
+# 3. Count events
+count_A <- sum(grepl("K", draws))
+count_B <- sum(grepl("H", draws))
+count_A_intersect_B <- sum(draws == "KH")
+count_A_union_B <- sum(grepl("K|H", draws))
+
+# 4. Calculate and compare frequencies
+cat("Comparing Theoretical Probabilities with Empirical Frequencies:\n\n")
+
+# Event A: King
+prob_A_emp <- count_A / n_simulations
+cat(sprintf("P(King):      Theoretical=%.4f, Empirical=%.4f\n", 4/52, prob_A_emp))
+
+# Event B: Heart
+prob_B_emp <- count_B / n_simulations
+cat(sprintf("P(Heart):     Theoretical=%.4f, Empirical=%.4f\n", 13/52, prob_B_emp))
+
+# Event A intersect B: King of Hearts
+prob_A_intersect_B_emp <- count_A_intersect_B / n_simulations
+cat(sprintf("P(King ∩ Heart): Theoretical=%.4f, Empirical=%.4f\n", 1/52, prob_A_intersect_B_emp))
+
+# Event A union B: King or Heart
+prob_A_union_B_emp <- count_A_union_B / n_simulations
+cat(sprintf("P(King U Heart):  Theoretical=%.4f, Empirical=%.4f\n", 16/52, prob_A_union_B_emp))
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+clear all
+set obs 100000
+set seed 1234
+
+// Create all possible cards
+local ranks "2 3 4 5 6 7 8 9 10 J Q K A"
+local suits "H D C S"
+
+// Generate random draws
+gen card = ""
+foreach s of local suits {
+    foreach r of local ranks {
+        replace card = "`r'`s'" if _n == ceil(runiform()*_N) & card == ""
+    }
+}
+replace card = card[_n-1] if card == ""  // fill any remaining gaps
+
+// Count events
+gen is_king = strpos(card, "K") > 0
+gen is_heart = strpos(card, "H") > 0
+gen is_king_heart = card == "KH"
+gen is_king_or_heart = is_king | is_heart
+
+// Calculate empirical probabilities
+quietly {
+    sum is_king
+    scalar prob_A_emp = r(mean)
+    
+    sum is_heart
+    scalar prob_B_emp = r(mean)
+    
+    sum is_king_heart
+    scalar prob_A_inter_B_emp = r(mean)
+    
+    sum is_king_or_heart
+    scalar prob_A_union_B_emp = r(mean)
+}
+
+// Display results
+display "Comparing Theoretical Probabilities with Empirical Frequencies:"
+display ""
+display "P(King):      Theoretical=" %4.4f (4/52) ", Empirical=" %4.4f scalar(prob_A_emp)
+display "P(Heart):     Theoretical=" %4.4f (13/52) ", Empirical=" %4.4f scalar(prob_B_emp)
+display "P(King ∩ Heart): Theoretical=" %4.4f (1/52) ", Empirical=" %4.4f scalar(prob_A_inter_B_emp)
+display "P(King U Heart):  Theoretical=" %4.4f (16/52) ", Empirical=" %4.4f scalar(prob_A_union_B_emp)
+```
+
+:::
 
 ## Solution: PMF, Expected Value, and Variance
 
@@ -92,7 +196,13 @@ Given the probability of success (default) $p = 0.05$.
 
 **(b) Simulation and Comparison**
 
-``` python
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+
 import numpy as np
 
 p_default = 0.05
@@ -112,6 +222,62 @@ print(f"Theoretical Var(X) = {0.0475:.6f}")
 print(f"Simulated variance = {sample_var:.6f}")
 ```
 
+### R
+
+```{r}
+#| echo: true
+
+# Set parameters
+p_default <- 0.05
+n_simulations <- 1000000
+
+# Simulate 1,000,000 Bernoulli trials
+simulations <- sample(c(0, 1), size = n_simulations, replace = TRUE, prob = c(1 - p_default, p_default))
+
+# Calculate sample mean and variance
+sample_mean <- mean(simulations)
+sample_var <- var(simulations)
+
+# Print results
+cat("Bernoulli Distribution Comparison:\n\n")
+cat(sprintf("Theoretical E[X]   = %.6f\n", 0.05))
+cat(sprintf("Simulated mean     = %.6f\n\n", sample_mean))
+cat(sprintf("Theoretical Var(X) = %.6f\n", 0.0475))
+cat(sprintf("Simulated variance = %.6f\n", sample_var))
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+clear all
+set obs 1000000
+set seed 1234  // for reproducibility
+
+// Parameters
+scalar p_default = 0.05
+scalar n_simulations = _N  // uses the current observation count
+
+// Simulate Bernoulli trials
+generate byte simulations = runiform() < p_default
+
+// Calculate sample mean and variance
+quietly summarize simulations
+scalar sample_mean = r(mean)
+scalar sample_var = r(Var)
+
+// Display results
+di "Bernoulli Distribution Comparison:" _n
+di "Theoretical E[X]   = " %6.6f 0.05
+di "Simulated mean     = " %6.6f sample_mean _n
+di "Theoretical Var(X) = " %6.6f 0.0475
+di "Simulated variance = " %6.6f sample_var
+```
+
+:::
+
 ## Standardization and Z-scores
 
 Given $R \sim N(\mu=0.12, \sigma=0.20)$.
@@ -126,7 +292,13 @@ Given $R \sim N(\mu=0.12, \sigma=0.20)$.
 
 ## Calculating Probabilities and Quantiles
 
-``` python
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+
 from scipy.stats import norm
 
 # Define the parameters
@@ -153,7 +325,71 @@ p5 = norm.ppf(0.05, loc=mu, scale=sigma)
 print(f"4. The 5th percentile return is: {p5:.4f} (or {p5:.2%})")
 ```
 
-\clearpage
+### R
+
+```{r}
+#| echo: true
+
+# Define the parameters
+mu <- 0.12
+sigma <- 0.20
+
+# 1. Probability of a negative return (P(R < 0))
+prob_neg <- pnorm(0, mean = mu, sd = sigma)
+cat(sprintf("1. Probability of a negative return: %.4f (or %.2f%%)\n", prob_neg, prob_neg * 100))
+
+# 2. Probability of return > 25% (P(R > 0.25))
+# P(R > 0.25) = 1 - P(R <= 0.25)
+prob_gt_25 <- 1 - pnorm(0.25, mean = mu, sd = sigma)
+cat(sprintf("2. Probability of return > 25%%: %.4f (or %.2f%%)\n", prob_gt_25, prob_gt_25 * 100))
+
+# 3. Probability of return between 0% and 15% (P(0 < R < 0.15))
+# P(0 < R < 0.15) = P(R < 0.15) - P(R < 0)
+prob_between <- pnorm(0.15, mean = mu, sd = sigma) - pnorm(0, mean = mu, sd = sigma)
+cat(sprintf("3. Probability of return between 0%% and 15%%: %.4f (or %.2f%%)\n", prob_between, prob_between * 100))
+
+# 4. 5th percentile of the return distribution
+# This is the value 'x' such that P(R < x) = 0.05
+p5 <- qnorm(0.05, mean = mu, sd = sigma)
+cat(sprintf("4. The 5th percentile return is: %.4f (or %.2f%%)\n", p5, p5 * 100))
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+* Clear results and set more off for continuous output
+clear all
+set more off
+
+* Define the parameters as scalars
+scalar mu = 0.12
+scalar sigma = 0.20
+
+* 1. Probability of a negative return (P(R < 0))
+scalar prob_neg = normal((0 - mu)/sigma)
+display "1. Probability of a negative return: " %6.4f prob_neg " (or " %6.2f 100*prob_neg "%)"
+
+* 2. Probability of return > 25% (P(R > 0.25))
+* P(R > 0.25) = 1 - P(R <= 0.25)
+scalar prob_gt_25 = 1 - normal((0.25 - mu)/sigma)
+display "2. Probability of return > 25%: " %6.4f prob_gt_25 " (or " %6.2f 100*prob_gt_25 "%)"
+
+* 3. Probability of return between 0% and 15% (P(0 < R < 0.15))
+* P(0 < R < 0.15) = P(R < 0.15) - P(R < 0)
+scalar prob_between = normal((0.15 - mu)/sigma) - normal((0 - mu)/sigma)
+display "3. Probability of return between 0% and 15%: " %6.4f prob_between " (or " %6.2f 100*prob_between "%)"
+
+* 4. 5th percentile of the return distribution
+* This is the value 'x' such that P(R < x) = 0.05
+scalar p5 = mu + sigma*invnormal(0.05)
+display "4. The 5th percentile return is: " %6.4f p5 " (or " %6.2f 100*p5 "%)"
+```
+
+
+:::
 
 ## Linear Combinations of Normal Variables
 
@@ -167,7 +403,13 @@ Given $R_A \sim N(0.10, 0.15^2)$ and $R_B \sim N(0.06, 0.10^2)$. The portfolio r
 
 **(b) Simulation**
 
-``` python
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -196,7 +438,71 @@ plt.grid(alpha=0.3)
 plt.show()
 ```
 
-\clearpage
+### R
+
+```{r}
+#| echo: true
+# Set seed for reproducibility (optional)
+# set.seed(123)
+
+n_sim <- 100000
+
+# Simulate returns for each asset
+returns_A <- rnorm(n_sim, mean = 0.10, sd = 0.15)
+returns_B <- rnorm(n_sim, mean = 0.06, sd = 0.10)
+
+# Calculate the portfolio return for each simulation
+returns_P <- 0.6 * returns_A + 0.4 * returns_B
+
+# Calculate sample mean and variance
+mean_P_sim <- mean(returns_P)
+var_P_sim <- var(returns_P)
+
+cat("Portfolio Simulation Comparison:\n\n")
+cat(sprintf("Theoretical E[Rp] = %.4f, Simulated mean = %.4f\n", 0.084, mean_P_sim))
+cat(sprintf("Theoretical Var(Rp) = %.4f, Simulated variance = %.4f\n\n", 0.0097, var_P_sim))
+
+# Bonus: Plot histogram
+hist(returns_P, breaks = 50, probability = TRUE, col = rgb(0, 0, 1, 0.7), 
+     main = 'Histogram of Simulated Portfolio Returns',
+     xlab = 'Return', ylab = 'Density')
+grid(col = "gray", lty = "dotted")
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+clear all
+set obs 100000
+set seed 123  // optional for reproducibility
+
+// Simulate returns for each asset
+gen returns_A = rnormal(0.10, 0.15)
+gen returns_B = rnormal(0.06, 0.10)
+
+// Calculate the portfolio return
+gen returns_P = 0.6 * returns_A + 0.4 * returns_B
+
+// Calculate sample mean and variance
+summarize returns_P
+scalar mean_P_sim = r(mean)
+scalar var_P_sim = r(Var)
+
+// Display results
+di "Portfolio Simulation Comparison:" _n
+di "Theoretical E[Rp] = 0.0840, Simulated mean = " %6.4f mean_P_sim
+di "Theoretical Var(Rp) = 0.0097, Simulated variance = " %6.4f var_P_sim _n
+
+// Bonus: Plot histogram
+histogram returns_P, bin(50) frequency normal ///
+    title("Histogram of Simulated Portfolio Returns") ///
+    xtitle("Return") ytitle("Density")
+```
+
+:::
 
 ## Rules of Expectation and Variance
 
