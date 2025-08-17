@@ -69,6 +69,78 @@ reg lhrwage educ exper union male
 
 :::
 
+## Heteroskedasticity
+
+1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
+
+2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+
+3. Examine the plot. Does the spread of the squared residuals appear to change as the fitted values decrease? Describe the pattern you see and explain why it might suggest the presence of heteroskedasticity.
+
+4. Re-estimate the model, but this time calculate **heteroskedasticity-robust standard errors**. 
+
+5. Compare the "normal" OLS standard errors with the robust standard errors for each of the four coefficients (`educ`, `exper`, `union`, and `male`).
+
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+# 1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sq_residuals = model.resid()**2
+
+# 2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+sns.scatterplot(x=model._data['exper'], y=sq_residuals)
+plt.show()
+
+# 4. Re-estimate the model, but this time calculate **heteroskedasticity-robust standard errors**. 
+model.vcov('HC1').summary()
+```
+
+
+### R
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+library(ggplot2)
+# 1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
+sq_residuals <- model$residuals^2
+
+# 2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+plot(x=wages$exper[model$obs_selection$obsRemoved], y=sq_residuals)
+
+# 4. Re-estimate the model, but this time calculate **heteroskedasticity-robust standard errors**. 
+model_hc <- feols(lhrwage ~ educ + exper + union + male, data = wages, vcov='hc1')
+summary(model_hc)
+```
+
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+* 1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
+reg lhrwage educ exper union male
+predict residuals, residuals
+gen sq_residuals = residuals^2
+
+* 2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+scatter sq_residuals exper, title("Squared Residuals vs Experience") xtitle("Experience") ytitle("Squared Residuals")
+
+* 3. Re-estimate model with heteroskedasticity-robust standard errors
+reg lhrwage educ exper union male, robust
+```
+
+:::
+
+
 ## Housing prices
 
 The regression model is: `price = 300,000 + 1500 * sqmtr`, with R² = 0.64.

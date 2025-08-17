@@ -40,6 +40,24 @@ You are provided with a dataset named `SLEEP75.DTA`. Your task is to investigate
   
 :::
 
+## Heteroskedasticity
+
+:::{style="font-size: 0.7em;"}
+
+Using the same multiple linear regression model from the previous question, where `lhrwage` is regressed on `educ`, `exper`, `union`, and `male`, you will now investigate the presence and consequences of heteroskedasticity.
+
+1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
+
+2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+
+3. Examine the plot. Does the spread of the squared residuals appear to change as the fitted values decrease? Describe the pattern you see and explain why it might suggest the presence of heteroskedasticity.
+
+4. Re-estimate the model, but this time calculate **heteroskedasticity-robust standard errors**. 
+
+5. Compare the "normal" OLS standard errors with the robust standard errors for each of the four coefficients (`educ`, `exper`, `union`, and `male`).
+
+:::
+
 ## Housing prices
 
 Consider the following regression output from a model trying to explain the price of a house:
