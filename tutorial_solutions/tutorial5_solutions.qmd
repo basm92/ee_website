@@ -76,11 +76,66 @@ Hey
 
 While the Fixed Effects (FE) model is robust to correlation between unobserved effects and regressors, the Random Effects (RE) model is more efficient *if* its key assumption (that this correlation is zero) holds. The Hausman test is the standard tool for making this choice.
 
-1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.
+1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.^[In Python, the random effects model can be estimated using the `linearmodels` library.]
 2.  Estimate the corresponding **Fixed Effects** model with the same variables.
 3.  Perform a **Hausman test** to formally compare the two models.
 4.  **Conclude:** Based on the p-value of the test, which model should you choose? Clearly state the null hypothesis of the Hausman test and explain what your result implies about the relationship between the unobserved individual effects ($\alpha_i$) and the explanatory variables in your model.
 
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+#| collapse: true
+
+import pandas as pd
+import pyfixest as pf
+import numpy as np
+from scipy.stats import chi2
+from linearmodels import RandomEffects
+from linearmodels import PanelOLS
+from linearmodels.panel import compare
+
+# Load example dataset (or use your own panel data)
+wagepan = pd.read_stata("../tutorials/datafiles/WAGEPAN.DTA")
+wagepan_panel = wagepan.set_index(['nr', 'year'])
+
+# 1. Fit Random Effects Model
+formula = 'lwage ~ married + union + educ'
+re_model = RandomEffects.from_formula(formula, wagepan_panel).fit()
+print(re_model)
+
+# 2. Fit Fixed Effects Model (This time also through linearmodels)
+fe_model = PanelOLS.from_formula(formula, wagepan_panel).fit()
+print(fe_model)
+
+# 3.  Perform a **Hausman test** to formally compare the two models.
+# Manual Hausman Test
+# Extract coefficients and covariance matrices
+beta_fe, beta_re = fe_model.params, re_model.params
+cov_fe, cov_re = fe_model.cov, re_model.cov
+
+# Compute difference and covariance
+diff = beta_fe - beta_re
+cov_diff = cov_fe - cov_re  # FE covariance is "more efficient"
+
+# Hausman test statistic
+hausman_stat = diff.T @ abs(np.linalg.inv(cov_diff)) @ diff
+df = len(diff)  # degrees of freedom
+p_value = 1 - chi2.cdf(hausman_stat, df)
+
+print(f"Hausman Statistic: {hausman_stat:.4f}")
+print(f"P-value: {p_value:.4f}")
+```
+
+
+### R
+
+
+### Stata
+
+:::
 
 
 ## Visualizing Unobserved Heterogeneity
