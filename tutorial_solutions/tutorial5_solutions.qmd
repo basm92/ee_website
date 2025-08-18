@@ -21,6 +21,56 @@ The Pooled OLS model ignores the panel structure of the data and can suffer from
 4.  Present the results of both models side-by-side in a single table.
 5.  **Interpret the difference:** Pay close attention to the coefficient for the `union` variable. Why is the estimated return to union membership different in the FE model compared to the Pooled OLS model? What does this suggest about how union members may differ from non-union members in ways not captured by the other variables?
 
+The coefficient for `union` decreases in magnitude by about 50% when estimated by fixed effects (0.167 vs. 0.083). When comparing differences in wages _for the same person_ when a person switches union membership. This comparison is arguably more sensible than comparing union members and non-union members, since these might differ in ways that are not captured by the `experience` control variables. For example, `union` workers might work disproportionally in higher paid professions, such as aviation. 
+
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+import pandas as pd
+import pyfixest as pf
+# 1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).
+# Declaring as a panel not necessary in Python
+wagepan = pd.read_stata("../tutorials/datafiles/WAGEPAN.DTA")
+
+# 2.  Estimate a **Pooled OLS** model to predict `lwage` using `exper` (experience), `expersq` (experience squared), and `union`.
+pooled_ols = pf.feols("lwage ~ exper + expersq + union", data = wagepan)
+
+# 3.  Estimate a **Fixed Effects ("within")** model using the same variables.
+fixed_ef = pf.feols("lwage ~ exper + expersq + union | nr", data = wagepan)
+
+# 4. Present the results of both models side-by-side in a single table.
+pf.etable([pooled_ols, fixed_ef])
+```
+
+
+### R
+
+```{r}
+#| echo: true
+# 1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).
+library(haven); library(fixest)
+# Declaring as a panel not necessary in Python
+wagepan <- read_dta("../tutorials/datafiles/WAGEPAN.DTA")
+
+# 2.  Estimate a **Pooled OLS** model to predict `lwage` using `exper` (experience), `expersq` (experience squared), and `union`.
+pooled_ols <- feols(lwage ~ exper + expersq + union, data = wagepan)
+
+# 3.  Estimate a **Fixed Effects ("within")** model using the same variables.
+fixed_ef <- feols(lwage ~ exper + expersq + union | nr, data = wagepan)
+
+# 4. Present the results of both models side-by-side in a single table.
+etable(list(pooled_ols, fixed_ef))
+```
+
+### Stata
+
+Hey
+
+:::
+
 
 ## Choosing Your Model 
 

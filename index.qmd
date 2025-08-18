@@ -16,12 +16,44 @@ Welcome to the Empirical Economics (Utrecht University) website. On this website
 
 - The course coordinator is Bas Machielsen (a dot h dot machielsen at uu dot .nl).
 - Tutorial teachers:
-  - Jelena
-  - Kattia
-  - Tina
-  - Vincent
-  - Mads
+  - [Jelena Arsenijevic](mailto:j.arsenijevic@uu.nl)
+  - [Kattia Moreno Cueva](mailto:k.m.morenocueva@uu.nl)
+  - [Tina Dulam](mailto:t.w.dulam@uu.nl)
+  - [Vincent Kunst](mailto:v.e.kunst@uu.nl)
+  - [Mads Nielsen](mailto:m.b.b.nielsen@uu.nl)
   
+## Tutorial Schedule (Preliminary)
+
+```{=html}
+<details>
+<summary>Click to expand</summary>
+```
+
+| Group | Scheduled     | Room    | Master                                | Teacher |
+|-------|---------------|---------|---------------------------------------|---------|
+| 1     | Wed 13:15     | Spin 107 | Banking and Finance                   |  Mads |
+| 2     | Wed 15:15     | Spin 107 | Banking and Finance                   |  Mads  |
+| 3     | Wed 17:15     | Spin 107 | Banking and Finance                   |  Mads |
+| 4     | Wed 13:15     | Spin 109 | Financial Management                  |  Tina  |
+| 5     | Wed 15:15     | Spin 109 | Financial Management                  | Jelena |
+| 6     | Wed 17:15     | Spin 109 | Reserve                               |         |
+| 7     | Wed 13:15     | Spin 013 | International Management              | Vincent |
+| 8     | Wed 15:15     | Spin 013 | International Management              | Vincent |
+|       |               |         |                                       |         |
+| 9     | Thu 13:15     | Spin 013 | Business and Social Impact            | Jelena |
+| 10    | Thu 15:15     | Spin 013 | Business and Social Impact            | Jelena |
+| 11    | Thu 17:15     | Spin 013 | Business development and entrepreneurship | Jelena |
+| 12    | Thu 13:15     | Spin 004 | Business development and entrepreneurship | Kattia |
+| 13    | Thu 15:15     | Spin 004 | Economic Policy                       | Kattia |
+| 14    | Thu 17:15     | Spin 004 | Economic Policy                       | Kattia |
+| 15    | Thu 13:15     | Spin 104 | Sustainable Finance and Investment    | Mads |
+| 16    | Thu 15:15     | Spin 104 | Sustainable Finance and Investment    | Mads |
+
+
+```{=html}
+</details>
+```
+
 ## Credits
 
 The lecture slides are partially based on earlier lectures by Wolter Hassink and owe a lot to discussions and brainstorms with various colleagues. 
