@@ -955,18 +955,6 @@ $$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
 - **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., $\beta_0 + \beta_1$).
 - **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the $\beta$ coefficients: $\sum \beta_S$.
 
-## Koyck (Geometric) Distributed Lag Model
-
-- Sometimes, the effect of X on Y might persist indefinitely, requiring an infinite number of lags. This is not practical to estimate.
-- The Koyck model assumes that the coefficients decline geometrically: $\beta_s = \beta_0 \lambda^s$, where $0 < \lambda < 1$.
-- This assumption allows the infinite lag model to be transformed into a simpler model that can be estimated:
-
-  $$
-    Y_t = \alpha(1-\lambda) + \beta_0 X_t + \lambda Y_{t-1} + v_t
-  $$
-
-- This is a form of an ARDL model.. 
-
 ## The Autoregressive Distributed Lag (ARDL) Model
 
 - ARDL models are a class of models that include lags of both the dependent variable and the explanatory variable(s).
@@ -1137,6 +1125,182 @@ estat ec
 
 :::
 
+# Prediction
+
+## What is Forecasting?
+
+:::{.callout-note title="Definition: Forecasting"}
+To predict future values of a time series based on its own past and potentially other related variables.
+:::
+
+- We use the information available up to time $t$ to form the best possible guess about the value of the series at a future time $t+h$.
+  -  **Information Set ($I_t$):** All known values of the series (and other relevant variables) up to and including time $t$.
+    $I_t = \{Y_t, Y_{t-1}, ...\}$
+  - **Forecast Horizon ($h$):** How many steps into the future we are predicting.
+    - $h=1$: One-step-ahead forecast.
+    - $h>1$: Multi-step-ahead forecast.
+
+- We want to find the *conditional expectation* of the future value, given our current information.
+
+  $$
+    \text{Forecast} = E[Y_{t+h} | I_t]
+  $$
+
+
+
+## Evaluating Forecasts
+
+- Before we make forecasts, we need to know how to measure their accuracy.
+- We do this by comparing the actual, observed values ($Y_t$) with our forecasted values ($\hat{Y}_t$).
+
+:::{.callout-note title="Definition: Forecast Error"}
+
+The forecast error is the difference between an actual observation and a forecast. 
+
+  $$
+    e_t = Y_t - \hat{Y}_t
+  $$
+:::
+
+## Common Evaluation Metrics:
+
+- **Mean Absolute Error (MAE):** $\text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |Y_t - \hat{Y}_t|$
+  - **Interpretation:** The average absolute size of the errors. Easy to understand and robust to outliers.
+
+- **Mean Squared Error (MSE):** $\text{MSE} = \frac{1}{n} \sum_{t=1}^{n} (Y_t - \hat{Y}_t)^2$
+  - **Interpretation:** Penalizes large errors much more heavily than small ones due to the squaring. Widely used in statistics.
+
+- **Root Mean Squared Error (RMSE):** $\text{RMSE} = \sqrt{\text{MSE}}$
+  - **Interpretation:** Same units as the original data, making it more interpretable than MSE.
+
+
+## Relative and Percentage Errors
+
+- Sometimes the scale of the data matters. An error of 10 is huge for a series with an average of 5, but tiny for a series with an average of 5,000.
+
+- **Scale-Free Metric:**
+  - **Mean Absolute Percentage Error (MAPE):** $\text{MAPE} = \left( \frac{1}{n} \sum_{t=1}^{n} \left| \frac{Y_t - \hat{Y}_t}{Y_t} \right| \right) \times 100\%$
+    - **Interpretation:** The average percentage error. Very intuitive ("we were off by about 5% on average").
+    - Can be problematic if actual values ($Y_t$) are close to or equal to zero.
+
+- **In-Sample vs. Out-of-Sample Evaluation:**
+  -  **In-Sample:** Evaluating the model on the same data used for training. Tells you about model *fit*.
+  -  **Out-of-Sample:** Splitting your data (e.g., 80% train, 20% test). You train the model on the first part and evaluate its forecasting performance on the part it has never seen. 
+    - **This is the true test of a forecast model!**
+
+
+## Forecasting with AR Models
+
+- Let's start predicting with a simple AR(p) model.
+
+  $$
+    Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \dots + \phi_p Y_{t-p} + \varepsilon_t
+  $$
+
+- Produce forecasts by **iterative substitution**: 
+
+  1.  **One-Step-Ahead Forecast ($h=1$):**
+      *   We want $E[Y_{t+1} | I_t]$. The future error term has an expectation of zero, $E[\varepsilon_{t+1}|I_t] = 0$.
+      *   We simply plug in all the *known* values of Y up to time $t$:
+      $$
+      \hat{Y}_{t+1|t} = c + \phi_1 Y_t + \phi_2 Y_{t-1} + \dots + \phi_p Y_{t-p+1}
+      $$
+
+  2.  **Two-Step-Ahead Forecast ($h=2$):**
+      *   We want $E[Y_{t+2} | I_t]$. The formula is $Y_{t+2} = c + \phi_1 Y_{t+1} + \dots$
+      *   The problem: We don't know $Y_{t+1}$!
+      *   **Solution:** We substitute our forecast for it, $\hat{Y}_{t+1|t}$.
+      $$
+      \hat{Y}_{t+2|t} = c + \phi_1 \mathbf{\hat{Y}_{t+1|t}} + \phi_2 Y_t + \dots + \phi_p Y_{t-p+2}
+      $$
+
+- For stationary AR processes, the long-run forecast (as $h \to \infty$) will converge to the unconditional mean of the process: $E[Y] = \frac{c}{1 - \sum \phi_i}$.
+
+## Forecasting with MA Models
+
+- Now for an MA(q) model. The "memory" of these models is very different.
+
+  $$
+    Y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \dots + \theta_q \varepsilon_{t-q}
+  $$
+
+  1.  **One-Step-Ahead Forecast ($h=1$):**
+      *   We want $E[Y_{t+1} | I_t]$. The equation is $Y_{t+1} = \mu + \varepsilon_{t+1} + \theta_1 \varepsilon_t + \dots$
+      *   The only future term is $\varepsilon_{t+1}$, whose expectation is 0. We can estimate the past error terms from the data (using residuals).
+      $$
+      \hat{Y}_{t+1|t} = \mu + \theta_1 \varepsilon_t + \dots + \theta_q \varepsilon_{t-q+1}
+      $$
+
+  2.  **Two-Step-Ahead Forecast ($h=2$):**
+      *   $Y_{t+2} = \mu + \varepsilon_{t+2} + \theta_1 \varepsilon_{t+1} + \dots$
+      *   Both $\varepsilon_{t+2}$ and $\varepsilon_{t+1}$ are unknown future shocks. Their conditional expectation is 0.
+      $$
+      \hat{Y}_{t+2|t} = \mu + \theta_2 \varepsilon_t + \dots + \theta_q \varepsilon_{t-q+2}
+      $$
+
+- For any forecast horizon $h$ greater than the order $q$ ($h > q$), all the error terms in the equation will be in the future.
+  - $\mathbf{\hat{Y}_{t+h|t} = \mu}$ for all $h > q$.
+  - The forecast quickly reverts to the process mean. MA models have a "short memory."
+
+## Forecasting with ARMA(p,q) Models
+
+- An ARMA model combines the features of both AR and MA processes.
+
+  $$
+    Y_t = c + \phi_1 Y_{t-1} + \dots + \phi_p Y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \dots + \theta_q \varepsilon_{t-q}
+  $$
+
+- **Forecasting combines the two previous methods:**
+  - For the AR part, we use an iterative process, plugging in past *forecasts* for unknown future values of $Y$.
+  - For the MA part, the influence of past shocks ($\varepsilon_t$) fades and disappears after $q$ periods.
+
+:::{.callout-tip title="Example: ARMA(1,1) Forecast"}
+- $Y_{t+1} = c + \phi_1 Y_t + \varepsilon_{t+1} + \theta_1 \varepsilon_t$
+  - Forecast $\hat{Y}_{t+1|t} = c + \phi_1 Y_t + \theta_1 \varepsilon_t$
+
+- $Y_{t+2} = c + \phi_1 Y_{t+1} + \varepsilon_{t+2} + \theta_1 \varepsilon_{t+1}$
+  - Forecast: $\hat{Y}_{t+2|t} = c + \phi_1 \mathbf{\hat{Y}_{t+1|t}} \quad (\text{The MA term vanishes as } E[\varepsilon_{t+1}|I_t]=0)$
+  
+The AR component gives the forecast a persistent, decaying memory, while the MA component captures the effect of short-term, finite shocks.
+
+:::
+
+## Forecasting with ARDL(p,q) Models
+
+- Why limit ourselves to just the past of Y? Other variables might help predict it.
+
+  $$
+    Y_t = c + \sum_{i=1}^{p} \phi_i Y_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + \varepsilon_t
+  $$
+
+- The process is similar to a standard AR forecast, but with an added component.
+  - **One-Step-Ahead Forecast ($h=1$):**
+    $$
+      \hat{Y}_{t+1|t} = c + \sum_{i=1}^{p} \phi_i Y_{t-i+1} + \sum_{j=0}^{q} \beta_j X_{t-j+1}
+    $$
+  - Simply plug in all known values for past $Y$ and past $X$.
+
+## Challenge of Multivariate Forecasting
+
+- To forecast $Y_{t+1}$, the model requires the value of $X_{t+1}$ if $\beta_0 \neq 0$!
+- To forecast $Y_{t+h}$, you need values for $X_{t+h}, X_{t+h-1}, \dots, X_{t+1}$.
+
+- **Solutions:**
+  1.  **Build a separate forecast model for X.** (e.g., use an ARIMA model to forecast future temperatures).
+  2.  **Create scenarios for X.** (e.g., "What will sales be if we assume a 10% increase in our advertising budget ($X$)?").
+  3.  **Only use lagged X's.** If $\beta_0 = 0$, then you only need $X$ values up to time $t$ to predict $Y_{t+1}$, which are known.
+
+## Takeaways
+
+- **The Foundation is Conditional Expectation:** all standard forecasting methods are an attempt to calculate $E[Y_{t+h} | I_t]$.
+
+- Test your forecasts on out-of-sample data using metrics like MAE, RMSE, or MAPE to understand their real-world performance.
+
+- **Model Structure dictates forecast behavior:**
+  - **AR(p):** Forecasts are iterative and have long memory. They converge slowly to the mean.
+  - **MA(q):** Forecasts have short memory. They revert to the mean after $q$ periods.
+  - **ARMA(p,q):** A hybrid approach capturing both long-term persistence and short-term shocks.
+  - **ARDL(p,q):** Incorporates external information but introduces the challenge of needing to forecast your predictors ($X$ variables).
 
 ## Other Topics in Time Series Econometrics
 
@@ -1168,5 +1332,8 @@ estat ec
 
 - **Autoregressive Distributed Lag Models**:
   - A generalization of distributed lag models, also integrating autoregressive components. A model like this has the ability to separate feedback effects from long-run impacts of $X$. 
+  
+- **Forecasting**: 
+  - We saw all of these models in a forecasting setting. We discussed conditional expectation as the main vehicle for forecasting, talked about particular processes and discussed some of the evaluation metrics. 
   
 # The End
