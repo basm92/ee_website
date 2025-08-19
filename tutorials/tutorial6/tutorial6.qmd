@@ -1,0 +1,129 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 6: Binary Outcomes"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial - Binary Outcomes'
+resources:
+  - demo.pdf
+---
+
+# Tutorial 6
+
+## Recapitulation of the Lecture
+
+## Slide 1
+
+## Slide 2
+
+# Questions
+
+
+## The Pros and Cons of Simplicity
+
+The lecture introduced the Linear Probability Model (LPM) as a straightforward way to handle binary outcomes using OLS.
+
+a) What are the two main advantages of the LPM, particularly concerning estimation and interpretation?
+b) What are its two primary shortcomings, as discussed in the lecture? Explain why each is a problem.
+c) One of these shortcomings can be partially addressed using robust standard errors. Which one is it, and why does this fix work?
+
+## The Latent Variable Framework
+
+Both Probit and Logit models are motivated by an underlying latent variable, $y^*$.
+
+a) In your own words, explain the concept of a latent variable $y^*$ and how it relates to the observed binary outcome $y$.
+b) The lecture states that $P(y_i=1) = P(\epsilon_i > -X_i'\beta)$. What is the final step needed to get from this expression to the specific functional forms for the Probit and Logit models? What key assumption distinguishes the two models?
+
+## Understanding Maximum Likelihood
+
+Probit and Logit models are estimated using Maximum Likelihood Estimation (MLE), not OLS.
+
+a) Explain the fundamental goal of MLE. How does its objective differ from the objective of OLS (which minimizes the sum of squared residuals)?
+b) Using the "biased coin" example from the lecture (observing 7 heads in 10 flips), explain how you would construct the likelihood function. What value of *p* (the probability of heads) does MLE tell us is the best estimate, and why is this intuitive?
+
+## Model Estimation
+
+*For this question, you will use the Bertrand and Mullainathan (2004) dataset, `lakisha_aer.dta`, which was used for the examples in the lecture.*
+
+You are interested in the effect of perceived race on the probability of receiving a callback for a job interview. The key variables are `call` (1 if callback, 0 otherwise) and `race` ('b' for black-sounding name, 'w' for white-sounding name).
+
+a) Estimate a **Linear Probability Model (LPM)** regressing `call` on `race`.
+b) Estimate a **Logit model** with the same variables.
+c) Estimate a **Probit model** with the same variables.
+
+For each model, report the estimated coefficient on the `race` variable and its p-value. Do the models agree on the direction and statistical significance of the effect?
+
+## Marginal Effects vs. Coefficients
+
+The coefficients from Logit and Probit models are not directly interpretable as marginal effects.
+
+a) Calculate the **Average Marginal Effect (AME)** of the `race` variable from your Logit and Probit models in Question 4.
+b) Interpret the AME from the Probit model. What does this number tell you about the difference in callback probabilities between resumes with white-sounding and black-sounding names?
+c) How do the AMEs from the Logit and Probit models compare to each other? How do they compare to the coefficient on `race` from the LPM in Question 4? Discuss your findings.
+
+## Odds Ratios in Logit
+
+The Logit model allows for a unique interpretation using odds ratios.
+
+a) Using the results from your Logit model in Question 4, calculate the odds ratio for the `race` variable.
+b) Provide a precise interpretation of this odds ratio. (Hint: A one-unit change in `race` corresponds to switching from a white-sounding name to a black-sounding name, or vice versa depending on your software's baseline).
+
+## The Complexity of Interaction Terms
+
+Suppose you were to estimate a Probit model:
+
+  $$
+    P(\text{call}=1 | X) = \Phi(\beta_0 + \beta_1 \text{race}_i + \beta_2 \text{female}_i + \beta_3 (\text{race}_i \times \text{female}_i))
+  $$
+
+Explain why you **cannot** simply look at the sign and significance of $\hat{\beta}_3$ to determine the sign and significance of the interaction effect on the *probability* of receiving a callback. How does this differ fundamentally from the interpretation of an interaction term in an LPM?
+
+## Censoring and the Tobit Model
+
+A health economist is studying individual annual out-of-pocket spending on prescription medication. A significant fraction of the sample (30%) has zero expenditure because they did not purchase any medication.
+
+a) The researcher considers dropping the zero-expenditure observations and running an OLS regression on the remaining positive values. Why would this lead to biased estimates?
+b) The researcher then considers running OLS on the full sample, including the zeros. Why is this also problematic for estimating the relationship between income and medication spending?
+c) Explain why the **Tobit model** is designed to handle this specific type of data problem.
+
+## Estimating a Tobit Model
+
+:::{style="font-size: 0.7em;"}
+
+*This question uses the Mroz dataset, which contains data on the labor force participation of married women in 1975.*^[It is widely available in software packages (e.g., in the `wooldridge` package in R or easily accessible online for Python/Stata).]
+
+The primary variable of interest is hours, representing the number of hours the woman worked in 1975. A significant number of women in the sample did not work, resulting in hours = 0. We want to model the factors that determine hours worked.
+
+a) Load the Mroz dataset. Create a histogram or frequency table for the hours variable. Based on the distribution you observe, explain precisely why a Tobit model is a more appropriate choice than a standard OLS regression for this research question.
+
+b) Estimate a Tobit model where hours is the dependent variable. Use the following as independent variables: educ (years of education), exper (actual labor market experience), nwifeinc (non-wife household income, in thousands), and kidslt6 (number of children less than 6 years old). Report the estimated coefficients and their statistical significance.
+
+c) Focus on the estimated coefficient for kidslt6. Provide a careful interpretation of this coefficient. What does this coefficient tell you about the relationship between having young children and the latent propensity or desired hours of work?
+
+:::
+
+## Sample Selection and the Heckman Model
+
+A labor economist wants to estimate the effect of union membership on wages. They only observe wages for individuals who are currently employed.
+
+a) Explain how this situation could lead to **sample selection bias**. (Hint: Think about the correlation between the unobserved factors that influence the decision to work and the unobserved factors that influence wages).
+b) To correct for this, the researcher uses a Heckman model. What is the critical role of an **exclusion restriction** for identifying the model?
+c) Propose a variable that could plausibly serve as an exclusion restriction in this context. Justify your choice by explaining why it likely affects the probability of being employed but not the wage itself.
+
+## Designing a Heckman Analysis
+
+Imagine you are tasked with estimating the wage premium for having a Master's degree. You have a dataset containing the following variables for a sample of individuals: `wage` (hourly, but missing for non-workers), `has_masters` (0/1), `is_working` (0/1), `experience` (years), and `has_partner` (0/1).
+
+a) Outline the **two steps** of the Heckman procedure you would use to estimate the effect of `has_masters` on `wage`. Clearly state the dependent and independent variables for each step.
+b) Which variable would be your candidate for the **exclusion restriction**? Justify your choice.
+c) After running the second step of the procedure, how would you determine if sample selection was actually a problem that needed correcting?
+
+# The End
