@@ -1,0 +1,133 @@
+---
+title: "Empirical Economics"
+subtitle: "Tutorial 7: Difference-in-Differences"
+mainfont: Lato
+monofont: Ubuntu Mono
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Tutorial - DiD'
+resources:
+  - demo.pdf
+---
+
+# Tutorial 7
+
+## Recapitulation of the Lecture
+
+## Slide 1
+
+## Slide 2
+
+# Questions
+
+## Decomposing the Naive Estimator
+
+The lecture shows that the simple difference-in-means estimator, $E[Y|T=1] - E[Y|T=0]$, is a biased estimator for the Average Treatment Effect on the Treated (ATT).
+
+1. Starting from the identity $E[Y|T=1] - E[Y|T=0] = E[Y(1)|T=1] - E[Y(0)|T=0]$, show the full derivation that decomposes this difference into the ATT and the Selection Bias term. Explain each step of your derivation.
+
+2. Provide an intuitive explanation of the selection bias term, $E[Y(0)|T=1] - E[Y(0)|T=0]$, using the lecture's example of a job training program. What would a positive selection bias imply in this context?
+
+
+## Applying Potential Outcomes
+
+Consider a study on the effect of a new irrigation system (the treatment) on the crop yield of farms. Let $Y_i$ be the crop yield for farm $i$.
+
+1. Define the potential outcomes, $Y_i(1)$ and $Y_i(0)$, in the context of this specific example.
+
+2. What is the individual causal effect ($\tau_i$) for a single farm $i$?
+
+3. Explain the "fundamental problem of causal inference" using this irrigation example. Why can't we directly calculate $\tau_i$ for any farm?
+
+## The 2x2 Calculation
+
+A researcher evaluates the impact of a new subway line on local house prices. She collects data from a neighborhood that received the subway line (Treatment) and a similar neighborhood that did not (Control), both before and after the line opened. The average house prices (in thousands of dollars) are as follows:
+
+| | **Before Period (Pre)** | **After Period (Post)** |
+| :--- | :---: | :---: |
+| **Treatment Group** | 450 | 520 |
+| **Control Group** | 420 | 460 |
+
+1. Calculate the Difference-in-Differences estimate ($\tau_{DiD}$) for the effect of the subway line on house prices. Show your calculations step-by-step.
+
+2. What is the "secular trend" in house prices according to this data?
+
+3. Based on your result, what is your conclusion about the causal effect of the new subway line?
+
+
+## The Parallel Trends Assumption
+
+The validity of the DiD estimator hinges on the parallel trends assumption.
+
+1. Write down the parallel trends assumption mathematically, using the potential outcomes notation provided in the lecture.
+
+2. Explain in plain English what this assumption means. Why is it essential for the DiD strategy to identify the ATT? What unobservable counterfactual does it allow us to estimate?
+
+3. If you had access to data from several years *before* the treatment was implemented, how could you visually build evidence for the credibility of this assumption?
+
+
+## Interpreting DiD Regression Output
+
+A researcher estimates the effect of a state-level environmental policy on air quality using the following regression model, where `AirQuality` is an index, `Treat` is a dummy for states that adopted the policy, and `Post` is a dummy for the period after the policy was adopted.
+
+$Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$
+
+The estimated model is:
+
+$\widehat{\text{AirQuality}}_{it} = 75.2 + 5.5 \cdot Treat_i - 8.1 \cdot Post_t - 4.3 \cdot (Treat_i \times Post_t)$
+
+1. What is the average air quality for the control group in the pre-treatment period?
+
+2. What does the coefficient $\beta_1 = 5.5$ represent? Does this indicate the policy was assigned randomly?
+
+3. What does the coefficient $\beta_2 = -8.1$ represent?
+
+4. What is the DiD estimate of the policy's effect? Interpret this coefficient ($\beta_3 = -4.3$) in the context of the study.
+
+
+## The Effect of Union Membership on Wages
+
+This question uses the classic `nlswork.dta` dataset, which contains panel data on young working women. We want to estimate the causal effect of joining a union on wages.^[This is a classic example of selection bias, as women who join unions may be systematically different from those who don't. You can load the data in Stata using `webuse nlswork`. A similar dataset is available for R and Python. The key variables are `ln_wage` (log wage), `union` (a dummy for union membership), `year`, and `idcode` (the individual identifier).]
+
+1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
+
+2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
+
+3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
+
+## Threats to Identification
+
+Imagine you are designing a study to evaluate the impact of a scholarship program (awarded to students in City A) on university enrollment rates. City B, which has no such program, serves as your control.
+
+**(a) Policy Anticipation:** How might anticipation effects violate the parallel trends assumption? Give a concrete example related to this scholarship program.
+
+**(b) Spillovers:** How might spillover effects contaminate your control group? Give a concrete example.
+
+**(c) Ashenfelter's Dip:** Describe what Ashenfelter's dip would look like in this context and why it would lead to a biased estimate of the program's effect.
+
+
+## Event Study and Parallel Trends
+
+This question uses the `cigar.dta` dataset (available via `webuse cigar` in Stata), which contains data on cigarette sales (`sales`), prices, and taxes for 48 states from 1963-1992. In 1989, California (statecode 5) passed Proposition 99, a large tobacco tax increase.
+
+a) Create a variable for per-capita cigarette sales.
+
+b) Plot the average per-capita cigarette sales over time for California and for all other states combined. Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the years leading up to 1989.
+
+c) Briefly outline how you would formally test for pre-trends using a regression framework, as described in the lecture. What coefficients would you be looking at, and what would you hope to find?
+
+##  Direction of Bias
+
+A researcher evaluates the effect of a new fertilizer on crop yields. They use a DiD design comparing farms that adopted the fertilizer (treatment) to those that did not (control).
+
+After presenting their results, a skeptical audience member points to their pre-treatment trend graph. The graph clearly shows that in the years leading up to the adoption, the yields of the "treatment" farms were already declining, while the yields of the "control" farms were stable.
+
+**(a)** Does this observation support or violate the parallel trends assumption?
+
+**(b)** Assuming the researcher found a positive DiD estimate (i.e., the fertilizer appeared to increase yields), is this estimate likely an **overestimate** or an **underestimate** of the true causal effect? Explain your reasoning by describing the counterfactual trend for the treatment group.
