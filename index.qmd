@@ -34,7 +34,7 @@ Welcome to the Empirical Economics (Utrecht University) website. On this website
 | 1     | Wed 13:15     | Spin 107 | Banking and Finance                   |  Mads |
 | 2     | Wed 15:15     | Spin 107 | Banking and Finance                   |  Mads  |
 | 3     | Wed 17:15     | Spin 107 | Banking and Finance                   |  Mads |
-| 4     | Wed 13:15     | Spin 109 | Financial Management                  |  Tina  |
+| 4     | Wed 13:15     | Spin 109 | Financial Management                  |  Jelena  |
 | 5     | Wed 15:15     | Spin 109 | Financial Management                  | Jelena |
 | 6     | Wed 17:15     | Spin 109 | Reserve                               |         |
 | 7     | Wed 13:15     | Spin 013 | International Management              | Vincent |
@@ -42,7 +42,7 @@ Welcome to the Empirical Economics (Utrecht University) website. On this website
 |       |               |         |                                       |         |
 | 9     | Thu 13:15     | Spin 013 | Business and Social Impact            | Jelena |
 | 10    | Thu 15:15     | Spin 013 | Business and Social Impact            | Jelena |
-| 11    | Thu 17:15     | Spin 013 | Business development and entrepreneurship | Jelena |
+| 11    | Thu 17:15     | Spin 013 | Business development and entrepreneurship | Tina |
 | 12    | Thu 13:15     | Spin 004 | Business development and entrepreneurship | Kattia |
 | 13    | Thu 15:15     | Spin 004 | Economic Policy                       | Kattia |
 | 14    | Thu 17:15     | Spin 004 | Economic Policy                       | Kattia |

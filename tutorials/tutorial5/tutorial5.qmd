@@ -40,7 +40,7 @@ The Pooled OLS model ignores the panel structure of the data and can suffer from
 
 While the Fixed Effects (FE) model is robust to correlation between unobserved effects and regressors, the Random Effects (RE) model is more efficient *if* its key assumption (that this correlation is zero) holds. The Hausman test is the standard tool for making this choice.
 
-1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.^[In Python, the random effects model can be estimated using the `linearmodels` library.]
+1.  Using the `wagepan` panel data, estimate a **Random Effects** model where `lwage` is a function of the time-varying predictors `married` and `union`, and the (mostly) time-invariant predictor `educ`.^[In Python, the random effects model can be estimated using the `linearmodels` library. In R, you can use the `plm` library. In Stata, `xtreg y x1 x2, re`.]
 2.  Estimate the corresponding **Fixed Effects** model with the same variables.
 3.  Perform a **Hausman test** to formally compare the two models.
 4.  **Conclude:** Based on the p-value of the test, which model should you choose? Clearly state the null hypothesis of the Hausman test and explain what your result implies about the relationship between the unobserved individual effects ($\alpha_i$) and the explanatory variables in your model.
