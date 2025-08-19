@@ -11,4 +11,3 @@ Below, the tutorial solutions can be found:
 - [Tutorial 5](tutorial_solutions/tutorial5_solutions.qmd)
 - [Tutorial 6](tutorial_solutions/tutorial6_solutions.qmd)
 - [Tutorial 7](tutorial_solutions/tutorial7_solutions.qmd)
-- [Tutorial 8](tutorial_solutions/tutorial8_solutions.qmd)
