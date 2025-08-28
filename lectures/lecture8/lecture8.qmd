@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Lecture 8: Hands-on Econometrics"
+subtitle: "Lecture 8: Instrumental Variables"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,7 +11,9 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Lecture 8- Hands-on Econometrics'
+    footer: 'Empirical Economics: Lecture 8 - Instrumental Variables'
+    include-in-header:
+      - file: preamble.tex
 resources:
   - demo.pdf
 ---
@@ -40,815 +42,582 @@ use_python("/home/bas/anaconda3/bin/python")
 - Potential Outcomes and Difference-in-differences
 - Hands-on Econometrics in Practice
 
-## Agenda 
+$$
+\newcommand{\Yobs}{Y^{\text{obs}}}
+\newcommand{\Ycf}{Y^{\text{cf}}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\indep}{\perp \!\!\! \perp}
+\newcommand{\Cov}{\text{Cov}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Prp}{\text{Pr}}
+$$
 
-- Data Wrangling and Cleaning
-  - Importing Data
-  - Pivoting
-  - Merging Datasets
-  - String Matching
-- Summary Tables
-- Regression Tables
-  - Standard Errors and Fit Statistics
-- Visualization
-- Project and Code Organization
+# Causal Inference
 
-# Motivation
+## The Goal of Causal Inference
 
-## Motivation: Why Data Cleaning? 
+- Our fundamental goal is often to estimate the causal effect of a variable $X$ on an outcome $Y$.
 
+- Consider the simple linear model:
 
-- In practice, you almost never get a dataset that is entirely ready to analyze. 
-- Including for your MSc thesis, where you might have to query, put together, clean and analyze data from various sources. 
-- To successfully put all of these data together, you need to know the basis of data cleaning in your preferred programming language. 
-- In addition, you want your thesis to have **reliable results**: 
-  - Dirty data (missing values, outliers, inconsistencies) can distort econometric models, leading to incorrect conclusions. Proper cleaning ensures robustness.
-- Data cleaning also makes your thesis **reproducible**: we expect replicable analyses.
-  - Clean, well-documented data allows others to verify your findings.
+  $$
+    Y_i = \beta_0 + \beta_1 X_i + \epsilon_i
+  $$
 
-## Motivation: Why Project & Code Management?
+- We want our estimate of $\beta_1$, which we call $\hat{\beta}_1$, to be an unbiased and consistent estimate of the true causal effect.
+- For Ordinary Least Squares (OLS) to be unbiased, we need the regressor $X$ to be uncorrelated with the error term $\epsilon$: $E[X_i \epsilon_i] = 0 \quad \text{or} \quad Cov(X_i, \epsilon_i) = 0$
+  - This is the assumption of _exogeneity_. 
 
-- An empirical economics project such as a thesis is much easier and less frustrating if you think about project and code management up front. 
-- Avoid Chaos: A well-organized folder structure (raw data, cleaned data, scripts, outputs) prevents lost files and version disasters.
-- Collaboration & Transparency: clear code (with comments!) make it easier for advisors and others to help and for you to revisit your work weeks/months later.
-- Scalability: Modular code (e.g., separate scripts for data prep, analysis, and visuals) lets you tweak one part without breaking everything.
+## The Problem: Endogeneity
 
-# Data Wrangling & Cleaning
+- Endogeneity occurs when the exogeneity assumption is violated:
 
-## Importing Data
+  $$
+    Cov(X_i, \epsilon_i) \neq 0
+  $$
 
-- Most of the data you'll receive is in a structured format
+- When $X$ is endogenous, OLS is biased and inconsistent. Our $\hat{\beta}_1$ does not converge to the true $\beta_1$, even with infinite data.
 
-- Pay attention to _delimiters_, if you parse something like this:
+- Why does this happen?
+  - The error term $\epsilon$ contains all other factors that determine $Y$ but are not included in the model. If any of these omitted factors are also correlated with $X$, we have a problem.
 
-- It isn't because the data is corrupted. It's just because the function you have used doesn't recognize the data format
+## Sources of Endogeneity
 
-## Importing Data through API
+- **Omitted Variable Bias (OVB)**
 
-- You can also think about importing data through dedicated libraries or through submitting requests to servers from Python or R 
+  - A variable $W$ affects $Y$ and is also correlated with $X$, but $W$ is not included in the model.
+  - _Example_: Effect of education ($X$) on wages ($Y$). Omitted "ability" ($W$) affects wages and is correlated with education.
 
+- **Simultaneity / Reverse Causality**
+  - $X$ causes $Y$, but $Y$ also causes $X$.
+  - _Example_:Effect of police presence ($X$) on crime rates ($Y$). More police may reduce crime, but higher crime rates lead to more police being hired.
 
-# Pivoting
+- **Measurement Error**
+  - The variable $X$ is measured with error.
+  - _Example_: Effect of household income ($X$) on consumption ($Y$). Income reported in surveys ($X$) is often an imperfect measure of true income.
 
-## Long and Wide Datasets
+## Illustrating Omitted Variable Bias
 
-- There generally exist two often-ocurring formats for financial and economic data. 
+- Let the true model be:
 
-- Long Format:
-  - In a long format, each row represents a single observation for a specific variable. 
-  - For instance, in a firm-year dataset, you might have separate rows for the revenue of Company A in 2023 and the revenue of the same company in 2024. This format is often easier for data collection and storage.
-
-- Wide Format: 
-  - In a wide format, each row represents a single subject (like a company), and the columns represent different variables or observations over time. 
-  - For example, you would have a single row for Company A with separate columns for "Revenue 2023" and "Revenue 2024". 
-
-
-
-## Standard (Long) Format
-
-- Statistical packages usually assume your data is in the _long format_:
-
-```{python}
-#| echo: false
-import pandas as pd
-
-# Create a sample long-format dataset
-data_long = {
-    'Company': ['Company A', 'Company A', 'Company B', 'Company B', 'Company C', 'Company C'],
-    'Year': [2023, 2024, 2023, 2024, 2023, 2024],
-    'Revenue': [100, 110, 200, 210, 150, 160],
-    'Expenses': [80, 85, 150, 155, 120, 125]
-}
-df_long = pd.DataFrame(data_long)
-print(df_long)
-```
-
-
-## Pivoting Datasets
-
-- It often occurs that your data is in a slightly different format. Most often, your data is in a _wide format_:
-
-```{python}
-#| echo: false
-# Pivot from long to wide format
-df_wide = df_long.pivot(index='Company', columns='Year', values=['Revenue', 'Expenses'])
-df_wide.columns = ['_'.join(map(str, col)) for col in df_wide.columns]
-df_wide.reset_index(inplace=True)
-print(df_wide)
-```
-
-## Pivoting Wider and Longer
-
-- Fortunately, it's possible to _reshape_ `DataFrames` so as to switch between these formats at your convenience. 
-
-- From Wide to Long:
-
-:::{.panel-tabset .hey}
-
-### R
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-library(tidyverse, quietly=TRUE)
-print(py$df_wide)
-long_condensed <- py$df_wide |>
-  pivot_longer(cols = contains(c('2023', '2024')), 
-               names_to = 'variable',
-               values_to = 'value')
-
-print(long_condensed)
-long_final <- long_condensed |>
-  separate_wider_delim(variable, delim="_", names=c('variable', 'year'))
-
-print(long_final)
-```
-
-### Python
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-print(df_wide)
-df_melted = pd.melt(df_wide, id_vars=['Company'], var_name='Metric_Year', value_name='Value')
-print(df_melted)
-# Split the 'Metric_Year' column into 'Metric' and 'Year'
-df_melted[['Metric', 'Year']] = df_melted['Metric_Year'].str.split('_', expand=True)
-df_melted.drop(columns='Metric_Year', inplace=True)
-print(df_melted)
-```
-
-### Stata
-
-:::
-
-:::{style="font-size: 0.9em;"}
-- From Long to Wide:
-:::
-
-:::{.panel-tabset .hey}
-
-### R 
-
-```{r}
-#| echo: true
-#| collapse: true
-#| code-fold: true
-print(py$df_long)
-py$df_long |>
-  pivot_wider(names_from="Year",
-              values_from=c("Revenue", "Expenses"))
-
-```
-
-### Python  
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-print(df_long)
-df_wide = df_long.pivot(index='Company', columns='Year', values=['Revenue', 'Expenses'])
-print(df_wide)
-df_wide.columns = ['_'.join(map(str, col)) for col in df_wide.columns]
-df_wide.reset_index(inplace=True)
-print(df_wide)
-
-```
-
-### Stata
-
-
-:::
-
-## Merging Datasets
-
-- Another common operation you might have to perform is _merging datasets_, also referred to as _joining datasets_.
-- If you acquire your data from different sources, you have to combine them somehow.
-- Merging datasets involves combining two (or more) datasets on the basis of common **keys** or **identifiers**. 
-- For example, you might have these two datasets, out of which you want to create a dataset including `name`, `band` and `instrument` :^[Borrowed from [here](https://dplyr.tidyverse.org/reference/mutate-joins.html)]
-
-::::{.columns}
-
-:::{.column}
-```{r}
-#| echo: false
-band_members
-```
-:::
-
-:::{.column}
-
-```{r}
-#| echo: false
-band_instruments
-```
-
-:::
-
-::::
-
-## Different Types of Joins
-
-- There are different types of "joins" you can perform. 
-
-- `join` functions usually take (at least) two arguments, and add columns from the `y` dataframe (the second argument) to the `x` dataframe (the first argument), matching observations based on the keys. 
-
-- The logic of this operation is **exactly the same**, no matter you do it in R, Python or Stata.
-
-:::{.panel-tabset}
-
-### R
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-In R, you'd use the `left_join` function from the `dplyr` package to join to datasets. `left_join` takes two arguments, data frame `x` and data frame `y`, where `x` is referred to as the left data frame, and `y` as the right data frame. 
-
-The function `left_join` keeps _all observations_ in `x`, irrespective of whether they have a match in `y`:
-
-```{r}
-#| echo: true
-#| collapse: true
-left_join(band_members, band_instruments)
-```
-
-Good practice is to also specify another argument, `by`, to explicitly instrument on the basis of what keys the join should be performed. This works in this way: `by=c('key_in_x_df' = 'key_in_y_df')`. If the keys have the same variable name in both data frames, you could use the special case `by='key_in_bothdfs'`. 
-
-```{r}
-#| echo: true
-#| collapse: true
-left_join(band_members, band_instruments, by = 'name')
-#left_join(band_members, band_instruments, by=c('name'='name')) would also work
-```
-
-:::
-
-### Python
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-In Python, you'd use the `merge` function from the `pandas` package. This function includes a whole lot of options. The function merge takes at least three arguments, the `left_df` and the `right_df`. 
-
-If the key columns have different names, you also specify the `left_on` and `right_on` arguments, as exemplified below. 
-
-If not, you could use the `on` argument and specify it like `on='common_column_name'`. 
-
-Finally, you should specify the `how` argument. If you specify `how='left'`, all observations from the left data frame will be kept. If you specify `how='inner'`, it'll only keep observations from the left data.frame for which a match can be found. For other options, check out the [pandas documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html). 
-
-```{python}
-#| echo: true
-#| collapse: true
-import pandas as pd
-
-band_members = r.band_members
-band_instruments = r.band_instruments
-merged_df = pd.merge(band_members, band_instruments, on='name', how='left')
-print(merged_df)
-```
-
-:::
-
-### Stata
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-In Stata, a join can be accomplished using the `merge` command. 
-
-```{stata}
-#| echo: true
-#| eval: false
-merge 1:1 name using band_instruments, keep(master match) nogenerate
-```
-
-- `merge 1:1 name` specifies a one-to-one merge on the variable 'name'
-
-- `using band_instruments` specifies the dataset to merge with (like `band_instruments` in R)
-
-- `keep(master match)` keeps only observations from the master dataset (left join) and matched observations
-
-- `nogenerate` suppresses creation of the _merge variable that tracks merge results
-
-- When the variable names of the variable holding the keys are different, you'd use this:
-
-```{stata}
-#| echo: true
-#| eval: false
-merge 1:1 artist_name=name using band_instruments, keep(master match) nogenerate
-```
-
-- where now, `artist_name` is the name in the master (the left) dataframe and `name` is the name of the key in the `using` dataset (i.e. `band_instruments`). 
-
-:::
-
-:::
-
-## Merging with Fuzzy Keys
-
-- Sometimes, datasets have keys that are not entirely identical. 
-- E.g. "United States" in one dataset vs. "United States of America" in another. 
-- Usually, the best strategy in this case is to look for existing identifiers. 
-  - E.g. companies usually have ISIN-numbers that are available in multiple databases. Countries have ISO codes. 
-- If that does not work, you could attempt _fuzzy matching_ or _fuzzy joining_. 
-- A fuzzy join (or approximate join) is a technique used to merge datasets based on inexact matching, such as similar strings.
-- Fuzzy joins handle inconsistencies like typos, different formats, or slight variations in data.
-
-## Implementation
-
-- This is how that works in different languages. 
-
-:::{.panel-tabset}
-
-### R
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-- In R, you'd use the `fuzzyjoin` library in the following way:
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-library(fuzzyjoin)
-library(dplyr)
-
-# Sample data
-df1 <- data.frame(company = c("Apple Inc.", "Microsoft", "Google LLC"))
-df2 <- data.frame(name = c("Apple Incorporated", "Microsoft Corp", "Google Inc"))
-
-# Perform fuzzy join using string similarity (Levenshtein distance by default)
-result <- stringdist_join(
-  df1, 
-  df2, 
-  by = c("company" = "name"),
-  mode = "left",
-  method = "jw",  # Jaro-Winkler (good for company names)
-  max_dist = 0.25, # Adjust threshold (lower = stricter)
-  ignore_case = TRUE
-) %>%
-  select(company, name)  # Keep only relevant columns
-
-print(result)
-```
-
-:::
-
-### Python
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-- In Python, you'd use the `rapidfuzz` library in the following way:
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-import pandas as pd
-from rapidfuzz import process, fuzz
-
-def fuzzy_join(left_df, right_df, left_col, right_col, threshold=40):
-    matches = []
-    for _, left_row in left_df.iterrows():
-        # Get best match (returns (match, score, index) or None)
-        match = process.extractOne(
-            left_row[left_col], 
-            right_df[right_col], 
-            scorer=fuzz.token_set_ratio,
-            score_cutoff=threshold
-        )
-        if match:
-            matches.append((left_row[left_col], match[0], match[1]))
-        else:
-            matches.append((left_row[left_col], None, None))
-    
-    # Create DataFrame with matches
-    matched_df = pd.DataFrame(matches, columns=[left_col, right_col, "score"])
-    
-    # Merge results
-    return pd.merge(
-        left_df,
-        matched_df[[left_col, right_col]],
-        on=left_col,
-        how="left"
-    ).merge(
-        right_df,
-        left_on=right_col,
-        right_on=right_col,
-        how="left"
-    )
-
-# Example usage
-df1 = pd.DataFrame({"company": ["Apple Inc.", "Microsoft", "Google LLC", "Netflix"]})
-df2 = pd.DataFrame({"name": ["Apple Incorporated", "Microsoft Corp", "Google Inc."]})
-
-result = fuzzy_join(df1, df2, "company", "name")
-print(result)
-```
-
-:::
-
-### Stata
-
-::: {.scroll-container style="overflow-y: scroll; height: 300px; font-size: 0.7em;"}
-
-- Stata has the `reclink` package (documentation [here](http://fmwww.bc.edu/repec/bocode/r/reclink.html)) that allows you to use fuzzy string matching to merge datasets:
-
-```{stata}
-#| echo: true
-#| eval: false
-#| code-fold: true
-
-* Install the reclink command from ssc
-ssc install reclink
-
-// Example with two datasets
-use dataset1, clear
-save temp1, replace
-
-use dataset2, clear
-save temp2, replace
-
-reclink keyvar using temp1, idmaster(id1) idusing(id2) gen(matchscore)
-```
-
-:::
-
-:::
-
-- An alternative you could exploit is use LLM's and provide them with the instruction to return a matched dataset.
-- There also exists a Python library called `recordlinkage`, available [here](https://recordlinkage.readthedocs.io/en/latest/installation.html). 
-
-
-# Regression Tables
-
-
-## Regression Tables
-
-- Regression tables will probably be some of the most important stuff in your thesis.
-
-- They often form your central evidence, confirming or rejecting your hypothesis, answering your research question. 
-
-- Anyone who reads your thesis farther than the introduction will probably look at them. 
-
-- This is why **regression tables have to be formatted nicely**. 
-
-- Fortunately, R/Python/Stata all have nice libraries allowing you to generate regression tables. 
-
-- Hence, **you should never manually create a regression table, ever**. 
-
-## Example Format
-
-::::{.columns}
-
-:::{.column width="50%"}
-- Regression tables should always be formulated like this:
-
-```{r}
-#| echo: false
-library(modelsummary); library(fixest); library(tinytable)
-model <- feols(mpg ~ drat, data=mtcars)
-model2 <- feols(mpg ~ drat + hp, data = mtcars)
-model3 <- feols(mpg ~ drat + hp, vcov='hc1', data=mtcars)
-
-modelsummary(list(model, model2, model3), gof_map=c("nobs", "r.squared"), output = 'tinytable') |>
-  theme_tt("resize", width=1)
-```
-
-:::
-
-:::{.column width="50%"}
-- And they should never be raw output like this:
-
-:::{style="font-size: 0.7em;"}
-```{r}
-#| echo: false
-summary(model)
-```
-:::
-
-:::
-
-::::
-
-
-## Regression Tables (Cont.)
-
-- Regression tables should have an informative title. 
-- Variable names should be properly and informatively formatted
-  - In human-readable text, so "GDP per capita", not `gdp_per_capita`. 
-- If you use fixed effects, these should be incorporated in the table in a specific way (see examples that follow). 
-- As a rule, you should also report the number of observations and (some equivalent of an) R-squared. 
-- Tables should have notes briefly describing what the regressions do. It should detail which method is used, how/which standard errors are computed and, traditionally, indicate statistical significance. 
-
-## Regression Tables in R/Python/Stata
-
-- Here are three full-fledged examples of nicely formatted regression tables. We'll go through all of the characteristics and their implementation.
-
-:::{.panel-tabset}
-
-### R
-
-::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
-
-- In R, the best option is to use the `modelsummary` and `tinytable` libraries to create regression tables and descriptive statistics. The documentation for these libraries is available [here](https://modelsummary.com/) and [here](https://vincentarelbundock.github.io/tinytable/) respectively. These both also work very well with the `fixest` package. 
-
-```{r}
-#| echo: true
-library(fixest)
-library(tibble)
-library(modelsummary)
-library(tinytable)
-# Estimate 6 models at once with "vs" fixed effects
-models <- feols(c(carb, mpg) ~ csw(cyl, disp, cyl:disp) | vs, data=mtcars)
-table1 <- modelsummary(models,
-             stars=c("*"=0.1, "**"=0.05, "***"=0.01),
-             gof_map = tibble(
-                raw=c("nobs", "r2.within", "FE: vs"),
-                clean=c("N", "Within R sq.", "VS FE"),
-                fmt=c(0, 2, 0))
-             ) |> 
-  setNames(c("", rep("carb", 3), rep("mpg", 3)))
-
-table1
-```
-
-- This table can be saved (exported to e.g. Word) by using the `save_tt()` function:
-
-```{r}
-#| echo: true
-#| eval: false
-save_tt(table1, "table1.docx")
-```
-
-:::
-
-### Python
-
-::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
-
-- In Python, the best option is to use the `pyfixest` package for regression tables and descriptive statistics. The documentation for regression tables is available [here](https://py-econometrics.github.io/pyfixest/table-layout.html). 
-
-```{python}
-#| echo: true
-import pyfixest as pf
-data = r.mtcars
-models = pf.feols("carb + mpg ~ csw(cyl, disp, cyl:disp) | vs", data=data)
-table = pf.etable(models,
-  signif_code=[0.01, 0.05, 0.1],
-  digits=3,
-  show_se_type=False,
-  labels={
-    "carb": "Carb",
-    "mpg": "Miles Per Gallon",
-    "cyl": "Cyl",
-    "disp": "Disp", 
-    "vs": "VS FE"
-}
-  )
-
-table
-```
-
-- This can also be exported in various ways, for example, to Word, using the `GT` library:
-
-```{python}
-#| echo: true
-#| eval: false
-from great_tables import GT
-GT.write_raw_html(table, filename="table1.html")
-```
-
-
-:::
-
-
-### Stata
-
-::: {.scroll-container style="overflow-y: scroll; height: 400px; font-size: 0.7em;"}
-
-
-- Stata uses the `estout` library (documentation [here](http://repec.org/bocode/e/estout/hlp_esttab.html)) to construct regression tables. 
-
-```{stata}
-#| echo: true
-#| eval: false
-#| code-fold: true
-* Load and prepare data
-sysuse auto, clear  // Stata doesn't have mtcars, so using auto dataset
-encode rep78, gen(rep78_fe)  // Create fixed effect variable
-
-* Run regressions
-eststo clear
-eststo: reg price mpg weight
-eststo: reg price mpg weight i.rep78_fe  // With fixed effects
-eststo: reg price mpg weight i.rep78_fe i.foreign  // Multiple FEs
-
-* Create publication-ready table
-esttab using "regression_table.rtf", ///
-    replace label b(3) se(3) ///
-    star(* 0.10 ** 0.05 *** 0.01) ///
-    title("Automobile Price Regressions") ///
-    addnotes("Standard errors in parentheses" "*** p<0.01, ** p<0.05, * p<0.10") ///
-    indicate("Rep78 FE = *.rep78_fe*" "Foreign FE = *.foreign*")
-
-```
-
-:::
-
-:::
-
+  $$
+    Y_i = \beta_0 + \beta_1 X_i + \beta_2 W_i + u_i
+  $$
   
-# Visualization
+- The omitted variable $W_i$ is an unobserved variable (e.g., ability).
 
-## What should we not show?
+- Suppose we estimate the simple model:
 
-- Don't show, or incorporate into your thesis, any raw plotted figure you used to inspect your data
-- I.e. a scatterplot like this is a no-go: 
+  $$
+    Y_i = \alpha_0 + \alpha_1 X_i + \epsilon_i \quad (\text{where } \epsilon_i = \beta_2 W_i + u_i)
+  $$
 
-```{r}
-#| echo: false
-#| fig-align: 'center'
-#| fig-width: 8
-mtcars |>
-  ggplot(aes(x = drat, y = mpg)) + geom_point()
-```
+- Then, the OLS estimate for $\alpha_1$ will be:
 
-## What should we show?
+  $$
+    \hat{\alpha}_1 = \beta_1 + \beta_2 \cdot \frac{Cov(X_i, W_i)}{Var(X_i)}
+  $$
 
-- Always add a **title** and **clear labels** to your plot.
-  - Make sure they're large enough.
-- If you're unsure, ask somebody else to look at your plot.
-  - If they don't get it, you probably created a bad plot.
-- Pay attention to ticks and intercepts.
-  
-```{r}
-#| echo: false
-#| fig-align: 'center'
-#| fig-width: 8
+- The bias is $\beta_2 \cdot \frac{Cov(X_i, W_i)}{Var(X_i)}$. 
+- It is non-zero if $W$ affects $Y$ ($\beta_2 \neq 0$) and is correlated with $X$ ($Cov(X,W) \neq 0$).
 
-mtcars |>
-  ggplot(aes(x=drat, y=mpg)) + geom_point() + 
-  xlab("Rear axle ratio (drat)") +
-  ylab("Miles/(US) Gallon (mpg)") + 
-  ggtitle("Relationship between Rear axle ratio and Miles per gallon") +
-  theme_bw()
-```
+# Intuition for IV
 
-## Use colors strategically
+## Intuition for Instrumental Variables
 
-Here is some code that helps you set-up some basic acceptable scatter plots. 
+- If $X$ is endogenous, we can't use its correlation with $Y$ to identify $\beta_1$.
 
+  - Part of the correlation between $X$ and $Y$ is the causal effect we want ($\beta_1$).
+  - Another part is the "bad" correlation due to endogeneity (e.g., OVB).
 
-## In what format should you save your graphics?
+- The idea in IV is to find a third variable $Z$, the _instrument_, that can isolate the "good" part of the variation in $X$.
 
-- Vector graphics are composed of formulas or paths.
-  - "Draw a straight line from (0, 0) to (13, 4)."
-  - Infinitely zoom-able. Preserves all underlying information.
-  - May be slow to load when complex.
-  - Extensions .pdf or .svg.
+- An instrument is a variable that is correlated with the endogenous regressor $X$, but is \textit{not} correlated with the error term $\epsilon$.
 
-- Raster graphics are composed of pixels (a grid of squares with color information).
-  - Only an approximation to the underlying shapes or points.
-  - Work better with Microsoft Office and HTML.
-  - Usually best: .png. Also .jpeg, .gif.
+  - It creates "as-if random" variation in $X$.
+  - It only affects $Y$ \textit{through} its effect on $X$.
 
-# Project Organization
+## Two Core IV Assumptions
 
-## General principes
+- For a variable $Z$ to be a valid instrument for $X$ in the model $Y_i = \beta_0 + \beta_1 X_i + \epsilon_i$, it must satisfy two conditions:
 
-- A Master's thesis is likely the largest, most complex independent project you've ever managed.
+  1. Relevance Condition (First Stage)
+  - The instrument $Z$ must be correlated with the endogenous variable $X$: $Cov(Z_i, X_i) \neq 0$
+  - This is testable from the data. We can regress $X$ on $Z$.
 
--  The difference between a smooth, relatively low-stress process and a chaotic, last-minute scramble often comes down to the organization you set up at the very beginning.
+  2. Exclusion Restriction (Exogeneity)
+  - The instrument $Z$ must be uncorrelated with the error term $\epsilon$: $Cov(Z_i, \epsilon_i) = 0$
+  - This means $Z$ affects $Y$ **only** through its effect on $X$.
+  - This is a theoretical assumption and is **not testable**. It requires deep institutional knowledge and a strong argument.
 
-- Adhering to these principles will make your thesis (hopefully) much less painful
+## Visualize IV with a DAG
 
-## File Organization
+- **The Endogeneity Problem (OVB):** $U$ is an unobserved confounder.
+  - The path $X \leftarrow U \rightarrow Y$ creates a spurious correlation between $X$ and $Y$. OLS is biased.
 
-- Create ONE main folder for your entire thesis.
-- Use a numbered prefix system to keep folders in a logical, non-alphabetical order.
-
-```
-\master_thesis\
-      \1_code\
-        \1_download_data.py
-        \2_bring_different_sources.py
-        \3_rename_and_reshape_data.py
-      \2_data\
-        \1_stockprice.csv
-        \2_accounting_info.json
-        \intermediate_data\
-          \stockprices_winsorized.csv
-      \3_figures\
-        \event_study.pdf
-        \scatterplot.pdf
-      \4_tables\
-        \descriptive_statistics.tex
-        \ols_baseline.tex
-        \ols_robust_se.tex
-        \autoregressive_1.tex
-      \5_document\
-        \thesis.docx
-```
-
-## File Organization (Cont.)
-
-- Why numbers? Because it forces the folders into an order that *you* decide is logical, not the alphabet. 'Admin' won't end up at the top, and 'Writing' won't be at the bottom. 
-
-- Keep your raw data in a separate folder and never touch it—always work on a copy. Make a backup of this folder. Set up a cloud sync service today. 
-  - You can use things like [Google Drive](http://drive.google.com), but also [DropBox](www.dropbox.com) and other commercial providers are available.
-  
-- Seperate files into inputs and outputs. 
-
-- Don't use file names or directory names with spaces. 
-  - Computer languages don't handle spaces well
-
-## Organizing Literature
-
-- Manual citation is a recipe for disaster. 
-- Pick a tool **now** and use it for every paper you read.
-  - Popular choices are Zotero, EndNote and Mendeley
-  - You can also use [Overleaf](www.overleaf.com) if you're familiar with LaTeX
-
-- Every time you download a paper, add it to your reference manager immediately. 
-
-- When you're writing, you can insert citations directly from the manager.
-
-## Code Organization
-
-- Break programs into short scripts or functions, each of which conducts a single task.
-
-- Make names distinctive and meaningful.
-
-- Be consistent with code style and formatting.
-  - Pay attention to things like file naming conventions and variable naming conventions
-
-- Use relative filepaths ("../input/data.csv" instead of "C:/build/input/data.csv").
-  - In VSCode, the working directory is always the **folder you have opened**. See [here](https://stackoverflow.com/questions/38623138/how-to-set-the-working-directory-for-debugging-a-python-program-in-vs-code) if you want to change that.
-  - In RStudio, if you set up an [Rproj](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects), your working directory will also be the directory in which the `.Rproj` file is situated. 
-  - In Stata, you can use `cd` to change your working directory. 
-  
-- Make incremental changes in your code, and test them as you go.
+- **IV Solution**: 
+  - **Relevance**: The arrow $Z \rightarrow X$.
+  - **Exclusion Restriction**: The \textit{absence} of a direct arrow from $Z$ to $Y$ or from $Z$ to $U$.
 
 
-## Code Organization (Cont.)
+# IV and Potential Outcomes 
 
+## Potential Outcomes (Reminder)
 
-- Save new copies of your scripts:
-  - Every time you make a substantial revision.
-  - If you make any edits to a script you haven't touched in more than 1-2 weeks.
+- Let's consider a binary treatment $X_i \in \{0, 1\}$.
 
-- Comment often to explain the purpose of your code
-  - Use descriptive variable names, e.g. `income_percapita` rather than `income_pc` or `inc_pc`
+  - $Y_i(1)$: The potential outcome for individual $i$ if they receive the treatment ($X_i=1$).
+  - $Y_i(0)$: The potential outcome for individual $i$ if they do not receive the treatment ($X_i=0$).
 
-- Don't use spaces when naming variables. 
-  - R: The `janitor` package has a function called `clean_names()`, which automatically converts column names into something compatible with R
+- The individual causal effect is $\tau_i = Y_i(1) - Y_i(0)$.
 
-- In Python, you could use something like this:
+- For each individual $i$, we can only observe one of the two potential outcomes:
 
-:::{style="font-size: 0.7em;"}
-```{python}
-#| echo: true
-#| code-fold: true
-#| eval: false
-import re
+$Y_i^{\text{obs}} = X_i Y_i(1) + (1-X_i) Y_i(0)$
 
-def clean_col_names(col_name):
-    """A more robust function to clean column names."""
-    # Convert to lowercase
-    new_col = col_name.lower()
-    # Replace any non-alphanumeric characters with an underscore
-    new_col = re.sub(r'[^A-Za-z0-9]+', '_', new_col)
-    # Remove leading/trailing underscores
-    new_col = new_col.strip('_')
-    return new_col
+- We never observe $Y_i(1)$ and $Y_i(0)$ for the same person.
 
-# Apply the function to all columns
-df.columns = [clean_col_names(col) for col in df_messy_copy.columns]
-```
+## IV in a Potential Outcomes Framework
+
+- Now let's introduce a binary instrument $Z_i \in \{0, 1\}$.
+
+  - $Z_i=1$: Individual $i$ is "encouraged" to get treatment.
+  - $Z_i=0$: Individual $i$ is "not encouraged".
+
+- We need to define potential outcomes for the treatment itself, based on the instrument:
+
+  - $X_i(1)$: The treatment status of individual $i$ if they are encouraged ($Z_i=1$).
+  - $X_i(0)$: The treatment status of individual $i$ if they are not encouraged ($Z_i=0$).
+
+- And we also have potential outcomes for $Y$: $Y_i(x)$, which depend on the treatment, which in turn depends on the instrument. 
+  - $Y_i (x)$ is shorthand for $Y_i (X_i(Z_i))$. 
+
+## Compliers, Always-Takers, Never-Takers
+
+- Based on how an individual's treatment status $X_i$ responds to the instrument $Z_i$, we can classify the population into four groups.
+
+:::{style="font-size: 1.5em;"}
+
+| Type          | If $Z_i=0$, $X_i(0)$ is | If $Z_i=1$, $X_i(1)$ is | Description                                  |
+|---------------|---------------------|---------------------|----------------------------------------------|
+| **Complier**  | 0                   | 1                   | *(Does what they are encouraged to do)*      |
+| **Always-Taker** | 1                | 1                   | *(Takes treatment regardless of encouragement)* |
+| **Never-Taker**  | 0                | 0                   | *(Never takes treatment regardless)*         |
+| **Defier**    | 1                   | 0                   | *(Does the opposite of encouragement)*       |
+
 :::
 
+## IV Assumptions in Potential Outcomes
 
-## Version Control
+- Like potential outcomes, we never know for sure which group an individual belongs to.
+- The two core assumptions have precise meanings in this framework, plus we need two more.
 
-- We've all been guilty of the 'Final_Final' file name. 
-  - This creates confusion and risk. 
-  - A simple, robust naming convention using dates in the `YEAR-MONTH-DAY` format is a great start because it sorts chronologically.
+- **Independence**: $Z_i \indep \{ Y_i(1), Y_i(0), X_i(1), X_i(0) \}$
+  - The instrument is "as-if" randomly assigned. It's independent of all potential outcomes and potential treatment decisions.
+- **Exclusion Restriction**: $Y_i(x, z) = Y_i(x) \quad \text{for all } x, z$
+  - The instrument $Z$ does not have a direct effect on the outcome $Y$. It only works through $X$. 
+
+- **Relevance (First Stage)**: $\E[X_i | Z_i=1] - \E[X_i | Z_i=0] \neq 0$
+  - The instrument must affect the treatment status for some individuals. This means there must be some Compliers.
+- **Monotonicity**: $X_i(1) \geq X_i(0) \quad \text{for all } i$
+  - The instrument encourages (or discourages) everyone weakly in the same direction. This assumption rules out the existence of _Defiers_
+
+## IV Estimator
+
+- With these four assumptions, IV does _not_ estimate the Average Treatment Effect ($ATE = E[Y_i(1) - Y_i(0)]$) for the whole population.
+
+- Instead, IV estimates the **Local Average Treatment Effect (LATE)** (Imbens & Angrist, 1994).
+
+$$\beta_{IV} = E[Y_i(1) - Y_i(0) \mid X_i(1) > X_i(0)]$$
+
+- This is the average treatment effect **only for the subpopulation of Compliers**. 
+
+- This is a crucial insight: The causal effect we get from IV is specific to the group of people who are induced into treatment by the instrument. It may not generalize to Always-Takers or Never-Takers.
+
+# Wald Estimator
+
+## The Wald Estimator
+
+- The simplest IV estimator is the Wald estimator, used when both the instrument $Z$ and the treatment $X$ are binary.
+
+$$\hat{\beta}_{\text{Wald}} = \frac{E[Y | Z=1] - E[Y | Z=0]}{E[X | Z=1] - E[X | Z=0]}$$
+
+- **Interpretation**: 
+  - **Numerator**: The "Reduced Form" effect. How much does the outcome change when the instrument is switched on?
+    - Called the _Intent-to-Treat (ITT) effect_
+  - **Denominator**: The "First Stage" effect. How much does the treatment take-up change when the instrument is switched on?
+    - Called the _share of compliers_.
+
+- The Wald estimator is simply the sample-analogue of this formula.
+
+## LATE Theorem (Heuristic)
+
+- Why does the Wald formula gives us the LATE?
+- The numerator is $E[Y | Z=1] - E[Y | Z=0]$
+- This difference in outcomes is only driven by the Compliers switching from $X=0$ to $X=1$. 
+- For everyone else (Always/Never-Takers), their treatment status doesn't change. So the numerator can be rewritten as:
+
+  $$
+    \text{Numerator} = \Pr(\text{Complier}) \cdot \E[Y(1) - Y(0) \mid \text{Complier}]=\Pr(\text{Complier})\cdot LATE.
+  $$
+
+- The denominator is $\E[X | Z=1] - \E[X | Z=0] = \Pr(\text{Complier})$
+- Together:
+
+  $$
+    \hat{\beta}_{\text{Wald}} = \frac{\Pr(\text{Complier}) \cdot \text{LATE}}{\Pr(\text{Complier})} = \text{LATE}
+  $$
+
+## Proof of LATE Theorem
+
+- Let's prove that the Wald estimator identifies the LATE under the four key IV assumptions (Independence, Exclusion, Relevance, Monotonicity).
+
+  $$
+    \text{Wald} = \frac{\E[Y | Z=1] - \E[Y | Z=0]}{\E[X | Z=1] - \E[X | Z=0]}
+  $$
+
+- We will show that $\E[X | Z=1] - \E[X | Z=0] = \Prp(\text{Complier})$.
+
+  $$
+  \begin{align*}
+    \E[X | Z=z] &= \E[X_i(z) | Z=z] && \text{(Def. of observed X)} \\
+    &= \E[X_i(z)] && \text{(by Independence assumption)}
+  \end{align*}
+  $$
+
+## Proof of LATE Theorem (Cont.)
+
+So the denominator is $\E[X_i(1)] - \E[X_i(0)]$. Let's expand this using the Law of Total Expectation over the population types (C=Complier, A=Always-Taker, N=Never-Taker). We assume Monotonicity, so there are no Defiers.
+
+\begin{align*}
+    \E[X_i(1)] &= \E[X_i(1)|C]\Prp(C) + \E[X_i(1)|A]\Prp(A) + \E[X_i(1)|N]\Prp(N) \\
+               &= (1)\Prp(C) + (1)\Prp(A) + (0)\Prp(N) = \Prp(C) + \Prp(A) \\
+    \E[X_i(0)] &= \E[X_i(0)|C]\Prp(C) + \E[X_i(0)|A]\Prp(A) + \E[X_i(0)|N]\Prp(N) \\
+               &= (0)\Prp(C) + (1)\Prp(A) + (0)\Prp(N) = \Prp(A)
+\end{align*}
+
+Therefore, the denominator is:
+
+$$(\Prp(C) + \Prp(A)) - \Prp(A) = \Prp(C)$$
+
+## Proof of LATE Theorem (Cont.)
+
+The Numerator: Intent-to-Treat for Compliers
+
+The numerator is $\E[Y | Z=1] - \E[Y | Z=0]$. Again, we use Independence to state that:
+
+$$\E[Y | Z = z] = \E[Y_i(X_i(z)) | Z = z] = \E[Y_i(X_i(z))]$$
+Dissecting these two terms: 
+
+\begin{align*}
+    \E[Y_i(X_i(1))] &= \E[Y_i(X_i(1))|C]\Prp(C) + \E[Y_i(X_i(1))|A]\Prp(A) + \E[Y_i(X_i(1))|N]\Prp(N) \\
+                    &= \E[Y_i(1)|C]\Prp(C) + \E[Y_i(1)|A]\Prp(A) + \E[Y_i(0)|N]\Prp(N) \\
+    \E[Y_i(X_i(0))] &= \E[Y_i(X_i(0))|C]\Prp(C) + \E[Y_i(X_i(0))|A]\Prp(A) + \E[Y_i(X_i(0))|N]\Prp(N) \\
+                    &= \E[Y_i(0)|C]\Prp(C) + \E[Y_i(1)|A]\Prp(A) + \E[Y_i(0)|N]\Prp(N)
+\end{align*}
+
+## Proof of LATE Theorem (Cont.)
+
+Now, we take the difference. Notice the terms for Always-Takers and Never-Takers are identical and will cancel out:
+
+\begin{align*}
+\text{Numerator} &= \left( \E[Y_i(1)|C]\Prp(C) + \dots \right) - \left( \E[Y_i(0)|C]\Prp(C) + \dots \right) \\
+&= \E[Y_i(1)|C]\Prp(C) - \E[Y_i(0)|C]\Prp(C) \\
+&= \Prp(C) \cdot \left( \E[Y_i(1)|C] - \E[Y_i(0)|C] \right) \\
+&= \Prp(\text{Complier}) \cdot \E[Y_i(1) - Y_i(0) | \text{Complier}] \\
+&= \Prp(\text{Complier}) \cdot \text{LATE}
+\end{align*}
+
+(The Exclusion Restriction is implicitly used because $Y$ only depends on $X$, not $Z$).
+
+## Putting It All Together
+
+We have shown:
+\begin{itemize}
+    \item \textbf{Numerator} = $\Prp(\text{Complier}) \times \text{LATE}$
+    \item \textbf{Denominator} = $\Prp(\text{Complier})$
+\end{itemize}
+
+Therefore, the Wald estimator is:
+$$\hat{\beta}_{\text{Wald}} = \frac{\E[Y | Z=1] - \E[Y | Z=0]}{\E[X | Z=1] - \E[X | Z=0]} = \frac{\Prp(\text{Complier}) \times \text{LATE}}{\Prp(\text{Complier})} = \text{LATE}$$
+
+This is a powerful result. It shows that the simple ratio of the reduced form effect to the first-stage effect precisely isolates the average causal effect for the specific subpopulation whose treatment status is actually manipulated by the instrument.
+
+
+## General IV Estimator
+
+Let's return to our linear model:
+$Y_i = \beta_0 + \beta_1 X_i + \epsilon_i$
+where $\Cov(X_i, \epsilon_i) \neq 0$. We have an instrument $Z$ such that $\Cov(Z_i, X_i) \neq 0$ and $\Cov(Z_i, \epsilon_i) = 0$.
+
+The IV estimator for $\beta_1$ is given by:
+
+$\hat{\beta}_1^{\text{IV}} = \frac{\Cov(Z, Y)}{\Cov(Z, X)}$
+
+Notice the similarity to the Wald estimator. The numerator is the covariance of the instrument and outcome (reduced form), and the denominator is the covariance of the instrument and the endogenous variable (first stage).
+
+## Analogy to OLS Estimator
+
+This formula is very instructive. Let's compare it to the OLS estimator in a simple regression.
+
+**OLS Estimator**:$\hat{\beta}_1^{\text{OLS}} = \frac{\Cov(X, Y)}{\Cov(X, X)} = \frac{\Cov(X, Y)}{\Var(X)}$
+OLS uses the full covariance of $X$ and $Y$. If $X$ is endogenous, this covariance is "contaminated."
+
+**IV Estimator**: $\hat{\beta}_1^{\text{IV}} = \frac{\Cov(Z, Y)}{\Cov(Z, X)}$
+IV replaces the "bad" variation in $X$ with the "good" variation in $Z$.
+
+- It uses only the part of the variation in $X$ that is induced by the exogenous instrument $Z$.
+- It then scales the relationship between $Z$ and $Y$ by the relationship between $Z$ and $X$.
+
+## General Case: Two-Stage Least Squares (2SLS)
+
+What if we have multiple instruments or other exogenous control variables ($W$)? We use a procedure called Two-Stage Least Squares (2SLS).
+
+Let the structural model be:
+\[ Y_i = \beta_0 + \beta_1 X_i + \gamma' W_i + \epsilon_i \]
+($X_i$ is endogenous, $W_i$ are exogenous controls).
+
+Let the instruments be $Z_1, Z_2, ..., Z_k$.
+
+The 2SLS procedure works in two steps...
+
+## 2SLS: The First Stage 
+
+**First Stage Regression**:
+Regress the endogenous variable $X$ on all the instruments $Z$ and all other exogenous controls $W$.
+$$X_i = \pi_0 + \pi_1 Z_{1i} + ... + \pi_k Z_{ki} + \delta' W_i + \nu_i $$
+
+- From this regression, we obtain the \textbf{predicted values} for $X$, which we call $\hat{X}_i$.
+
+$$\hat{X}_i = \hat{\pi}_0 + \hat{\pi}_1 Z_{1i} + ... + \hat{\pi}_k Z_{ki} + \hat{\delta}' W_i$$
+
+- This $\hat{X}_i$ is the part of the variation in $X$ that is explained by our exogenous variables.
+- By construction, $\hat{X}_i$ is uncorrelated with the structural error $\epsilon_i$ (as long as our instruments are valid!).
+
+
+## 2SLS: The Second Stage
+
+**Second Stage Regression**:
+Regress the outcome variable $Y$ on the \textbf{predicted} endogenous variable $\hat{X}$ and the other exogenous controls $W$.
+
+$$Y_i = \beta_0 + \beta_1 \hat{X}_i + \gamma' W_i + \text{error}$$
+
+- The coefficient $\hat{\beta}_1$ from this second stage regression is our 2SLS estimate.
+- Since we used $\hat{X}_i$ instead of $X_i$, we have purged the endogeneity, and our estimate for $\beta_1$ is now consistent.
+
+Note on standard errors: Do \textbf{not} perform these two steps manually in your statistical software. The standard errors from the second stage will be incorrect.
+
+## Finding Good Instruments
+
+The credibility of any IV analysis rests entirely on the quality of the instrument.
+
+- A good instrument must be both \textbf{relevant} and \textbf{valid} (exogenous).
+- The exclusion restriction is a very strong assumption. You must provide a convincing story for why your instrument $Z$ could not possibly affect $Y$ except through its effect on $X$.
+
+Often, instruments come from:
+
+  - Natural or quasi-random experiments (e.g., policy changes, lotteries).
+  - Institutional details or rules.
+  - Geographic or historical quirks.
+
+## The Problem of Weak Instruments
+
+What happens if the \textbf{Relevance} condition is only barely met?
+i.e., $\Cov(Z,X)$ is very close to zero.
+
+If an instrument is weak, even a tiny violation of the exclusion restriction (a tiny $\Cov(Z, \epsilon)$) can lead to a very large bias in the IV estimate.
+
+$$\text{Bias}(\hat{\beta}_{IV}) \approx \frac{\Cov(Z, \epsilon)}{\Cov(Z, X)}$$
+
+A small denominator leads to a large bias! Furthermore, the variance of the IV estimator will be very large.
+
+## Testing for Weak Instruments
+
+We can and should test for instrument relevance.
+
+- This is a test on the \textbf{first stage} regression:
+
+$$X_i = \pi_0 + \pi_1 Z_{1i} + ... + \pi_k Z_{ki} + (\text{controls}) + \nu_i$$
+
+- We perform an F-test on the joint significance of all instruments:
+$$H_0: \pi_1 = \pi_2 = ... = \pi_k = 0$$
+
+A first-stage **F-statistic greater than 10** is often used as a benchmark to indicate that instruments are not weak (Stock, Wright, \& Yogo, 2002). $F < 10$ is a serious red flag. You should always report the first-stage F-statistic in any IV analysis.
+
+## Testing the Exclusion Restriction
+
+The exclusion restriction, $\Cov(Z, \epsilon)=0$, is the bedrock of IV and is \textbf{fundamentally untestable}.
+
+- Its validity is based on economic theory, institutional knowledge, and careful reasoning.
+- However, if you have \textbf{more instruments than endogenous variables} (the "overidentified" case), you can perform a partial test (Sargan-Hansen test).
+
+  - *Intuition*: If all instruments are valid, they should all point to the same estimate of $\beta_1$. The test checks if the different instruments produce statistically different estimates.
+  - A rejection of the null hypothesis suggests that at least one of your instruments is not valid (i.e., it is correlated with the error term).
+  - This test requires you to believe that at least one instrument is valid to test the validity of the "extra" ones.
+
+## Classic IV Example: Angrist \& Krueger (1991)
+
+**Research Question**: What is the causal effect of an additional year of schooling on wages?
+
+- Outcome (Y): Log weekly wages.
+- Endogenous Variable (X): Years of schooling.
+- Endogeneity Problem: Ability is an omitted variable. More able individuals tend to get more schooling and earn higher wages, biasing the OLS estimate upwards.
+
+- The Instrument (Z): Quarter of Birth.
+
+## Angrist \& Krueger (1991): The Instrument
+
+- Why is Quarter of Birth a valid instrument?
+
+- Institutional Detail: In the US, compulsory schooling laws required students to attend school until they turned 16 or 17.
+  - Students born early in the year (e.g., Jan, Feb) start school at an older age. They turn 16 earlier in their school career and can legally drop out with slightly less education.
+  - Students born late in the year (e.g., Oct, Nov) are younger when they start school. They are forced by the law to stay in school longer to reach their 16th birthday, resulting in slightly more education on average.
+
+- IV Assumptions: 
+  - Relevance: Is quarter of birth correlated with years of schooling? Yes, the data showed a small but statistically significant relationship.
+  - Exclusion restriction: Is it plausible that quarter of birth has no direct effect on wages, other than through its effect on schooling? It's hard to think of a reason why birth month would directly influence adult earnings, other than this institutional reason.
+
+
+## Angrist * Krueger (1991): Results
+
+- OLS Result: Found that an extra year of school was associated with about a 7.5% increase in wages.
+
+  - Likely an overestimate due to ability bias.
+  - Why is this an overestimate? Think about the OVB formula and the correlation between $X$ and $Z$
+
+- 2SLS Result: Using quarter of birth as an instrument, they found a very similar return to schooling, also around 7.5%.
+
+- Interpretation (LATE):
+  - This IV estimate is the \textit{Local} Average Treatment Effect.
+  - It represents the return to schooling for the _compliers_: those individuals who were induced to stay in school for an extra bit of time because of compulsory schooling laws.
+  - These are likely people on the margin of dropping out of high school. The result may not apply to the returns to getting a college degree.
+
+## Other Example: Demand Estimation
+
+- Let's say we want to estimate the price elasticity of demand for avocados.
+- The starting point is a so-called **structural model**. 
   
-- If you're working a lot with code or LaTeX, I strongly encourage you to look into Git.
-  - It's the professional standard for a reason. 
-  - For Word documents, leverage the version history that's built into tools like Google Docs or OneDrive.
+  1.  **Demand Curve:** We want to estimate this equation. $\alpha_1$ is our parameter of interest (the elasticity).
+      $$ Q_i^d = \alpha_0 + \alpha_1 P_i + u_i $$
+      - $u_i$ represents unobserved demand shocks (e.g., a new health trend, a guacamole festival).
+  
+  2.  **Supply Curve:** The market also has a supply curve.
+      $$ Q_i^s = \beta_0 + \beta_1 P_i + v_i $$
+      - $v_i$ represents unobserved supply shocks (e.g., a localized pest).
 
+## The Endogeneity Issue
+
+- In market equilibrium, $Q_i^d = Q_i^s = Q_i$, and the price $P_i$ adjusts to make this happen. This means price $P_i$ is determined by *both* supply and demand factors.
+
+-   If there is a positive demand shock ($u_i > 0$), the demand curve shifts right. This leads to a higher equilibrium price **and** a higher quantity.
+-   Therefore, $P_i$ is positively correlated with the demand error term $u_i$.
+-   This violates the core OLS assumption that regressors are uncorrelated with the error term: $Cov(P_i, u_i) \neq 0$.
+-   Running OLS of `Q` on `P` will give a biased estimate of $\alpha_1$.
+
+## The Solution: IV
+
+- We need a variable, let's call it $Z$, that provides an *exogenous* source of variation in price. This variable is our **Instrument**.
+
+:::{.callout-tip title="Example: Good Instrument"}
+Let $Z_i$ be a measure of growing conditions (e.g., rainfall in avocado-growing regions). Good weather increases supply.
+:::
+
+## The Updated Structural Model
+
+-  **Demand Curve (Unchanged):** Weather doesn't directly affect how many avocados a person wants to buy at a given price.
+    $$ Q_i = \alpha_0 + \alpha_1 P_i + u_i $$
+
+- **Supply Curve (with Instrument):** Weather directly affects the quantity supplied.
+    $$ Q_i = \beta_0 + \beta_1 P_i + \delta Z_i + v_i $$
+
+## The Two IV Conditions (in this context)
+
+1.  **Relevance:** The instrument must affect the endogenous variable. Good weather must actually change the price of avocados.
+    -   *Algebraically:* $\delta \neq 0$, which implies $Cov(Z_i, P_i) \neq 0$.
+
+2.  **Exclusion Restriction:** The instrument must be uncorrelated with the error term in the primary equation (demand). Good weather doesn't directly cause a craving for avocados.
+    -   *Algebraically:* $Cov(Z_i, u_i) = 0$. This is the crucial identifying assumption.
+
+## Identification: The Algebra of IV
+
+How do we use our instrument $Z$ and the exclusion restriction to find $\alpha_1$?
+
+Our goal is to estimate $\alpha_1$ from the demand equation:
+$$Q_i = \alpha_0 + \alpha_1 P_i + u_i$$
+
+The problem is that $Cov(P_i, u_i) \neq 0$. But we have assumed $Cov(Z_i, u_i) = 0$. Let's use that!
+
+**Step 1: Take the covariance of the demand equation with our instrument $Z_i$.**
+$$ Cov(Z_i, Q_i) = Cov(Z_i, \alpha_0 + \alpha_1 P_i + u_i) $$
+
+**Step 2: Use the properties of covariance to expand the right side.**
+$$ Cov(Z_i, Q_i) = Cov(Z_i, \alpha_0) + Cov(Z_i, \alpha_1 P_i) + Cov(Z_i, u_i) $$
+
+## Identification: The Algebra of IV (Cont.)
+
+**Step 3: Simplify.**
+
+  - $Cov(Z_i, \alpha_0) = 0$ (covariance with a constant is zero).
+  - $Cov(Z_i, \alpha_1 P_i) = \alpha_1 Cov(Z_i, P_i)$ (constants can be pulled out).
+  - $Cov(Z_i, u_i) = 0$ (this is our crucial **Exclusion Restriction** assumption!).
+
+**Step 4: See what's left.**
+$$ Cov(Z_i, Q_i) = \alpha_1 Cov(Z_i, P_i) $$
+
+**Step 5: Solve for our parameter of interest, $\alpha_1$.**
+$$ \alpha_1 = \frac{Cov(Z_i, Q_i)}{Cov(Z_i, P_i)} $$
+This is the Instrumental Variables estimator for $\alpha_1$.
+
+## The Link to Reduced Form & First Stage
+
+The expression $\frac{Cov(Z_i, Q_i)}{Cov(Z_i, P_i)}$ has a beautiful and intuitive interpretation. Let's look at two simple regressions.
+
+1.  **The First Stage:** How does our instrument ($Z$) affect our endogenous variable ($P$)?
+    $$ P_i = \pi_{p0} + \pi_{p1} Z_i + \text{error}_p $$
+    - The OLS estimate of $\pi_{p1}$ is: $\hat{\pi}_{p1} = \frac{Cov(Z_i, P_i)}{Var(Z_i)}$.
+    - This tells us how much price changes for a one-unit change in weather.
+
+2.  **The Reduced Form:** How does our instrument ($Z$) affect our final outcome ($Q$)?
+    $$ Q_i = \pi_{q0} + \pi_{q1} Z_i + \text{error}_q $$
+    - The OLS estimate of $\pi_{q1}$ is: $\hat{\pi}_{q1} = \frac{Cov(Z_i, Q_i)}{Var(Z_i)}$.
+    - This tells us how much quantity changes for a one-unit change in weather.
+
+## Ratio of RF and FS
+
+**Now, let's look at the ratio of these two coefficients:**
+
+$$ \frac{\hat{\pi}_{q1}}{\hat{\pi}_{p1}} = \frac{ \frac{Cov(Z_i, Q_i)}{Var(Z_i)} }{ \frac{Cov(Z_i, P_i)}{Var(Z_i)} } = \frac{Cov(Z_i, Q_i)}{Cov(Z_i, P_i)} $$
+
+**This is exactly our IV estimator!**
+
+$$ \hat{\alpha}_{1, IV} = \frac{\text{Reduced Form Effect}}{\text{First Stage Effect}} = \frac{\text{Effect of Z on Q}}{\text{Effect of Z on P}} $$
+
+The structural parameter $\alpha_1$ is **identified** because it can be expressed as the ratio of two estimable parameters from simple regressions. We have used the exogenous variation from the instrument to isolate the causal effect of price on quantity demanded.
+
+# IV in Software
+
+## IV in R/Python/Stata
+
+Todo.
+
+
+## Testing for Relevance
+
+Todo. 
 
 # Summary
 
 ## What did we do?
 
-## Other Resources
+- Problem: Endogeneity ($\Cov(X, \epsilon) \neq 0$) makes OLS biased and inconsistent for estimating causal effects.
+  - Solution: A valid Instrumental Variable ($Z$) is:
+    - **Relevant**: Correlated with $X$.
+    - **Exogenous**: Uncorrelated with the error term $\epsilon$ (the Exclusion Restriction).
 
-- [This](https://github.com/uo-ec607/lectures)
-- [This](https://github.com/msu-econ-data-analytics/course-materials?tab=readme-ov-file)
+- **Interpretation**: IV estimates the Local Average Treatment Effect (LATE) - the causal effect for the subpopulation of "compliers" whose behavior is changed by the instrument.
+
+- **Estimation**: Use the Wald estimator for simple cases, and Two-Stage Least Squares (2SLS) for the general case.
+- **In Practice**: Finding a valid instrument is the hardest part. Always check for weak instruments (First-stage F-statistic) and be prepared to defend your exclusion restriction.
 
 
+# The End

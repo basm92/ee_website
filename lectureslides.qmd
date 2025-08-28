@@ -4,11 +4,12 @@ title: "Lecture Slides"
 
 The lecture slides can be found below. 
 
-- [Lecture 1: Probability](lectures/lecture1/lecture1.qmd)
-- [Lecture 2: Statistics](lectures/lecture2/lecture2.qmd)
-- [Lecture 3: The Linear Model](lectures/lecture3/lecture3.qmd)
-- [Lecture 4: Time Series](lectures/lecture4/lecture4.qmd)
-- [Lecture 5: Panel Data](lectures/lecture5/lecture5.qmd)
-- [Lecture 6: Binary Outcomes](lectures/lecture6/lecture6.qmd)
-- [Lecture 7: Potential Outcomes and DiD](lectures/lecture7/lecture7.qmd)
-- [Lecture 8: Hand-on Econometrics](lectures/lecture8/lecture8.qmd)
+- [Week 0: Prerequisite Knowledge](lectures/prerequisite/prerequisite.qmd)
+- [Week 1: The Linear Model I](lectures/lecture1/lecture1.qmd)
+- [Week 2: The Linear Model II](lectures/lecture2/lecture2.qmd)
+- [Week 3: Time Series](lectures/lecture3/lecture3.qmd)
+- [Week 4: Panel Data I](lectures/lecture4/lecture4.qmd)
+- [Week 5: Panel Data II](lectures/lecture5/lecture5.qmd)
+- [Week 6: Binary Outcomes](lectures/lecture6/lecture6.qmd)
+- [Week 7: Potential Outcomes and DiD](lectures/lecture7/lecture7.qmd)
+- [Week 8: Instrumental Variables](lectures/lecture8/lecture8.qmd)

@@ -1,0 +1,166 @@
+---
+title: "Solutions Tutorial 8"
+format: html
+---
+
+
+```{r setup}
+#| echo: false
+
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+## Estimating the AJR Model
+
+The results:
+
+```{python}
+#| echo: false
+import statsmodels.formula.api as smf
+from linearmodels.iv import IV2SLS
+import pandas as pd
+
+colonial_data = pd.read_csv('../tutorials/datafiles/colonial_origins.csv', decimal=',', sep=";")
+# Model 1: OLS
+ols_model = smf.ols('logpgp95 ~ avexpr + africa', data=colonial_data).fit()
+
+# Model 2: Reduced Form
+reduced_form = smf.ols('logpgp95 ~ logem4 + africa', data=colonial_data).fit()
+
+# Model 3: First Stage
+first_stage = smf.ols('avexpr ~ logem4 + africa', data=colonial_data).fit()
+
+# Model 4: 2SLS / IV
+iv_model = IV2SLS.from_formula('logpgp95 ~ 1 + africa + [avexpr ~ logem4]', data=colonial_data).fit()
+print(iv_model)
+
+
+print("Partial F Stat.:", iv_model.first_stage.diagnostics['f.stat'], "\n")
+```
+
+a) **Verify the IV Estimate:**
+The IV estimate is the ratio of the reduced form coefficient to the first stage coefficient for the instrument.
+-   Reduced Form Coefficient (`logem4` on `logpgp95`): **-0.43**
+-   First Stage Coefficient (`logem4` on `avexpr`): **-0.53**
+
+$$ \text{Calculated IV Estimate} = \frac{\text{Reduced Form}}{\text{First Stage}} = \frac{-0.43}{-0.53} \approx 0.81 $$
+
+This calculated value of **0.81** is indeed very close to the 2SLS coefficient for `avexpr` reported in column (4), which is **0.80**. The minor difference is due to rounding in the table and the presence of the control variable (`africa`).
+
+b) **Compare OLS and 2SLS:**
+The 2SLS estimate (0.80) is almost double the OLS estimate (0.42). This implies that the OLS estimate is biased downwards. According to the omitted variable bias formula, this would happen if the omitted factors (captured in the error term) that negatively affect GDP are also negatively correlated with the quality of institutions. For example, a country's geography or historical disease environment might be unfavorable to long-term growth (negative effect on GDP) and might have also led colonial powers to establish extractive institutions (negative correlation with `avexpr`). This would cause OLS to underestimate the true positive effect of institutions.
+
+c) **Assess Instrument Strength:**
+The instrument, settler mortality (`logem4`), is **not weak**. The rule of thumb is that the first-stage F-statistic on the excluded instrument should be greater than 10. Here, the F-statistic is **10.27**, which is above this threshold, indicating a sufficiently strong relationship between settler mortality and the quality of institutions.
+
+d) **Interpret the LATE:**
+The 2SLS estimate is a Local Average Treatment Effect (LATE). In this context, it represents the average causal effect of institutions on GDP **only for the subgroup of "complier" countries**. These are the countries whose colonial-era institutional development was directly influenced by the settler mortality rates. In other words, they are the countries where low mortality *caused* the establishment of better institutions, and high mortality *caused* the establishment of worse institutions. The estimate does not necessarily apply to countries whose institutions were determined by other factors, regardless of settler mortality.
+
+## Colonial Origins IV Strategy
+
+a) **Relevance:** The first-stage logic follows a clear causal chain:
+1.  **High Settler Mortality:** In places where European settlers faced high mortality rates (e.g., from malaria, yellow fever), they were discouraged from establishing long-term settlements.
+2.  **Extractive Institutions:** Consequently, the colonial powers set up "extractive" institutions designed to transfer resources from the colony to the metropole as quickly as possible, with little emphasis on private property rights or checks and balances on government power.
+3.  **Persistence:** These extractive institutions have persisted long after independence.
+Conversely, in places with low mortality rates, Europeans settled in large numbers and demanded institutions that protected their rights and property, leading to the development of "inclusive" institutions that also persisted. Thus, historical settler mortality is strongly correlated with the quality of institutions today.
+
+b) **Exclusion Restriction:** For settler mortality to be a valid instrument, it must affect current GDP per capita **only through its effect on institutions**. It cannot have a direct effect on today's GDP or affect it through any other channel. For example, the historical disease environment that caused high mortality must not be the primary cause of poor health or low productivity in the country *today*.
+
+c) **LATE and "Compliers":** In this context, the "compliers" are the countries whose choice of institutional path (extractive vs. inclusive) was causally determined by the settler mortality rates they faced. The LATE represents the average treatment effect of having good institutions for this specific group of countries. It is the causal effect of institutions for countries whose institutional path was effectively "assigned" by their disease environment during the colonial era.
+
+
+## Defending and Challenging the Exclusion Restriction
+
+a) **Argument to Defend:** The most compelling defense is that the diseases that determined settler mortality in the 18th and 19th centuries (primarily malaria and yellow fever) are no longer the primary determinants of health and wealth in the 21st century. Due to medical advances (like quinine and modern medicine) and public health infrastructure, the lethality of this historical disease environment has been massively reduced. Therefore, it is plausible that this historical factor has no significant direct impact on modern GDP, and its influence is only felt through the persistent institutional structures it helped to create.
+
+b) **Argument to Challenge (Violation):** A plausible channel that violates the exclusion restriction is the **persistence of the disease environment itself**. If the factors that led to high settler mortality historically (e.g., a tropical climate suitable for malaria-carrying mosquitoes) are also responsible for a high disease burden today, then settler mortality could be affecting current GDP through both institutions and current public health. A high contemporary disease burden directly reduces labor productivity and human capital, meaning the instrument would have an effect on the outcome that is *not* channeled through institutions, thus violating the exclusion restriction.
+
+
+## Interpreting 2SLS Results
+
+a) **Interpret First Stage:** The coefficient of **-0.53*** on Log Settler Mortality is statistically significant and negative. It means that a 1% increase in historical settler mortality rates is associated with a 0.53-point decrease in the modern-day index of "Protection Against Expropriation". This supports the **relevance condition** by showing a strong, statistically significant relationship between the instrument and the endogenous variable. The **F-statistic of 10.27** is slightly above the conventional threshold of 10, further confirming that the instrument is not weak.
+
+b) **Interpret 2SLS:** The coefficient of **0.80*** on Protection Against Expropriation is the 2SLS estimate. It implies that a one-point increase in the institutional quality index is estimated to **cause** a 80% increase in GDP per capita. This is a very large and statistically significant causal effect, suggesting that strong institutions are a fundamental cause of long-run economic prosperity.
+
+c) **Sign of Reduced Form:** The IV estimator is the ratio of the Reduced Form (RF) effect to the First Stage (FS) effect: `IV ≈ RF / FS`.
+-   We know the IV estimate is positive (`+0.80`).
+-   We know the First Stage estimate is negative (`-0.53`).
+So, `(+) = RF / (-)`. For this equation to hold, the Reduced Form coefficient **must be negative**. This makes intuitive sense: a higher settler mortality rate (the instrument) should be associated with lower GDP per capita today (the outcome).
+
+## Designing an Alternative IV Study
+
+A potential alternative instrument for the quality of institutions is **Legal Origin**.
+
+1.  **Relevance:** The legal system a country inherited from its colonizer (e.g., British Common Law vs. French Civil Law) is a fundamental component of its modern institutional framework. Different legal traditions have different approaches to protecting property rights and limiting state power. Therefore, a country's legal origin is likely to be strongly correlated with its score on "protection against expropriation risk".
+2.  **Validity (Exclusion Restriction):** The argument for validity is that the identity of a country's colonizer was, from the perspective of the colonized country, a historical accident. Whether a country was colonized by Britain versus France should not affect its long-run economic development today through any channel *other than* the persistent legal and political institutions that were established.
+3.  **Potential Weaknesses:** The exclusion restriction is highly debatable. The identity of the colonizer (e.g., Britain) could be correlated with many other factors that affect growth, such as the introduction of a specific language (English), culture, or integration into different global trade networks. If these other factors have a direct impact on GDP, then legal origin would not be a valid instrument.
+
+## Deriving the IV Estimator
+
+Given the model:
+$$ Y_i = \beta_0 + \beta_1 X_i + \epsilon_i $$
+And the two core IV assumptions:
+1.  Relevance: $Cov(Z_i, X_i) \neq 0$
+2.  Exclusion Restriction: $Cov(Z_i, \epsilon_i) = 0$
+
+We can derive the estimator for $\beta_1$.
+
+**Step 1:** Take the covariance of the entire model equation with the instrument $Z_i$.
+$$ Cov(Z_i, Y_i) = Cov(Z_i, \beta_0 + \beta_1 X_i + \epsilon_i) $$
+**Step 2:** Use the additive property of covariance to expand the right side.
+$$ Cov(Z_i, Y_i) = Cov(Z_i, \beta_0) + Cov(Z_i, \beta_1 X_i) + Cov(Z_i, \epsilon_i) $$
+**Step 3:** Simplify each term.
+
+  -   The covariance with a constant is zero: $Cov(Z_i, \beta_0) = 0$.
+  -   Constants can be factored out of covariance: $Cov(Z_i, \beta_1 X_i) = \beta_1 Cov(Z_i, X_i)$.
+  -   By the exclusion restriction assumption: $Cov(Z_i, \epsilon_i) = 0$.
+
+**Step 4:** Substitute the simplified terms back into the equation.
+$$ Cov(Z_i, Y_i) = 0 + \beta_1 Cov(Z_i, X_i) + 0 $$
+$$ Cov(Z_i, Y_i) = \beta_1 Cov(Z_i, X_i) $$
+**Step 5:** Solve for $\beta_1$.
+$$ \hat{\beta}_1^{\text{IV}} = \frac{Cov(Z, Y)}{Cov(Z, X)} $$
+
+## The Wald Estimator
+
+a) **Calculate Key Quantities:**
+-   $E[X | Z=1]$ (Treatment rate when encouraged): Always-Takers (20%) + Compliers (40%) = **0.6**
+-   $E[X | Z=0]$ (Treatment rate when not encouraged): Only Always-Takers (20%) = **0.2**
+-   $E[Y | Z=1]$ (Avg. outcome when encouraged):
+    (0.40 * 30) [Never-Takers] + (0.20 * 50) [Always-Takers] + (0.40 * 60) [Compliers, Treated]
+    = 12 + 10 + 24 = **46**
+-   $E[Y | Z=0]$ (Avg. outcome when not encouraged):
+    (0.40 * 30) [Never-Takers] + (0.20 * 50) [Always-Takers] + (0.40 * 40) [Compliers, Not Treated]
+    = 12 + 10 + 16 = **38**
+
+b) **Compute the Wald Estimator:**
+$$ \hat{\beta}_{\text{Wald}} = \frac{E[Y | Z=1] - E[Y | Z=0]}{E[X | Z=1] - E[X | Z=0]} = \frac{46 - 38}{0.6 - 0.2} = \frac{8}{0.4} = 20 $$
+The estimated treatment effect is **20**.
+
+c) **LATE:** The Local Average Treatment Effect is the average effect of the treatment specifically for the subpopulation of **Compliers**. For this group, the average outcome with treatment is 60, and the average outcome without treatment is 40.
+$$ \text{LATE} = E[Y(1) - Y(0) | \text{Complier}] = 60 - 40 = 20 $$
+The LATE is **20**, which is exactly what the Wald estimator calculates.
+
+
+## The Danger of Weak Instruments
+
+a) **Intuitive Explanation:** The approximate bias of the IV estimator is $Bias(\hat{\beta}_{IV}) \approx \frac{Cov(Z, \epsilon)}{Cov(Z, X)}$.
+-   The numerator, $Cov(Z, \epsilon)$, represents the degree to which the exclusion restriction is violated.
+-   The denominator, $Cov(Z, X)$, represents the strength (relevance) of the instrument.
+A "weak instrument" means the denominator is very close to zero. Even if the instrument is almost perfect (the numerator is a tiny, non-zero number), dividing a small number by a *very* small number results in a large ratio. Therefore, a weak instrument dramatically magnifies any small violation of the exclusion restriction, leading to a large bias in the final estimate.
+
+b) **Testing in Practice:** Researchers test for weak instruments by examining the **first-stage regression** (the regression of the endogenous variable on the instrument(s) and controls). They use the **F-statistic** that tests the joint significance of all excluded instruments. The common rule of thumb is that an **F-statistic greater than 10** indicates that the instruments are not weak.
+
+## Understanding 2SLS
+
+a) **First Stage Regression:** The purpose of the first stage is to predict the endogenous variable using only exogenous information.
+-   **Dependent Variable:** The endogenous variable, $X_i$ (police numbers).
+-   **Independent Variables:** All exogenous variables in the model, which include the instruments ($Z_{1i}$ for firefighters and $Z_{2i}$ for election year) and any exogenous controls ($W_i$ for poverty level).
+-   **Equation:** $X_i = \pi_0 + \pi_1 Z_{1i} + \pi_2 Z_{2i} + \gamma_1 W_i + \nu_i$
+
+b) **Second Stage Regression:** The second stage uses the predicted values from the first stage to estimate the causal effect.
+-   **Equation:** $Y_i = \beta_0 + \beta_1 \hat{X}_i + \gamma_1 W_i + \text{error}_i$
+-   **Key Difference:** The regressor of interest is no longer the original endogenous variable $X_i$, but its predicted value, $\hat{X}_i$. This predicted value, $\hat{X}_i$, is a linear combination of the exogenous variables only. By construction, it is uncorrelated with the structural error term $\epsilon_i$, which solves the endogeneity problem and allows for a consistent estimate of $\beta_1$.
+
+c) **Standard Errors:** You should not perform 2SLS manually because the standard errors calculated by OLS in the second stage are incorrect. The regressor $\hat{X}_i$ is an *estimate* generated from the first stage, and it has its own variance and uncertainty. A manual OLS regression in the second stage fails to account for this additional uncertainty from the first stage. This causes the reported standard errors to be too small, t-statistics to be too large, and confidence intervals to be too narrow, leading to an overstatement of statistical significance. Specialized software commands (`ivreg`, `IV2SLS`, `ivregress`) are designed to calculate the correct standard errors for the entire two-stage process.

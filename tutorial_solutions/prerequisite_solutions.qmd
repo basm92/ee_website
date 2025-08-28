@@ -1,5 +1,5 @@
 ---
-title: "Solutions Tutorial 1"
+title: "Solutions Prerequisite Exercises"
 format: html
 ---
 
