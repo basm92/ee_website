@@ -44,6 +44,7 @@ exper[exper < 0] <- 0
 # wage_mlr = beta0 + beta1*educ + beta2*exper + u
 wage_mlr <- 1.5 + 1.1 * educ + 0.2 * exper + rnorm(n, 0, 3)
 dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
+slr_model <- lm(wage ~ educ, data = dat)
 ```
 
 
@@ -62,913 +63,18 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
 
 ## What do we do today?
 
-- First two/three lectures devoted to Probability & Statistics
+- First two lectures devoted to the linear model.
 
-- Lecture 1: 
+- Prequisite knowledge:
   - How do we model the processes that might have generated our data?
-  - Probability
-
-- Lecture 2:
   - How do we summarize and describe data, and try to uncover what process may have generated it?
-  - Statistics
+  - Probability and statistics
+
+- This lecture:
+  - Multiple linear regression, hypotheses tests, F-tests, Interactions, Understanding Statistical Output
   
-- **This lecture and rest of the course**:
-  - How do we uncover patterns between variables?
-  - Econometrics
+- **Material:** Wooldridge Chapter 3
 
-# What is Econometrics?
-
-## What is Econometrics?
-
-- **Econometrics** is the use of statistical methods to:
-
-  1.  **Estimate** economic relationships.
-  2.  **Test** economic theories.
-  3.  **Evaluate** and implement government and business policy.
-  4.  **Forecast** economic variables.
-
-- It's where economic theory meets real-world data. 
-- Theory proposes relationships (e.g., Law of Demand), but econometrics tells us the magnitude and statistical significance of these relationships.
-
-## Why study econometrics?
-
-- It allows you to **quantify** the relationships that you learn about in your other economics courses.
-  
-  - *By how much* does demand fall if we raise the price by 10%?
-  - What is the effect of an additional year of education on future wages?
-  - It helps distinguish between **correlation** and **causation**.
-  - It is an essential tool for empirical research in economics and finance, and a highly valued skill in the job market.
-
-
-## The Nature of Economic Data
-
-- The type of data we have determines the econometric methods we should use.
-  - **Cross-Sectional Data:** A snapshot of many different individuals, households, firms, countries, etc., at a *single point in time*.
-  - **Time Series Data:** Observations on a single entity (e.g., a country, a company) collected over *multiple time periods*.
-  - **Pooled Cross-Sections:** A combination of two or more cross-sectional datasets from different time periods. The individuals are different in each period.
-  - **Panel (or Longitudinal) Data:** The *same* cross-sectional units are followed over time.
-  
-## Examples of Economic Data
-
-:::{.callout-tip title="Examples of Economic Data"}
-Cross-sectional data: A survey of 500 individuals in 2023, with data on their wage, education, gender, and age.
-
-Time-series data: Data on Dutch GDP, inflation, and unemployment from 1950 to 2023.
-
-Pooled cross-sections: A random survey of households in 1990, and another *different* random survey of households in 2020.
-
-Panel data: Tracking the wage, education, and city of residence for the same 500 individuals every year from 2010 to 2020.
-:::
-
-# The Concept of a Model
-
-## The Population Regression Function (PRF)
-
-- In econometrics, we are interested in *relationships* between variables. 
-  - Let's say we are interested in the relationship between wages ($y$) and years of education ($x$). Economic theory suggests a positive relationship.
-
-- We can model the *average* wage for a given level of education. This is the **Population Regression Function (PRF)**:
-
-$$
-E(y | x) = \beta_0 + \beta_1 x.
-$$
-
-- Where:
-  - $E(y | x)$ is the **expected value (average) of y, given a value of x**.
-  - $\beta_0$ is the **population intercept**.
-  - $\beta_1$ is the **population slope**. These are unknown constants (parameters) that we want to estimate.
-
-- The PRF represents the true, but unknown, relationship in the population.
-
-## Example: Visualization of PRF
-
-```{r}
-#| fig.align: 'center'
-#| fig.width: 8
-
-# Define the PRF parameters
-beta_0 <- 20   # Population intercept (wage when education = 0)
-beta_1 <- 5    # Population slope (wage increase per year of education)
-
-# Create a sequence of education levels
-education <- seq(0, 20, length.out = 100)
-
-# Calculate the expected wage (PRF)
-expected_wage <- beta_0 + beta_1 * education
-
-# Create a data frame for plotting
-prf_data <- data.frame(education, expected_wage)
-
-# Calculate positions for annotations
-intercept_x <- 0
-intercept_y <- beta_0
-slope_x <- 15  # Choose a point to demonstrate slope
-slope_y <- beta_0 + beta_1 * slope_x
-
-# Plot the Population Regression Function with properly placed annotations
-ggplot(prf_data, aes(x = education, y = expected_wage)) +
-  geom_line(color = "blue", linewidth = 1.5) +
-  
-  # Add intercept annotation at actual intercept point
-  geom_point(aes(x = intercept_x, y = intercept_y), color = "red", size = 3) +
-  annotate("text", x = intercept_x + 1, y = intercept_y + 5,
-           label = paste0("Intercept (β0) = ", beta_0),
-           color = "darkred", hjust = 0) +
-  
-  # Add slope annotation showing rise over run
-  geom_segment(aes(x = slope_x, xend = slope_x, 
-                   y = beta_0 + beta_1 * (slope_x - 1), yend = slope_y),
-               color = "green", linewidth = 1, linetype = "dashed") +
-  geom_segment(aes(x = slope_x - 1, xend = slope_x, 
-                   y = beta_0 + beta_1 * (slope_x - 1), yend = beta_0 + beta_1 * (slope_x - 1)),
-               color = "green", linewidth = 1, linetype = "dashed") +
-  annotate("text", x = slope_x + 1, y = (slope_y + beta_0 + beta_1 * (slope_x - 1))/2,
-           label = paste0("Slope (β1) = ", beta_1, "\n(Δy/Δx = ", beta_1, "/1)"),
-           color = "darkgreen", hjust = 0) +
-  
-  labs(title = "Population Regression Function (PRF)",
-       subtitle = expression(paste("E(wage | education) = ", beta[0], " + ", beta[1], " education")),
-       x = "Education Level (years)",
-       y = "Expected Wage ($)") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.subtitle = element_text(hjust = 0.5)) +
-  scale_y_continuous(limits = c(0, max(expected_wage) * 1.1)) +
-  scale_x_continuous(breaks = seq(0, 20, by = 2))
-```
-
-## The Stochastic Error Term
-
-- Of course, not everyone with the same level of education has the same wage. Other factors matter (experience, innate ability, location, luck, etc.).
-- We capture all these other unobserved factors in a **stochastic error term**, $u$.
-
-- Our individual-level population model is:
-
-$$
-y_i = \beta_0 + \beta_1 x_i + u_i
-$$
-
-- Where: 
-  - $y_i$ is the wage of individual $i$.
-  - $x_i$ is the education of individual $i$.
-  - $u_i$ is the error term for individual $i$. It represents the deviation of individual $i$'s actual wage from the population average, $E(y|x_i)$.
-
-- By definition of the conditional expectation, $E(u|x) = 0$. The average of the unobserved factors does not depend on the level of education.
-
-## From Population to Sample
-
-- We can't observe the entire population. We only have a sample of data.
-- Our goal is to use the sample data to *estimate* the unknown population parameters $\beta_0$ and $\beta_1$.
-
-- The **Sample Regression Function (SRF)** is our estimate of the PRF:
-
-$$
-\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x
-$$
-
-- Where: 
-  - $\hat{y}$ (y-hat) is the **predicted** or **fitted** value of y.
-  - $\hat{\beta}_0$ and $\hat{\beta}_1$ are the **estimators** of $\beta_0$ and $\beta_1$. They are statistics calculated from our sample data.
-
-## Example Regression in a Sample
-
-:::{.callout-tip title="Example: Sample Data and Regression"}
-
-```{r}
-#| fig.align: 'center'
-#| fig.width: 8
-#| fig.height: 3
-
-ggplot(dat, aes(x=educ, y=wage)) +
-  geom_point(alpha=0.6) +
-  labs(title="Sample Data and a Potential Regression Line", x="Education (years)", y="Wage ($/hour)") +
-  theme_minimal() +
-  geom_smooth(method="lm", se=FALSE, aes(color="OLS Line")) +
-  scale_color_manual(name="", values="blue")
-```
-
-:::
-
-# Derivation of the OLS Estimator
-
-## Residuals
-
-- How do we choose the "best" values for $\hat{\beta}_0$ and $\hat{\beta}_1$? We want a line that fits the data as closely as possible.
-
-:::{.callout-note title="Definition: Residual"}
-
-We define the **residual**, $e_i$, as the difference between the actual value $y_i$ and the fitted value $\hat{y}_i$:
-$$
-e_i = y_i - \hat{y}_i = y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)
-$$
-
-:::
-
-## OLS Method
-
-- The **Ordinary Least Squares (OLS)** method chooses $\hat{\beta}_0$ and $\hat{\beta}_1$ to minimize the **Sum of Squared Residuals (SSR)**:
-
-:::{.callout-note title="Definition: OLS Optimzation Problem"}
-
-$$
-\min_{\hat{\beta}_0, \hat{\beta}_1} SSR = \sum_{i=1}^{n} e_i^2 = \sum_{i=1}^{n} (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2
-$$
-:::
-
-- We square the residuals so that positive and negative errors don't cancel out, and because it penalizes larger errors more heavily.
-
-## Example: Residuals
-
-```{r}
-#| fig.align: 'center'
-#| fig.width: 9
-# Generate sample data
-n <- 20
-education <- round(runif(n, 8, 16))
-wage <- 20 + 5 * education + rnorm(n, 0, 10)
-
-data <- data.frame(education, wage)
-
-# True PRF parameters (unknown in practice)
-beta0_true <- 20
-beta1_true <- 5
-
-# Two potential regression lines (not optimal)
-beta0_1 <- 15  # First guess: intercept too low
-beta1_1 <- 6   # First guess: slope too steep
-
-beta0_2 <- 25  # Second guess: intercept too high
-beta1_2 <- 4   # Second guess: slope too flat
-
-# Calculate predicted values and residuals for both models
-data$pred1 <- beta0_1 + beta1_1 * data$education
-data$resid1 <- data$wage - data$pred1
-SSR1 <- sum(data$resid1^2)
-
-data$pred2 <- beta0_2 + beta1_2 * data$education
-data$resid2 <- data$wage - data$pred2
-SSR2 <- sum(data$resid2^2)
-
-# Create plots
-plot1 <- ggplot(data, aes(x = education, y = wage)) +
-  geom_point() +
-  geom_abline(intercept = beta0_1, slope = beta1_1, color = "red", linewidth = 1) +
-  geom_segment(aes(xend = education, yend = pred1), color = "blue", linetype = "dashed") +
-  labs(title = paste("Potential Regression Line 1\nSSR =", round(SSR1, 1)),
-       subtitle = sprintf("y = %.1f + %.1f x", beta0_1, beta1_1),
-       x = "Education (years)", y = "Wage ($)") +
-  theme_minimal() +
-  ylim(min(wage)-10, max(wage)+10)
-
-plot2 <- ggplot(data, aes(x = education, y = wage)) +
-  geom_point() +
-  geom_abline(intercept = beta0_2, slope = beta1_2, color = "darkgreen", linewidth = 1) +
-  geom_segment(aes(xend = education, yend = pred2), color = "blue", linetype = "dashed") +
-  labs(title = paste("Potential Regression Line 2\nSSR =", round(SSR2, 1)),
-       subtitle = sprintf("y = %.1f + %.1f x", beta0_2, beta1_2),
-       x = "Education (years)", y = "Wage ($)") +
-  theme_minimal() +
-  ylim(min(wage)-10, max(wage)+10)
-
-# Arrange plots side by side
-grid.arrange(plot1, plot2, ncol = 2,
-             top = "Comparing Two Potential Regression Lines and Their Residuals",
-             bottom = "Blue dashed lines show residuals (vertical distances from points to line)")
-```
-
-## Derivation of OLS
-
-- To minimize the SSR, we use calculus: take the partial derivatives with respect to $\hat{\beta}_0$ and $\hat{\beta}_1$ and set them to zero. 
-- These are the **First Order Conditions (FOCs)**.
-
-:::{.callout-note title="OLS First Order Conditions"}
-
-1.  $\frac{\partial SSR}{\partial \hat{\beta}_0} = -2 \sum_{i=1}^{n} (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0 \implies \sum (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0$
-2.  $\frac{\partial SSR}{\partial \hat{\beta}_1} = -2 \sum_{i=1}^{n} x_i (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0 \implies \sum x_i(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i) = 0$
-
-:::
-
-## OLS Solution
-
-- Solving this system of two equations for the two unknowns ($\hat{\beta}_0$, $\hat{\beta}_1$) gives the OLS estimator formulas:
-
-:::{.callout-note title="Theorem: OLS Estimates for $\beta_0$ and $\beta_1$"}
-$$
-\hat{\beta}_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2} = \frac{\text{Sample Covariance}(x,y)}{\text{Sample Variance}(x)}
-$$
-
-$$
-\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}
-$$
-
-where $\bar{x}$ and $\bar{y}$ are the sample means of $x$ and $y$.
-
-:::
-
-## Algebraic Properties of OLS
-
-- The OLS estimators have some important algebraic properties that come directly from the FOCs:
-
-- **The sum of the OLS residuals is zero:**
-  - This implies that the sample average of the residuals, $\bar{e}$, is also zero.
-
-$$\sum_{i=1}^{n} e_i = 0$$
-  
-
-
-## Algebraic Properties of OLS (Cont.)
-
-- **The sample covariance between the regressor ($x$) and the OLS residuals ($e$) is zero:**
-  - This means the part of $y$ that we can't explain with $x$ (the residual) is uncorrelated with $x$ in our sample.
-
-$$\sum_{i=1}^{n} x_i e_i = 0$$
-
-
-
-- **The point $(\bar{x}, \bar{y})$ is always on the OLS regression line.**
-  - From the formula $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$, we can write $\bar{y} = \hat{\beta}_0 + \hat{\beta}_1 \bar{x}$.
-
-
-## Interpreting OLS Coefficients
-
-- Let's run our wage-education regression: $\text{Wage}_i = \hat{\beta}_0 + \hat{\beta}_1 \text{Educ}_i$
-
-::: {.panel-tabset}
-
-### R
-
-```{r}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-
-slr_model <- lm(wage ~ educ, data = dat)
-# The coefficients are:
-summary(slr_model)
-```
-
-### Python
-
-```{python}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-
-import statsmodels.api as sm
-X = r.dat.educ
-y = r.dat.wage
-X = sm.add_constant(X)
-model = sm.OLS(y, X).fit()
-print(model.summary())
-```
-
-### Stata
-
-```{stata}
-#| eval: false
-#| code-fold: true
-#| collapse: true
-
-reg wage educ
-```
-
-:::
-
-- So our estimated SRF is: $\widehat{wage} = `r round(coef(slr_model)[1], 2)` + `r round(coef(slr_model)[2], 2)` \times educ$
-
-## Interpretation
-
-- Slope ($\hat{\beta}_1 \approx `r round(coef(slr_model)[2], 2)`$): "For each additional year of education, we estimate the hourly wage to increase by **$1.15**, on average." This is the key policy parameter.
-- Intercept ($\hat{\beta}_0 \approx `r round(coef(slr_model)[1], 2)`$): "For an individual with zero years of education, we predict an hourly wage of **$1.79**."
-
-## Units and Functional Form
-
-- The values of the coefficients depend on the units of measurement of $y$ and $x$. We've used a **level-level** model ($y$ and $x$ are in their natural units).
-
-- Suppose we measured wage in cents instead of dollars.
-  - The new dependent variable is $wage_{cents} = 100 \times wage$.
-  - The new regression would be:
-    $\widehat{wage_{cents}} = (100 \times \hat{\beta}_0) + (100 \times \hat{\beta}_1) \times educ$
-  - Both the intercept and slope would be 100 times larger. The *interpretation* is the same, just the units change ("an extra year of education increases wage by 125 cents").
-
-## Units and Functional Form (Cont.)
-
-- What if we measured education in months instead of years?
-  - The interpretation of $\hat{\beta}_1$ would become "the estimated change in wage for an additional *month* of education." The coefficient value would be $\frac{1}{12}$ of its original value:
-
-:::{.callout-tip title="Example: Education in Months"}
-From our definition, $educ_{years} = \frac{1}{12} educ_{months}$. Let's substitute this into the original estimated equation:
-
-\begin{align*}
-\widehat{wage} &= \hat{\beta}_0 + \hat{\beta}_1 educ_{years} \\
-&= \hat{\beta}_0 + \hat{\beta}_1 \left( \frac{1}{12} educ_{months} \right) \\
-&= \hat{\beta}_0 + \left( \frac{\hat{\beta}_1}{12} \right) educ_{months}
-\end{align*}
-:::
-
-## Why use different functional forms?
-
-- So far, we've assumed a linear relationship: a one-unit change in $x$ leads to the same change in $y$, regardless of the starting value of $x$.
-  - But often, relationships are not linear. We use transformations (like logarithms) to:
-  - **Model Non-Linear Relationships**: Capture effects that are proportional or diminishing.
-  - **Change the Interpretation**: Analyze percentage changes (elasticities) instead of unit changes.
-  - **Improve Statistical Properties**: Stabilize the variance of the error term or make the distribution of a variable more symmetric.
-
-- The most common transformations involve the natural logarithm, $\log()$.
-
-## The Log-Level Model: $\log(y)$ on $x$
-
-- Here, we transform the dependent variable $y$: $\log(y) = \beta_0 + \beta_1 x + u$
-
-- **Interpretation of $\beta_1$**: A one-unit increase in $x$ is associated with a $(100 \times \beta_1)\%$ change in $y$.
-
-:::{.callout-note title="Interpretation of $\beta$ in the Log-Level Model"}
-To see this, take the derivative of the equation with respect to $x$:
-  $$ \frac{d(\log(y))}{dx} = \beta_1 $$
-
-Recall the calculus rule/approximation: for small changes, $\Delta \log(y) \approx \frac{\Delta y}{y}$.
-
-For a one-unit change in $x$ ($\Delta x = 1$):
-  $$ \beta_1 = \frac{\Delta \log(y)}{\Delta x} \approx \frac{\Delta y / y}{1} $$
-  
-:::
-
-## Example Log-Level
-
-:::{.callout-tip title="Example: Log-Level Interpretation"}
-
-In a log-level model, $\beta_1$ is the *proportional* change in $y$.
-
-We multiply by 100 to get a percentage.
-
-If $\widehat{\log(wage)} = 1.5 + 0.08 \times educ$, an additional year of education is associated with an approximate $0.08 \times 100 = 8\%$ increase in wage.
-
-:::
-
-## The Level-Log Model: $y$ on $\log(x)$
-
-- Here, we transform the independent variable $x$: $y = \beta_0 + \beta_1 \log(x) + u$
-
-- **Interpretation of $\beta_1$**: A 1% increase in $x$ is associated with a $(\beta_1 / 100)$ unit change in $y$.
-
-:::{.callout-note title="Interpretation of $\beta$ in Level-Log Model"}
-
-To see this, take the derivative of the equation with respect to $\log(x)$:
-  $$ \frac{dy}{d(\log(x))} = \beta_1 $$
-  
-A change in $\log(x)$ is approximately the proportional change in $x$: $\Delta \log(x) \approx \frac{\Delta x}{x}$.
-
-- So, $\Delta y \approx \beta_1 \Delta(\log(x)) \approx \beta_1 \frac{\Delta x}{x}$.
-- If we consider a 1% change in $x$, then $\frac{\Delta x}{x} = 0.01$.
-- The resulting change in $y$ is: $\Delta y \approx \beta_1 \times (0.01) = \frac{\beta_1}{100}$.
-  
-:::
-
-## Example Level-Log Model
-
-:::{.callout-tip title="Example: Level-Log Model"}
-
-Suppose that $\text{price} = 200 + 75 \times \log(\text{sqft})$ is an estimated regression model for house prices.
-
-Then, A 1% increase in square footage is associated with a $75/100 = \$0.75$ increase in price.
-:::
-
-## The Log-Log Model: $\log(y)$ on $\log(x)$
-
-- This model is very common in economics because $\beta_1$ is an **elasticity**: $\log(y) = \beta_0 + \beta_1 \log(x) + u$
-
-:::{.callout-note title="Interpretation of $\beta$ in the Log-Log Model"}
-
-A 1% increase in $x$ is associated with a $\beta_1\%$ change in $y$. To see this, from the model, we can write:
-  $$ \beta_1 = \frac{d(\log(y))}{d(\log(x))} $$
-  
-Using the same approximations as before:
-  $$ \beta_1 \approx \frac{\Delta y / y}{\Delta x / x} = \frac{\%\Delta y}{\%\Delta x} $$
-  
-This is the definition of elasticity. If we set the percentage change in $x$ to 1% ($\%\Delta x=1$), then the percentage change in $y$ is just $\beta_1$.
-
-:::
-
-## Example: Elasticity
-
-:::{.callout-tip title="Example: Interpretation of $\beta_1$ in the Log-Log Model"}
-
-Suppose we have estimated $\log(\text{sales}) = 4.8 - 1.2 \times \log(\text{price})$ for a product. Then, a 1% increase in price is associated with a 1.2% decrease in sales. The price elasticity of demand is -1.2.
-
-:::
-
-## Other Forms: Polynomials
-
-- We can also add polynomial terms (like $x^2$, $x^3$, etc.) to capture more complex non-linear patterns, such as diminishing returns.
-  - **Model (Quadratic):** $y = \beta_0 + \beta_1 x + \beta_2 x^2 + u$
-
-:::{.callout-note title="Interpretation of the Quadratic Model"}
-The effect of a change in $x$ on $y$ now *depends on the level of $x$*.
-
-The marginal effect of $x$ on $y$ is the derivative with respect to $x$:
-  $$ \frac{\Delta y}{\Delta x} \approx \frac{dy}{dx} = \beta_1 + 2 \beta_2 x $$
-  
-A one-unit change in $x$ is associated with a change in $y$ of approximately $\beta_1 + 2 \beta_2 x$.
-
-:::
-
-## Example Polynomial
-
-:::{.callout-tip title="Example: Polynomial Regression"}
-
-Suppose we have estimated $\widehat{wage} = 3.50 + 0.60 \times educ - 0.02 \times educ^2$.
-
-The effect of the *first* year of education ($x=0 \to x=1$) is about $\$0.60$.
-
-The effect of the *13th* year of education ($x=12 \to x=13$) is:
-  $0.60 + 2(-0.02)(12) = 0.60 - 0.48 = \$0.12$.
-
-This captures the *diminishing returns* to education on wage.
-:::
-
-## Dummy Variables
-
-- A dummy variable (or indicator variable), $D_i$, is a special variable: a binary variable that takes the value 1 if an observation `i` belongs to a specific category, and 0 otherwise. 
-  - This allows us to incorporate qualitative information (e.g., gender, policy status, geographic region) into a regression model.
-
-:::{.callout-tip title="Example: Wage Conditional on Gender Dummy"}
-
-Consider a regression of wage on a single dummy variable for gender:
-
-  $$
-    wage_i = \beta_0 + \beta_1 Female_i + \epsilon_i
-  $$
-  
-where $Female_i = 1$ if person `i` is female, and $Female_i = 0$ if male.
-
-:::
-
-## Interpretation 
-
-- To interpret the coefficients, we take the conditional expectation of `wage` for each group:
-
-:::{.callout-tip title="Example: Wage on Gender (Cont.)"}
-- **For Males ($Female_i = 0$):**
-  - $E[wage_i | Female_i=0] = \beta_0 + \beta_1(0) = \beta_0$
-  - The expected wage for the reference group (males) is simply the intercept, $\beta_0$.
-
-- **For Females ($Female_i = 1$):**
-  - $E[wage_i | Female_i=1] = \beta_0 + \beta_1(1) = \beta_0 + \beta_1$
-  - The expected wage for the treatment group (females) is $\beta_0 + \beta_1$.
-:::
-
-- The coefficient $\beta_1$ represents the **difference** in the expected outcome between the two groups:
-
-  $$
-    E[wage_i | Female_i=1] - E[wage_i | Female_i=0] = (\beta_0 + \beta_1) - \beta_0 = \beta_1
-  $$
-
-- Now, $\beta_1$ is the average difference in wages between females and males.
-
-## Summary of Interpretations
-
-:::{style="font-size: 1.2em;"}
-
-| Model Name | Equation | Interpretation of $\hat{\beta}_1$ |
-| :--- | :--- | :--- |
-| **Level-Level** | $y = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $\hat{\beta}_1$ unit change in $y$. |
-| **Log-Level** | $\log(y) = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $(100 \times \hat{\beta}_1)\%$ change in $y$. |
-| **Level-Log** | $y = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $(\hat{\beta}_1/100)$ unit change in $y$. |
-| **Log-Log** | $\log(y) = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $\hat{\beta}_1\%$ change in $y$. |
-| **Polynomial** | $y = \beta_0 + \beta_1 x + \beta^2 x^2 + \dots$ | A 1-unit change in $x$ leads to a variable change in $y$. |
-| **Dummies** | $y = \beta_0 + \beta_1 D_i$ | A change in the dummy from 0 to 1 leads to a $\beta_1$ change in $y$. |
-
-:::
-
-# Goodness of Fit
-
-## Goodness-of-Fit
-
-- How well does our estimated line explain the variation in our dependent variable, $y$?
-
-- We can partition the total variation in $y$ into two parts: the part explained by the model, and the part that is not explained.
-
-:::{.callout-note title="Partition of Variation in $Y$"}
-**SST (Total Sum of Squares):** Total variation in $y$.
-    $SST = \sum (y_i - \bar{y})^2$
-    
-**SSE (Explained Sum of Squares):** Variation explained by the regression.
-    $SSE = \sum (\hat{y}_i - \bar{y})^2$
-    
-**SSR (Sum of Squared Residuals):** Unexplained variation.
-    $SSR = \sum e_i^2$
-
-It is a mathematical property that **SST = SSE + SSR**.
-
-:::
-
-## Goodness-of-Fit Visualization
-
-```{r echo=F, out.width=250}
-# Create example data and linear model
-set.seed(123)
-x <- 1:20
-y <- 2*x + rnorm(20, sd = 8)
-df <- data.frame(x, y)
-model <- lm(y ~ x, data = df)
-df$y_pred <- predict(model)
-mean_y <- mean(y)
-
-# Visualization
-ggplot(df, aes(x = x)) +
-  geom_point(aes(y = y, color = "Observed data"), size = 3) +
-  geom_line(aes(y = y_pred, color = "Regression line"), linewidth = 1) +
-  geom_hline(aes(yintercept = mean_y, linetype = "Mean of Y"), color = "black") +
-  geom_segment(aes(xend = x, y = y, yend = y_pred, color = "Unexplained (SSR)"), 
-               show.legend = TRUE) +
-  geom_segment(aes(xend = x, y = mean_y, yend = y_pred, color = "Explained (SSE)"), 
-               show.legend = TRUE) +
-  geom_segment(aes(xend = x, y = y, yend = mean_y, linetype = "Total (SST)"), 
-               color = "black", linetype = "dotted", show.legend = TRUE) +
-  scale_color_manual(name = "Components",
-                     values = c("Observed data" = "black",
-                               "Regression line" = "blue",
-                               "Unexplained (SSR)" = "red",
-                               "Explained (SSE)" = "green")) +
-  scale_linetype_manual(name = "Variation",
-                        values = c("Mean of Y" = "dashed",
-                                  "Total (SST)" = "dotted")) +
-  labs(title = "Goodness-of-Fit Visualization",
-       subtitle = "SST (Total) = SSE (Explained) + SSR (Residuals)",
-       x = "X", y = "Y") +
-  theme_minimal() +
-  theme(legend.position = "bottom",
-        legend.box = "vertical")
-```
-
-## Goodness-of-Fit: $R^2$
-
-- We want to encapsulate "goodness-of-fit" into one number. 
-
-:::{.callout-note title="Definition: $R^2$"}
-
-The **R-squared** measures the proportion of the total sample variation in $y$ that is "explained" by the regression model.
-
-$$
-R^2 = \frac{SSE}{SST} = 1 - \frac{SSR}{SST}
-$$
-
-:::
-
-- $R^2$ is always between 0 and 1.
-- A higher $R^2$ means the model fits the data better in-sample.
-- **Caution:** A high $R^2$ is not the ultimate goal of econometrics! We care more about getting an unbiased estimate of the causal effect $\beta_1$.
-
-# OLS Classical Assumptions
-
-## The Classical Assumptions
-
-- The objective of a regression is to say something about the population parameters $\beta$. However, we only have a sample equivalent, $\hat{\beta}$ at our disposal.
-  - This estimate goes paired with some uncertainty. 
-  - For our OLS estimates to have desirable statistical properties, certain assumptions must hold. These are the **Gauss-Markov Assumptions**.
-
-:::{.callout-note title="Gauss-Markov Assumptions"}
-- Assumption 1: Linearity in Parameters. The population model is $y = \beta_0 + \beta_1 x + u$.
-- Assumption 2: Random Sampling. The data $(x_i, y_i)$ are a random sample from the population described by the model.
-- Assumption 3: Sample Variation in $x$. The values of $x_i$ in the sample are not all the same. This is the **no perfect collinearity** assumption. If all $x_i$ are the same, the denominator of $\hat{\beta}_1$ is zero!
-- Assumption 4: Zero Conditional Mean. $E(u|x) = 0$. The average value of the unobserved factors is unrelated to the value of $x$.
-- Assumption 5: Homoskedasticity. $Var(u|x) = \sigma^2$. The variance of the error term is constant for all values of $x$.
-:::
-
-## The Crucial Assumption: Zero Conditional Mean
-
-- Assumption 4, $E(u|x) = 0$, is the most important assumption for establishing **causality**. 
-  - It means that the explanatory variable ($x$) must not be correlated with any of the unobserved factors ($u$) that affect the dependent variable ($y$).
-
-:::{.callout-tip title="Example: Zero Conditional Mean Assumption"}
-Let $y = wage$, $x = educ$, $u$ = unobserved factors like innate ability, family background, motivation. 
-
-Is it likely that $E(u|educ)=0$? Probably not. Innate ability ($u$) is likely correlated with education ($x$). People with higher ability may find it easier to get more education.
-
-If $Cov(educ, ability) > 0$, then our OLS estimate $\hat{\beta}_1$ will be biased upwards. It will capture the effect of education *and* the effect of ability. This is **Omitted Variable Bias**.
-:::
-
-## Unbiasedness of OLS
-
-:::{.callout-note title="Theorem: Unbiasedness of OLS"}
-
-Under assumptions **SLR.1 through SLR.4**, the OLS estimators are **unbiased**.
-
-$$
-E(\hat{\beta}_0) = \beta_0 \quad \text{and} \quad E(\hat{\beta}_1) = \beta_1
-$$
-:::
-
-- **What does this mean?**
-  - Unbiasedness is a property of the *procedure* of OLS estimation.
-    - If we could draw many, many random samples from the population and calculate $\hat{\beta}_1$ for each sample, the *average* of all these estimates would be equal to the true population parameter, $\beta_1$.
-  - Our estimate from any single sample might be higher or lower than the true value, but on average, we get it right.
-    - This property relies critically on the Zero Conditional Mean assumption (SLR.4). If SLR.4 fails, OLS is biased.
-    
-    
-## Variance of OLS Estimators
-
-- We also want our estimators to be precise, meaning they don't vary too much from sample to sample. This is measured by their sampling variance.
-
-:::{.callout-note title="Theorem: Variance of the OLS Estimator"}
-
-Under assumptions **SLR.1 through SLR.5** (all five Gauss-Markov assumptions), the variance of the OLS slope estimator is:
-
-$$
-Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\sigma^2}{SST_x}
-$$
-
-Consult the appendix for a derivation.
-
-:::
-
-## Variance of OLS Estimators (Cont.)
-
-- Let's forget regression for a second. 
-  - How much does a simple sample mean ($\bar{x}$) wobble?
-  - Its variance is famously simple: $Var(\bar{x}) = \frac{\sigma^2}{n}$
-  
-- This formula is driven by two intuitive ideas:
-  - $\sigma^2$ is the variance of the underlying population. It's the inherent "noisiness" or "spread" of the data points themselves.
-  - $n$ is your sample size. It's how much data you have to "anchor" your estimate.
-  
-- Looking at $Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\sigma^2}{SST_x}$ tells us the exact same.. 
-
-## Determinants of the Variance
-
-- What determines the precision of our estimate?
-  - **The error variance, $\sigma^2$**: More "noise" in the relationship (larger $\sigma^2$) leads to a larger variance for $\hat{\beta}_1$.
-  - **The total sample variation in x, $SST_x$**: More variation in our explanatory variable ($x$) leads to a *smaller* variance for $\hat{\beta}_1$. We learn more about the slope when our $x$ values are more spread out.
-  - **The sample size, n**: A larger sample size generally increases $SST_x$, which *decreases* the variance of $\hat{\beta}_1$.
-
-## Determining the Variance in Practice
-
-- There's a catch. We need $\sigma^2$ (the true variance of the errors) for our formula.
-  - But we can never know the true errors, because we don't know the true line!
-  - All we have are the residuals ($e_i$) from our estimated line: $e_i = y_i - \hat{y}_i$
-
-- Solution: We use the residuals to estimate the error variance. We call this estimate $s^2$ or $\hat{\sigma^2}$, and its square root is called the **standard error** of a regression coefficient. 
-
-## The Standard Error
-
-- The **SER** is an estimator of the standard deviation of the population error term, $\sigma$. It measures the typical size of a residual (the model's "average mistake").
-
-:::{.callout-note title="Definition: Standard Error of a Regression"}
-$$
-\hat{\sigma} = SER = \sqrt{\frac{SSR}{n-2}} = \sqrt{\frac{\sum e_i^2}{n-2}}
-$$
-:::
-
-- We divide by $n-2$ (degrees of freedom) because we had to estimate two parameters ($\beta_0, \beta_1$) to get the residuals.
-- SER is measured in the same units as $y$. A smaller SER is better.
-
-## From Standard Error to Inference
-
-- Now we have all the pieces:
-  - Start with the true (but unusable) variance formula $Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$
-  - Plug in our estimate $s^2$ for the unknown $\sigma^2$
-  - This gives us the estimated variance: $s^2 / \sum (X_i - \bar{X})^2$
-  - Take the square root to get it back to the original units of β₁:
-  - This is the Standard Error of the Coefficient.
-
-:::{.callout-note title="Definition: Standard Error of a Coefficient"}
-$$
-SE(\hat{\beta}) = \hat{\sigma} / \sqrt{\sum_{i=1}^n (X_i - \bar{X})^2}
-$$
-:::
-
-## Hypotheses Testing
-
-- To test a hypothesis about a single coefficient (e.g., $H_0: \beta = 0$), we want to see how many standard deviations our estimate $\hat{\beta}$ is from the hypothesized value.
-  $$
-    \text{Test Stat} = (\text{Our Estimate of } \hat{\beta} - \text{Hypothesized Value}) / \text{Standard Error}(\hat{\beta})
-  $$
-  
-- If we knew the true $\sigma$, this statistic would follow a perfect Normal distribution.
-
-- We don't know the population error variance, $\sigma^2$.
-- Solution: We replace $\sigma^2$ with its sample estimate, $\hat{\sigma}^2 = \frac{SSR}{n-k-1}$. 
-  - Because we had to *estimate* $\sigma^2$, we introduce extra sampling variability into our statistic.
-  - This means that our test statistic will be $t$-distributed instead of normally distributed. 
-
-## Why a t-statistic?
-
-- The ratio of our estimate to its standard error is no longer normally distributed. It follows a **t-distribution**.
-
-:::{.callout-note title="Definition: Distribution of t-value under $H_0$"}
-
-$$
-t = \frac{\hat{\beta} - \beta}{se(\hat{\beta}_j)} \sim t_{n-2}
-$$
-
-:::
-
-- The **t-distribution** looks very similar to the normal distribution but has "fatter tails," reflecting the added uncertainty from estimating $\sigma^2$.
-  - It is characterized by its **degrees of freedom (df)**, which for Simple Linear Regression is $df = n - 2$.
-  - As the sample size ($n$) gets large, the t-distribution converges to the standard normal distribution.
-
-## Visualization
-
-:::{.callout-tip title="Example: $t$-distribution vs. Normal Distribution"}
-
-```{r}
-#| fig-align: 'center'
-#| fig-width: 8
-#| fig-height: 4
-
-# Set the range for x-values
-x <- seq(-4, 4, length.out = 1000)
-
-# Create data frame for normal distribution
-normal_df <- data.frame(
-  x = x,
-  y = dnorm(x),
-  df = NA,  # Add df column to match t_df structure
-  Distribution = "Standard Normal"
-)
-
-# Create data frame for t-distributions with different degrees of freedom
-t_df <- data.frame(
-  x = rep(x, 3),
-  y = c(dt(x, df = 1), dt(x, df = 5), dt(x, df = 30)),
-  df = rep(c(1, 5, 30), each = length(x)),
-  Distribution = rep(c("t (df=1)", "t (df=5)", "t (df=30)"), each = length(x))
-)
-
-# Now the columns match and rbind will work
-combined_df <- rbind(normal_df, t_df)
-
-# Create the plots
-plot_normal <- ggplot(normal_df, aes(x, y)) +
-  geom_line(color = "blue", linewidth = 1) +
-  ggtitle("Standard Normal Distribution") +
-  xlab("x") + ylab("Density") +
-  theme_minimal() +
-  ylim(0, 0.45)
-
-plot_t <- ggplot(t_df, aes(x, y, color = Distribution)) +
-  geom_line(linewidth = 1) +
-  ggtitle("t-Distributions with Various Degrees of Freedom") +
-  xlab("x") + ylab("Density") +
-  scale_color_manual(values = c("red", "green", "purple")) +
-  theme_minimal() +
-  theme(legend.position = "bottom") +
-  ylim(0, 0.45)
-
-# Arrange plots side by side
-grid.arrange(plot_normal, plot_t, ncol = 2)
-```
-
-:::
-
-## Example: A $t$-test in Simple Linear Regression
-
-:::{.callout-tip title="Example: $t$-test in Linear Regression"}
-Consider the following regression output:
-
-```{r}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-summary(slr_model)
-```
-
-From this, we can see that the regression standard error (SER), $\hat{\sigma} = 3.4$. We can also see that the SE on the `educ` coefficient is 0.19. We can relate the two by dividing SER by $\sqrt{\sum (X_i - \bar{X})^2}$: 
-
-```{r}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-
-ser <- sqrt(sum(slr_model$residuals^2/98))
-cat("Standard error regression:", ser)
-
-se_beta_educ <- ser / sqrt(sum((dat$educ - mean(dat$educ))^2))
-cat("Standard error Beta_educ:", se_beta_educ)
-```
-
-We can therefore manually calculate the $t$-statistic testing $H_0: \beta=0$ as:
-
-```{r}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-
-t_stat <- (slr_model$coefficients['educ'] - 0) / se_beta_educ
-```
-
-Finally we can even calculate the two-sided $p$-value of observing a test statistic this extreme under the null hypothesis:
-
-```{r}
-#| code-fold: true
-#| echo: true
-#| collapse: true
-
-p_val <- (1-pt(t_stat, 98)) + pt(-t_stat, 98)
-cat("The p-value is:", p_val)
-```
-
-:::
 
 # Multiple Regression
 
@@ -1072,21 +178,16 @@ Model: $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_k x_k + u$
 The F statistic is defined as:
 
 $$
-F = \frac{(SSR_{\text{restricted}} - SSR_{\text{unrestricted}}) / (k_{\text{unrestricted}} - k_{\text{restricted}})}{SSR_{\text{unrestricted}} / (n - k_{\text{unrestricted}} - 1)}
+F = \frac{(SSR_{restricted} - SSR_{unrestricted}) / q}{SSR_{unrestricted} / (n - k - 1)}
 $$
 
-- Where:
-  - $SSR_{\text{restricted}}$ = Sum of Squared Residuals from the restricted model (fewer predictors)
-  - $SSR_{\text{unrestricted}}$ = Sum of Squared Residuals from the unrestricted model (more predictors)
-  - $k_{\text{restricted}}$ = Number of parameters in the restricted model (including intercept)
-  - $k_{\text{unrestricted}}$ = Number of parameters in the unrestricted model (including intercept)
-  - $n$ = Number of observations 
+**Where:**
 
-- In addition, define: 
-  - $df_1 = k_{\text{unrestricted}} - k_{\text{restricted}}$  
-  (difference in the number of parameters)
-  - $df_2 = n - k_{\text{unrestricted}} - 1$  
-  (sample size minus number of unrestricted parameters minus 1)
+*   $SSR_{restricted}$ = Sum of Squared Residuals from the restricted model (the model with fewer predictors, where the null hypothesis is assumed to be true).
+*   $SSR_{unrestricted}$ = Sum of Squared Residuals from the unrestricted model (the model with more predictors).
+*   $q$ = The number of restrictions being tested. This is essentially the number of parameters that are set to zero in the restricted model. You can often simply count the number of equals signs in your null hypothesis to determine the value of q. For instance, if your null hypothesis is $H_0: \beta_1 = \beta_2 = 0$, then $q=2$ because you are imposing two restrictions.
+*   $n$ = The number of observations in your sample.
+*   $k$ = The number of parameters in the unrestricted model (including the intercept).
 
 :::
 
@@ -1140,15 +241,15 @@ legend("topright", legend = c("F(1,10)", "F(5,10)", "F(10,10)", "F(20,50)"),
 - The power of dummy variables becomes clear when we add other regressors. Let's add years of education (`Educ`) to our model:
 
   $$
-    wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \epsilon_i
+    Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + u_i
   $$
 
 - We again analyze the regression equation for each group, now holding `Educ` constant.
   - **For Males ($Female_i = 0$):**
-    - $E[wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
+    - $E[Wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
     - This is the wage-education profile for males. It's a line with intercept $\beta_0$ and slope $\beta_2$.
   - **For Females ($Female_i = 1$):**
-    - $E[wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i = (\beta_0 + \beta_1) + \beta_2 Educ_i$
+    - $E[Wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i = (\beta_0 + \beta_1) + \beta_2 Educ_i$
     - This is the wage-education profile for females. It's a line with a **different intercept**, $(\beta_0 + \beta_1)$, but the **same slope**, $\beta_2$.
 
 ## Reinterpreting Dummies
@@ -1220,22 +321,22 @@ ggplot(wage_data, aes(x = education, y = wage, color = gender)) +
 
 ## Interaction Effects
 
-- The standard linear regression model  $\text{wage}_i = \beta_0 + \beta_1 \text{gender}_i + \beta_2 \text{educ}_i + \epsilon_i$ assumes the effect of education on wages ($\beta_2$) is identical for men and women. 
+- The standard linear regression model  $\text{Wage}_i = \beta_0 + \beta_1 \text{Gender}_i + \beta_2 \text{Educ}_i + u_i$ assumes the effect of education on wages ($\beta_2$) is identical for men and women. 
 
 - What if an extra year of education has a different return for females than for males? To allow for this, we must let the slope differ between the groups. We do this by adding an **interaction term**.
 
 - The interaction term is simply the product of the dummy variable and the continuous variable.
-$wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i) + \epsilon_i$
+$Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i) + u_i$
 
 - Once more, we derive the regression line for each group.
   - **For Males ($Female_i = 0$):** The dummy and interaction term are both zero.
-    - $E[wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
+    - $E[Wage_i | Female_i=0, Educ_i] = \beta_0 + \beta_2 Educ_i$
     - The intercept is $\beta_0$ and the slope is $\beta_2$. This is the baseline profile.
 
   - **For Females ($Female_i = 1$):**
-    - $E[wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i + \beta_3 (1 \cdot Educ_i)$
+    - $E[Wage_i | Female_i=1, Educ_i] = \beta_0 + \beta_1(1) + \beta_2 Educ_i + \beta_3 (1 \cdot Educ_i)$
     - Group the terms by the constant and the variable `Educ`:
-    - $E[wage_i | Female_i=1, Educ_i] = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) Educ_i$
+    - $E[Wage_i | Female_i=1, Educ_i] = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) Educ_i$
     - For females, the intercept is $(\beta_0 + \beta_1)$ and the slope is $(\beta_2 + \beta_3)$.
 
 ## Interpreting Interaction Terms
@@ -1373,22 +474,22 @@ reg wage educ expr
 - Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Assuming the regressors $x_i$ are non-stochastic, we have:
 
   $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right)
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
   $$
 
-- To evaluate the variance of the sum, we must make assumptions about the error terms, $\epsilon_i$. The **Linear Model** imposes two key assumptions on the errors:
-  1.  **No serial correlation:** The errors are uncorrelated across observations. Mathematically, $Cov(\epsilon_i, \epsilon_j) = 0$ for all $i \neq j$.
-  2.  **Homoskedasticity:** The errors have a constant variance. Mathematically, $Var(\epsilon_i) = \sigma^2$ for all $i$.
+- To evaluate the variance of the sum, we must make assumptions about the error terms, $u_i$. The **Linear Model** imposes two key assumptions on the errors:
+  1.  **No serial correlation:** The errors are uncorrelated across observations. Mathematically, $Cov(u_i, u_j) = 0$ for all $i \neq j$.
+  2.  **Homoskedasticity:** The errors have a constant variance. Mathematically, $Var(u_i) = \sigma^2$ for all $i$.
 
 ## OLS with Homoskedasticity
 
 - Under the no-serial-correlation assumption, the variance of the sum is simply the sum of the variances:
 
   $$
-    Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N Var\left((x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i)
+    Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right) = \sum_{i=1}^N Var\left((x_i - \bar{x})u_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i)
   $$
 
-- Now, we impose the **homoskedasticity** assumption ($Var(\epsilon_i) = \sigma^2$). Since $\sigma^2$ is a constant, we can factor it out of the summation:
+- Now, we impose the **homoskedasticity** assumption ($Var(u_i) = \sigma^2$). Since $\sigma^2$ is a constant, we can factor it out of the summation:
 
   $$
     = \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \sigma^2 \sum_{i=1}^N (x_i - \bar{x})^2
@@ -1405,7 +506,7 @@ reg wage educ expr
 
 - The assumption of homoskedasticity ("same scatter") is often violated in economic data. **Heteroskedasticity** occurs when the variance of the error term is *not* constant across observations.
 
-  -  **Formal Definition:** $Var(\epsilon_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
+  -  **Formal Definition:** $Var(u_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
   - **Intuitive Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
 
 - If we ignore this and use the classical formula, our inference can be severely misleading.
@@ -1417,10 +518,10 @@ reg wage educ expr
 - We return to the step just before we imposed homoskedasticity:
 
   $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i)
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i)
   $$
 
-- Now, we substitute $Var(\epsilon_i) = \sigma_i^2$:
+- Now, we substitute $Var(u_i) = \sigma_i^2$:
 
   $$
     Var(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \sigma_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
@@ -1432,12 +533,12 @@ reg wage educ expr
 
 - The challenge is that we cannot compute the true variance because we do not know the individual error variances, $\sigma_i^2$.
 
-- The insight (White, 1980) is to use the squared OLS residual for each observation, $\hat{\epsilon}_i^2 = (y_i - \hat{y}_i)^2$, as an estimator for the unobserved error variance, $\sigma_i^2$. 
+- The insight (White, 1980) is to use the squared OLS residual for each observation, $\hat{u}_i^2 = (y_i - \hat{y}_i)^2$, as an estimator for the unobserved error variance, $\sigma_i^2$. 
 
-- We construct the estimator by taking the correct formula for the variance and "plugging in" $\hat{\epsilon}_i^2$ for $\sigma_i^2$. This gives the **heteroskedasticity-robust variance estimator**, also alled the **White estimator** or **HC estimator**:
+- We construct the estimator by taking the correct formula for the variance and "plugging in" $\hat{u}_i^2$ for $\sigma_i^2$. This gives the **heteroskedasticity-robust variance estimator**, also alled the **White estimator** or **HC estimator**:
 
   $$
-    \widehat{Var}_{HC}(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \hat{\epsilon}_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
+    \widehat{Var}_{HC}(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \hat{u}_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
   $$
 
 - The square root of this value is the **heteroskedasticity-robust standard error** (or HC-robust SE).
@@ -1459,21 +560,21 @@ reg wage educ expr
 - We have previously seen that, to perform inference (t-tests, confidence intervals), we need the variance of the OLS estimator, $Var(\hat{\beta}_1)$.
 
   $$
-    Var(\hat{\beta}_1) = Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})\epsilon_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right)
+    Var(\hat{\beta}_1) = Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})u_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
   $$
 
-- The crucial step is calculating $Var(\sum (x_i - \bar{x})\epsilon_i)$. The variance of a sum of random variables is the sum of their variances plus twice the sum of all unique pairwise covariances:
+- The crucial step is calculating $Var(\sum (x_i - \bar{x})u_i)$. The variance of a sum of random variables is the sum of their variances plus twice the sum of all unique pairwise covariances:
 
   $$
-    Var\left(\sum_{i=1}^N (x_i - \bar{x})\epsilon_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(\epsilon_i) + \sum_{i \neq j} (x_i - \bar{x})(x_j - \bar{x}) Cov(\epsilon_i, \epsilon_j)
+    Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i) + \sum_{i \neq j} (x_i - \bar{x})(x_j - \bar{x}) Cov(u_i, u_j)
   $$
 
 ## Classical Assumptions
 
 - The **Classical Linear Model (CLM)** makes two critical assumptions here:
 
-  1.  **Homoskedasticity:** $Var(\epsilon_i) = \sigma^2$ for all $i$.
-  2.  **No serial correlation:** $Cov(\epsilon_i, \epsilon_j) = 0$ for all $i \neq j$.
+  1.  **Homoskedasticity:** $Var(u_i) = \sigma^2$ for all $i$.
+  2.  **No serial correlation:** $Cov(u_i, u_j) = 0$ for all $i \neq j$.
 
 - Under these assumptions, the second term (the sum of covariances) vanishes entirely. The formula simplifies beautifully:
 
@@ -1485,7 +586,7 @@ reg wage educ expr
 
 ##  Intra-Cluster Correlation
 
-- In many economic datasets, the assumption that $Cov(\epsilon_i, \epsilon_j) = 0$ is unrealistic.   
+- In many economic datasets, the assumption that $Cov(u_i, u_j) = 0$ is unrealistic.   
 - Examples are students nested within schools, individuals within states, or firms over time (panel data). 
 
 - Unobserved factors at the group level can induce correlation among the error terms within that group.
@@ -1497,12 +598,12 @@ reg wage educ expr
 - Let's introduce notation for clusters. Let $g$ index the cluster (e.g., a school) and $i$ index the individual within the cluster. An observation is denoted by $gi$. Our model is now:
 
   $$
-    y_{gi} = \beta_0 + \beta_1 x_{gi} + \epsilon_{gi}
+    y_{gi} = \beta_0 + \beta_1 x_{gi} + u_{gi}
   $$
 
 - The key feature of clustered data is the assumed error structure:
-  - $Cov(\epsilon_{gi}, \epsilon_{gj}) \neq 0$ for $i \neq j$ (Correlation **within** a cluster $g$)
-  - $Cov(\epsilon_{gi}, \epsilon_{g'j}) = 0$ for $g \neq g'$ (No correlation **between** clusters)
+  - $Cov(u_{gi}, u_{gj}) \neq 0$ for $i \neq j$ (Correlation **within** a cluster $g$)
+  - $Cov(u_{gi}, u_{g'j}) = 0$ for $g \neq g'$ (No correlation **between** clusters)
 
 - If we ignore this structure and use the standard OLS formula, we are incorrectly zeroing out all the covariance terms in the variance calculation. 
   - If these covariance terms are, on average, positive (which is common), we will systematically underestimate the true variance of $\hat{\beta}_1$. This leads to standard errors that are too small. 
@@ -1512,7 +613,7 @@ reg wage educ expr
 - Let's re-derive the variance of $\hat{\beta}_1$ under the clustering assumption. We start again from:
 
   $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi}\right)
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)
   $$
 
 - where $G$ is the number of clusters and $N_g$ is the size of cluster $g$.
@@ -1520,13 +621,13 @@ reg wage educ expr
 - Let's focus on the variance term. We can rewrite the sum over individuals as a sum over clusters of within-cluster sums:
 
   $$
-    Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right) \right)
+    Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right) \right)
   $$
   
 - Since errors are uncorrelated *across* clusters, the variance of this sum is the sum of the variances:
 
   $$
-    = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)
+    = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)
   $$
   
 ## Deriving Cluster-Robust Variance (Cont.)
@@ -1534,7 +635,7 @@ reg wage educ expr
 - Now, let's expand the variance term for a *single* cluster $g$. This is where the non-zero covariances appear:
 
   $$
-    Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right) = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})^2 Var(\epsilon_{gi}) + \sum_{i \neq j \in g} (x_{gi} - \bar{x})(x_{gj} - \bar{x}) Cov(\epsilon_{gi}, \epsilon_{gj})
+    Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right) = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})^2 Var(u_{gi}) + \sum_{i \neq j \in g} (x_{gi} - \bar{x})(x_{gj} - \bar{x}) Cov(u_{gi}, u_{gj})
   $$
 
 - This expression is the complete variance for cluster $g$. 
@@ -1543,25 +644,25 @@ reg wage educ expr
 
 ## The Cluster-Robust Estimator
 
-- We cannot directly calculate the true variance because the error terms $\epsilon_{gi}$ and their variances/covariances are unknown. We must estimate it from the data using the OLS residuals, 
+- We cannot directly calculate the true variance because the error terms $u_{gi}$ and their variances/covariances are unknown. We must estimate it from the data using the OLS residuals, 
   
   $$
-    \hat{\epsilon}_{gi} = y_{gi} - \hat{y}_{gi}
+    \hat{u}_{gi} = y_{gi} - \hat{y}_{gi}
   $$
 
-- Let's define a score for each observation: $u_{gi} = (x_{gi} - \bar{x})\hat{\epsilon}_{gi}$.
-- Let the sum of these scores within a cluster be $u_g = \sum_{i=1}^{N_g} u_{gi} = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi}$.
+- Let's define a score for each observation: $u_{gi} = (x_{gi} - \bar{x})\hat{u}_{gi}$.
+- Let the sum of these scores within a cluster be $u_g = \sum_{i=1}^{N_g} u_{gi} = \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi}$.
 
 ## The Cluster-Robust Estimator (Cont.)
 
-- The variance expression we derived for a single cluster, $Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)$, can be thought of as the expected value of the squared sum, $E\left[ \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\epsilon_{gi} \right)^2 \right]$. ^[Since the expectation of the error term conditional on $X$ is zero, the variance is equal to the expectation squared.]
+- The variance expression we derived for a single cluster, $Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)$, can be thought of as the expected value of the squared sum, $E\left[ \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)^2 \right]$. ^[Since the expectation of the error term conditional on $X$ is zero, the variance is equal to the expectation squared.]
 
-- A natural estimator for this quantity is simply the squared sum of the estimated scores for that cluster: $(u_g)^2 = \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2$.
+- A natural estimator for this quantity is simply the squared sum of the estimated scores for that cluster: $(u_g)^2 = \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2$.
 
 - By summing this quantity over all clusters, we get an estimate of the total variance of the numerator of $\hat{\beta}_1$:
 
   $$
-    \widehat{Var}\left(\text{numerator}\right) = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2
+    \widehat{Var}\left(\text{numerator}\right) = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2
   $$
 
 ## The Cluster-Robust Estimator (Cont.)
@@ -1569,7 +670,7 @@ reg wage educ expr
 - Plugging this back into our main variance formula for $\hat{\beta}_1$, we get the **cluster-robust variance estimator**:
 
   $$
-    V\hat{a}r_C(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \left[ \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{\epsilon}_{gi} \right)^2 \right]
+    V\hat{a}r_C(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \left[ \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2 \right]
   $$
   
 - A small-sample correction factor, $\frac{G}{G-1}\frac{N-k}{N-1}$, is typically applied, but the core formula above is the key insight.
@@ -1579,7 +680,7 @@ reg wage educ expr
 - Let's compare this to the **heteroskedasticity-robust estimator**:
 
   $$
-    V\hat{a}r_W(\hat{\beta}_1) = \frac{1}{\left(\sum_i (x_i - \bar{x})^2\right)^2} \left[ \sum_{i=1}^N (x_i - \bar{x})^2 \hat{\epsilon}_i^2 \right]
+    V\hat{a}r_W(\hat{\beta}_1) = \frac{1}{\left(\sum_i (x_i - \bar{x})^2\right)^2} \left[ \sum_{i=1}^N (x_i - \bar{x})^2 \hat{u}_i^2 \right]
   $$
 
 - The HC estimator assumes observations are independent but allows their variances to differ. It estimates the variance contribution of each observation $i$ and sums them up.
@@ -1600,16 +701,8 @@ reg wage educ expr
 
 ## What did we do?
 
-- **The Linear Model's Purpose:**
-  - Econometrics uses the linear regression model to estimate the relationship between a dependent variable (e.g., wage) and one or more explanatory variables (e.g., education). The goal is to estimate an unknown "population" relationship using a "sample" of data.
-
-- **The OLS Method**:
-  - The model's coefficients (slope and intercept) are estimated using the Ordinary Least Squares (OLS) method. This technique finds the best-fitting line by minimizing the sum of the squared differences (residuals) between the actual data points and the predicted values on the line.
-
-- **Interpretation of Coefficients**: 
-  - The meaning of a coefficient depends on the model's structure. While a basic model shows unit changes, using logarithms (log-level, level-log, log-log) allows for interpreting relationships in terms of percentage changes or elasticities, which is common in economics.
-
-## What did we do? (Cont.)
+- **Multiple Linear Regression**:
+  - We introduced the method of multiple linear regression and provided ourselves with an interpretation of the estimated coefficients. 
 
 - **Evaluated Assumptions**: 
   - For OLS estimates to be unbiased (correct on average), a set of classical assumptions must hold. The most critical is the Zero Conditional Mean assumption, which states that unobserved factors (like innate ability) must not be correlated with the explanatory variable (like education); otherwise, the estimate will suffer from omitted variable bias.
@@ -1619,101 +712,5 @@ reg wage educ expr
   - The t-test is used to assess the significance of a single variable, while the F-test is used to assess the joint significance of multiple variables or the overall explanatory power of the model.
 
 # The End
-
-# Appendix
-
-## Derivation of Variance of OLS Slope Estimator
-
-:::{.callout-note title="Derivation of Variance of OLS Estimator"}
-
-Consider the univariate linear regression model:
-
-$$
-y_i = \alpha + \beta x_i + \epsilon_i \quad \text{where} \quad \epsilon_i \sim \text{iid } N(0, \sigma^2)
-$$
-
-The OLS estimator for the slope coefficient $\beta$ is:
-
-$$
-\hat{\beta} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{S_{xy}}{S_{xx}}.
-$$
-
-Where $S_{xx} = \sum (x_i - \bar{x})^2$ and $S_{xy} = \sum (x_i - \bar{x})(y_i - \bar{y})$.
-
-:::
-
-## Rewriting the Estimator
-
-:::{.callout-note title="Derivation of Variance of OLS Estimator"}
-
-Substitute $y_i = \alpha + \beta x_i + \epsilon_i$ into the estimator:
-
-\begin{align*}
-\hat{\beta} &= \frac{\sum (x_i - \bar{x})(\alpha + \beta x_i + \epsilon_i - \bar{y})}{S_{xx}} \\
-&= \beta + \frac{\sum (x_i - \bar{x})\epsilon_i}{S_{xx}}
-\end{align*}
-
-Since $\text{Var}(\hat{\beta}) = \text{Var}\left(\beta + \frac{\sum (x_i - \bar{x})\epsilon_i}{S_{xx}}\right) = \text{Var}\left(\frac{\sum (x_i - \bar{x})\epsilon_i}{S_{xx}}\right)$
-
-:::
-
-## Variance Derivation
-
-:::{.callout-note title="Derivation of Variance of OLS Estimator"}
-
-Given that $\epsilon_i$ are iid with $\text{Var}(\epsilon_i) = \sigma^2$:
-
-\begin{align*}
-\text{Var}(\hat{\beta}) &= \frac{1}{S_{xx}^2} \text{Var}\left(\sum (x_i - \bar{x})\epsilon_i\right) \\
-&= \frac{1}{S_{xx}^2} \sum (x_i - \bar{x})^2 \text{Var}(\epsilon_i) \quad \text{(by indep., variance of sum = sum of variances)} \\
-&= \frac{\sigma^2}{S_{xx}^2} \sum (x_i - \bar{x})^2 \quad \text{(Var = $\sigma^2$, take constant out of sum)} \\
-&= \frac{\sigma^2}{S_{xx}}
-\end{align*}
-
-The variance of the OLS slope estimator is $\text{Var}(\hat{\beta}) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$
-
-:::
-
-## Linearity and Normality of $\hat{\beta}$
-
-:::{.callout-note title="Linearity and Normality of the OLS Estimator"}
-
-Since $\hat{\beta}$ is a linear combination of the $\epsilon_i$ (which are normally distributed), $\hat{\beta}$ is also normally distributed:
-
-$$
-\hat{\beta} \sim N\left(\beta, \text{Var}(\hat{\beta})\right)
-$$
-
-From the previous derivation, we know that $\text{Var}(\hat{\beta}) = \frac{\sigma^2}{S_{xx}}$. Hence, the **sampling distribution of $\hat{\beta}$** is:
-
-$$
-\hat{\beta} \sim N\left(\beta, \frac{\sigma^2}{\sum (x_i - \bar{x})^2}\right) \text{or equivalently, } \sim N\left(\beta, \frac{\sigma^2}{S_{xx}}\right)
-$$
-
-:::
-
-## Standardized Distribution
-
-:::{.callout-note title="Linearity and Normality of the OLS Estimator"}
-
-If we standardize $\hat{\beta}$, we obtain a standard normal distribution:
-
-$$
-\frac{\hat{\beta} - \beta}{\sqrt{\text{Var}(\hat{\beta})}} = \frac{\hat{\beta} - \beta}{\sigma / \sqrt{S_{xx}}} \sim N(0,1)
-$$
-
-From this follows:
-
-**Unbiasedness**: The expected value of $\hat{\beta}$ is the true parameter $\beta$.
-
-**Normality**: The distribution is exactly normal when errors are normal.
-
-**Variance decreases with**:
-
-- Larger sample size $n$ (generally increases $S_{xx}$).
-- Greater spread in $x_i$ (increases $S_{xx}$).
-- Smaller error variance $\sigma^2$.
-    
-:::
 
 
