@@ -49,3 +49,9 @@
 .reveal .hey pre code {
   max-height: 200px !important;
 }
+
+.scroll-container {
+  overflow-y: scroll;
+  height: 400px; 
+}
+

@@ -550,139 +550,6 @@ In other words, we compute the marginal effect using the values of each observat
 
 :::
 
-## Interpretation Method 3: Odds Ratios (Logit Only)
-
-- For the Logit model, we can interpret results using **Odds Ratios**.
-
-:::{.callout-note title="Definition: Odds Ratio (OR)"}
-The odds are defined as: $\text{Odds}=\frac{P(y=1)}{P(y=0)} = \frac{P}{1-P}$.
-
-For example, if P=0.8, Odds = 0.8 / 0.2 = 4 (or "4 to 1"). If P=0.5, Odds = 0.5 / 0.5 = 1.
-
-:::
-
-- The Logit model can be written as:
-  $$
-    \ln(\frac{P}{1-P}) = \ln(\text{Odds}) = \beta_0 + \beta_1 x_1 + ...
-  $$ {#eq-lodds}
-  
-- The model is linear in the *log-odds*.
-
-## Interpretation Method: Odds Ratio (Cont.)
-
-- Exponentiating both sides of [@eq-lodds] gives: $\text{Odds}=e^{\beta_0 + \beta_1 X_1 + \dots}$
-- The _Odds Ratio_ compares the odds for two different values of a predictor $x_j$. Suppose we increase $x_j$ by 1 unit while holding other predictors constant:
-  $$
-    \text{OR}_j = \frac{\text{Odds} (X_j + 1)}{\text{Odds} (X_j)} = e^{\beta_j}
-  $$
-  
-## Odds Ratios Interpretation
-
-*   **Interpretation:** A one-unit increase in $x_k$ multiplies the odds of success by a factor of $e^{\beta_k}$.
-
-:::{.callout-tip title="Example: Odds Ratios"}
-
-If $\hat{\beta}_k = 0.2$, then $e^{0.2} \approx 1.22$. A one-unit increase in $x_k$ increases the odds of the outcome by 22%.
-
-If $\hat{\beta}_k = -0.5$, then $e^{-0.5} \approx 0.61$. A one-unit increase in $x_k$ decreases the odds by about 39% (multiplies them by 0.61).
-
-:::
-
-
-
-## Interaction Terms
-
-- Interaction effects in probit/logit models are also not straightforward: 
-
-- Suppose our model has two independent variables and an interaction effect, i.e. $P(y | x_1, x_2) = F(\beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2)$. 
-
-- We already know the marginal effect (ME) of $x_1$ on the conditional probability is the partial derivative of $P(y=1 | X)$ with respect to $x_1$: 
-
-  $$
-    ME_{x_1} = f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_1 + \beta_3 x_2)
-  $$
-
-- Note that the marginal effect of $x_1$ is not constant; it depends on the value of $x_2$ (due to the $\beta_3 x_2$ term) and on the values of *all* variables through the $f(\cdot)$ term.
-
-
-## Interaction Terms (Cont.)
-
-- The interaction effect is defined as the change in the marginal effect of one variable, $x_1$, as the other variable, $x_2$, changes. Hence, we have to look for the **cross-partial derivative**:
-
-  $$
-    \text{Interaction Effect (IE)} = \frac{\partial (ME_{x_1})}{\partial x_2} = \frac{\partial^2 P(Y|x_1, x_2)}{\partial x_2 \partial x_1}
-  $$
-
-- We differentiate $ME(x_1)$ with respect to $x_2$ using the product rule:
-
-  $$
-    \frac{\beta_1 + \beta_3 x_2} {\partial x_2} = \beta_3
-  $$
-  
-- and:
-
-  $$
-    \frac{\partial f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2)}{\partial x_2} = f'(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_2 + \beta_3 x_1) 
-  $$
-
-- Hence, according to the product rule, 
-  
-  $$
-  \begin{align}
-    \text{IE} = [f'(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \cdot (\beta_2 + \beta_3 x_1)] (\beta_1 + \beta_3 x_2) + \\ f(\beta_0+\beta_1 x_1 + \beta_2 x_2 + \beta_3 x_1 x_2) \beta_3.
-  \end{align}
-  $$
-
-## Analysis of the result
-
-- This formal result is profoundly different from the simple coefficient $\beta_3$ in the LPM. It consists of two parts:
-
-  1.  **$f(.)\beta_3$:**
-    - The "direct" effect, which is the interaction coefficient $\beta_3$ scaled by the PDF `f(.)`. This part's sign is determined by the sign of $\beta_3$, but its magnitude depends on all covariates. 
-
-  2.  **$f'(.)(\beta_1 + \beta_3 x_2)(\beta_2 + \beta_3 x_1)$:** 
-    - The "non-linearity" or "functional form" effect. This term arises purely because $f(.)$ is not a constant. **Critically, this term exists even if $\beta_3= 0$**. In that case, the interaction effect would be $f'(.) \beta_1 \beta_2$, which is generally non-zero. This means that an interaction effect on the probabilities is an inherent feature of non-linear models, regardless of whether an interaction term is included in the linear index $X$. 
-
-- **Conclusion:** The sign, magnitude, and even statistical significance of the true interaction effect on the probability can differ from that of the coefficient $\beta_3$. One cannot simply inspect $\beta_3$ to understand the interaction.
-
-## Contrast with the Linear Probability Model (LPM)
-
-- This insight was originally discovered by Ai and Norton (2003). 
-
-- For the LPM, the model is $P(y=1 | X) = \alpha_0 + \alpha_1 x_1 + \alpha_2 x_2 + \alpha_3 x_1 x_2$. 
-- In the LPM, the interaction effect on the probability is precisely and unambiguously equal to the coefficient on the interaction term, $\alpha_3$.
-  - This starkly contrasts with the result from the probit/logit model, highlighting the interpretational complexity introduced by non-linearity.
-
-
-## Goodness-of-Fit and Testing
-
-- How well does our model fit the data?
-
-- **Percent Correctly Predicted:**
-  - If $\hat{p}_i > 0.5$, predict $y=1$. If $\hat{p}_i \le 0.5$, predict $y=0$.
-  - Compare predictions to actual outcomes. What percentage did we get right?
-  - Intuitive, but sensitive to the 0.5 cutoff.
-
-- **Pseudo R-Squared:**
-  - Several versions exist, like **McFadden's R-squared**.
-  - $R^2_{McF} = 1 - \frac{\ln L_{full}}{\ln L_{null}}$ (where $L_{null}$ is from a model with only an intercept).
-  - Ranges from 0 to 1, but values are much lower than OLS R-squared. A value of 0.2-0.4 can indicate a very good fit. **Do not compare to OLS R-squared!**
-
-- **Likelihood Ratio (LR) Test:**
-  - Tests the joint significance of a set of variables (like the F-test in OLS).
-  - Compares the log-likelihood of the restricted model to the unrestricted (full) model.
-  - $LR = 2(\ln L_{full} - \ln L_{restricted})$ which follows a $\chi^2$ distribution.
-
-## Choosing Between Probit and Logit
-
-- **In practice, the choice rarely matters much.**
-  - The Normal and Logistic distributions are very similar, except the Logistic has slightly "fatter tails" (it's less sensitive to outliers).
-  - Predicted probabilities from both models are usually very close.
-
-- **Rule of Thumb:**
-  - Logit coefficients are larger than Probit coefficients by a factor of ~1.6 - 1.8.
-  - Logit Marginal Effects $\approx$ Probit Marginal Effects.
-  - **Logit is often preferred** due to the simpler interpretation of coefficients as log-odds and the direct calculation of odds ratios.
 
 ## Logit and Probit in Software
 
@@ -769,6 +636,730 @@ probit call race sex i.occupbroad
 ```
 
 :::
+
+## Marginal Effects in Software
+
+- R/Python/Stata have libraries that allow you to calculate the marginal effects in these two ways easily.
+
+:::{.panel-tabset}
+
+### R
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+library(marginaleffects)
+# Model as before
+# Logit
+model <- glm(call ~ race + sex + C(occupbroad), data=df, family=binomial(link="logit"))
+
+# Using the marginaleffects package
+avg_slopes(model, variables = c('race', 'sex'))
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+# Logit
+model = smf.logit(formula="call ~ race + sex + C(occupbroad)", data=df)
+results = model.fit()
+
+# Using the `get.margeff` method:
+results.get_margeff(at='overall').summary()
+results.get_margeff(at='mean').summary()
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+
+* Logit
+logit call race sex i.occupbroad
+
+* Calculate the Average Marginal Effect for all variables
+margins, dydx(*)
+
+* Calculate the Marginal Effect at the Mean for all variables
+margins, dydx(*) atmeans
+* The interpretation is similar to the AME, but it applies specifically to an observation with average characteristics rather than being an average of individual effects.
+```
+
+:::
+
+
+## Goodness-of-Fit and Testing
+
+- How well does our model fit the data?
+
+- **Percent Correctly Predicted:**
+  - If $\hat{p}_i > 0.5$, predict $y=1$. If $\hat{p}_i \le 0.5$, predict $y=0$.
+  - Compare predictions to actual outcomes. What percentage did we get right?
+  - Intuitive, but sensitive to the 0.5 cutoff.
+
+- **Pseudo R-Squared:**
+  - Several versions exist, like **McFadden's R-squared**.
+  - $R^2_{McF} = 1 - \frac{\ln L_{full}}{\ln L_{null}}$ (where $L_{null}$ is from a model with only an intercept).
+  - Ranges from 0 to 1, but values are much lower than OLS R-squared. A value of 0.2-0.4 can indicate a very good fit. **Do not compare to OLS R-squared!**
+
+- **Likelihood Ratio (LR) Test:**
+  - Tests the joint significance of a set of variables (like the F-test in OLS).
+  - Compares the log-likelihood of the restricted model to the unrestricted (full) model.
+  - $LR = 2(\ln L_{full} - \ln L_{restricted})$ which follows a $\chi^2$ distribution.
+  
+## Predictive Accuracy: The Confusion Matrix 
+
+- This is the most intuitive method for assessing a model's performance. It's based on how well the model classifies individual cases.
+  1.  The model calculates a predicted probability, $\hat{p}_i$, for each observation.
+  2.  We choose a classification threshold (commonly 0.5).
+  3.  We classify the prediction: if $\hat{p}_i > 0.5$, predict 1 (e.g., "Yes"); if $\hat{p}_i \le 0.5$, predict 0 (e.g., "No").
+  4.  We compare these predictions to the actual outcomes in a "confusion matrix."
+
+:::{style="font-size: 1.2em;"}
+
+|                 | **Predicted: No (0)** | **Predicted: Yes (1)** |
+| :-------------- | :-------------------- | :--------------------- |
+| **Actual: No (0)** | True Negatives (TN)   | False Positives (FP)   |
+| **Actual: Yes (1)**| False Negatives (FN)  | True Positives (TP)    |
+:::
+
+- Percent Correctly Predicted (Accuracy) = $\tfrac{TN + TP}{\text{Total Observations}}$
+  *   **Pro:** Very easy to understand and communicate.
+  *   **Con:** It is highly sensitive to the 0.5 cutoff. If the model is for a rare event (e.g., disease diagnosis), a different threshold might be more appropriate. It also treats all misclassifications as equal.
+
+
+## Calculating the Percent Correctly Predicted
+
+- Let's see how to implement this in code. We will fit a model and then evaluate its accuracy using a confusion matrix.
+
+:::{.panel-tabset}
+
+### R
+
+```{r cm}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+#| 
+# Load necessary library for more detailed metrics
+# install.packages("caret")
+library(caret)
+
+# Create some sample data
+set.seed(123) # for reproducibility
+sample_data <- data.frame(
+  predictor = rnorm(100),
+  outcome = rbinom(100, 1, 0.6)
+)
+
+# Fit the logistic regression model
+logit_model <- glm(outcome ~ predictor, data = sample_data, family = "binomial")
+
+# Get predicted probabilities
+predicted_probs <- predict(logit_model, type = "response")
+
+# Convert probabilities to classes (0 or 1) using a 0.5 threshold
+predicted_class <- factor(ifelse(predicted_probs > 0.5, 1, 0))
+actual_class <- factor(sample_data$outcome)
+
+# Generate the confusion matrix
+# 'positive="1"' tells the function which outcome is the "success" class
+conf_matrix <- confusionMatrix(data = predicted_class, reference = actual_class, positive="1")
+
+print(conf_matrix)
+```
+
+### Python
+
+```{python cm_p}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, classification_report
+
+# 1. Create some sample data
+np.random.seed(123) # for reproducibility
+sample_data = pd.DataFrame({
+    'predictor': np.random.randn(100),
+    'outcome': np.random.binomial(1, 0.6, 100)
+})
+
+# Define predictor (X) and outcome (y) variables
+# We need to reshape the predictor to be a 2D array for scikit-learn
+X = sample_data[['predictor']]
+y = sample_data['outcome']
+
+# 2. Fit the logistic regression model
+logit_model = LogisticRegression()
+model_fit = logit_model.fit(X, y)
+
+# 3. Get predicted classes
+# .predict() automatically uses a 0.5 probability threshold
+predicted_class = model_fit.predict(X)
+
+# 4. Generate the confusion matrix and classification report
+# The labels parameter ensures the matrix is in the order [0, 1]
+# for TN, FP, FN, TP
+conf_matrix = confusion_matrix(y_true=y, y_pred=predicted_class)
+
+# The classification_report provides precision, recall, f1-score, etc.
+class_report = classification_report(y_true=y, y_pred=predicted_class)
+
+# 5. Print
+print("--- Confusion Matrix ---")
+print("         Predicted 0 | Predicted 1")
+print("Actual 0 |    {}     |    {}     ".format(conf_matrix[0, 0], conf_matrix[0, 1]))
+print("Actual 1 |    {}     |    {}     ".format(conf_matrix[1, 0], conf_matrix[1, 1]))
+print("\n") # Add a newline for better spacing
+
+print(class_report)
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+
+* Clear any existing data and set seed for reproducibility
+clear all
+set seed 123
+
+* 1. Create some sample data
+* Set the number of observations to 100
+set obs 100
+
+* Generate the predictor variable from a standard normal distribution
+gen predictor = rnormal()
+
+* Generate the binary outcome variable from a binomial distribution
+* This creates a variable that is 0 or 1, with a 60% probability of being 1
+gen outcome = rbinomial(1, 0.6)
+
+
+* 2. Fit the logistic regression model
+* The command 'logit' runs the model with 'outcome' as the dependent variable
+logit outcome predictor
+
+
+* 3. Generate the confusion matrix and classification report
+* The 'estat classification' command is run immediately after the regression.
+* It automatically uses a 0.5 probability threshold to classify outcomes.
+estat classification
+```
+
+:::
+
+- The output from the confusion matrix gives a detailed breakdown, including the confusion matrix itself, and key metrics like:
+
+  *   **Accuracy:** The overall "Percent Correctly Predicted."
+  *   **Sensitivity:** The proportion of actual positives that were correctly identified.
+  *   **Specificity:** The proportion of actual negatives that were correctly identified.
+
+## Explanatory Power: Pseudo R-Squared 
+
+- In linear regression, $R^2$ tells us the proportion of variance explained by the model. We can't use the same metric for logistic regression, but we have alternatives called **Pseudo R-Squareds**.
+
+- **McFadden's $R^2$** is a common choice. It is based on the log-likelihood of two models:
+
+  1.  **The Full Model ($L_{full}$):** The model with all of our chosen predictors.
+  2.  **The Null Model ($L_{null}$):** A basic model with only an intercept. This model essentially predicts the same probability (the overall sample proportion) for every observation.
+
+  $$
+    R^2_{McF} = 1 - \frac{\ln L_{full}}{\ln L_{null}}
+  $$
+
+- **Interpretation:**
+
+  *   **Ranges from 0 to 1:** A value of 0 means your predictors are useless. A value of 1 would mean a perfect fit.
+  *   **Values are much lower than OLS R-squared:** Do not make a direct comparison! A McFadden's $R^2$ between 0.2 and 0.4 can indicate a very good model fit.
+  *   It represents the improvement in the log-likelihood of the full model compared to the null model.
+
+## The Likelihood Ratio (LR) Test
+
+- The LR test is the equivalent of the F-test in OLS. 
+  - It tests the **joint significance** of a set of variables by comparing the goodness-of-fit of two **nested** models.
+  - One model (the restricted model) is a special case of the other (the full model). For example, a model with predictors `{X1}` is nested within a model with predictors `{X1, X2}`.
+  - The test determines if the additional variables in the full model provide a statistically significant improvement in fit compared to the simpler, restricted model.
+  $LR = 2(\ln L_{full} - \ln L_{restricted})$
+
+- This statistic follows a **Chi-Squared ($\chi^2$) distribution**, with degrees of freedom equal to the number of variables excluded from the restricted model.
+
+   - **$H_0$ (Null Hypothesis):** The restricted model is the true model. The coefficients of the extra variables in the full model are all equal to zero.
+   - **$H_A$ (Alternative Hypothesis):** The full model is the true model. At least one of the extra variables has a non-zero coefficient.
+  - A small p-value (< 0.05) suggests that the full model is a significant improvement, and the additional variables are jointly significant.
+
+## Performing a Likelihood Ratio Test
+
+- A common use of the LR test is to check if the full model is a significant improvement over the null (intercept-only) model.
+
+:::{.panel-tabset}
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+# Load the library for the LR test
+# install.packages("lmtest")
+library(lmtest)
+
+# Create the restricted (null) model
+null_model <- glm(outcome ~ 1, data = sample_data, family = "binomial")
+
+# Compare the two models using the Likelihood Ratio Test
+lr_test_result <- lrtest(null_model, logit_model)
+
+print(lr_test_result)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from scipy.stats import chi2
+
+# --- Setup: Re-creating the data from the previous step ---
+# This ensures the script is self-contained.
+np.random.seed(123) # for reproducibility
+sample_data = pd.DataFrame({
+    'predictor': np.random.randn(100),
+    'outcome': np.random.binomial(1, 0.6, 100)
+})
+
+# Define predictor (X) and outcome (y) variables
+y = sample_data['outcome']
+X = sample_data[['predictor']]
+
+# In statsmodels, you need to manually add a constant (intercept) to the model
+X_with_const = sm.add_constant(X)
+
+# --- Step 1: Fit the full (unrestricted) logistic regression model ---
+# This is the same as 'logit_model' from the R code
+full_model = sm.Logit(y, X_with_const).fit(disp=0) # disp=0 suppresses convergence messages
+
+# --- Step 2: Fit the restricted (null) model ---
+# This model only includes an intercept (outcome ~ 1)
+# The predictor is just a column of ones (the constant)
+X_null = sm.add_constant(pd.DataFrame({'dummy': np.ones(len(y))})) # Creates just an intercept
+null_model = sm.Logit(y, X_null).fit(disp=0)
+
+# --- Step 3: Compare the two models using the Likelihood Ratio Test ---
+from scipy.stats.distributions import chi2
+def likelihood_ratio(llmin, llmax):
+    return(2*(llmax-llmin))
+
+LR = likelihood_ratio(null_model.llf, full_model.llf)
+p = chi2.sf(LR, 1) # L2 has 1 DoF more than L1
+
+print('p: %.30f' % p)
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+#| code-fold: true
+
+* Clear any existing data and set seed for reproducibility
+clear all
+set seed 123
+
+* --- Setup: Re-creating the data from the previous step ---
+* This ensures the script is self-contained.
+set obs 100
+gen predictor = rnormal()
+gen outcome = rbinomial(1, 0.6)
+
+
+* --- Step 1: Fit the full (unrestricted) logistic regression model ---
+* This is the model including our variable of interest.
+logit outcome predictor
+
+* --- Step 2: Store the estimation results of the full model ---
+* The 'estimates store' command saves all the results (like the log-likelihood)
+* of the most recent model under a name you choose.
+estimates store full_model
+
+
+* --- Step 3: Fit the restricted (null) model ---
+* To fit an intercept-only model, you just specify the dependent variable.
+logit outcome
+
+
+* --- Step 4: Compare the two models using the Likelihood Ratio Test ---
+* The 'lrtest' command compares the currently active model (the null model)
+* with a previously stored model (full_model).
+lrtest full_model
+```
+
+:::
+
+  - **LogLik:** The log-likelihood values for the null (Model 1) and full (Model 2) models.
+  - **Chisq:** This is the LR test statistic (0.5065).
+  - **Pr(>Chisq):** This is the p-value (0.4766).
+
+- Since the p-value is large, we do not reject the null hypothesis. This indicates that our predictor does not provide a statistically significant improvement over a model that simply predicts the mean.
+
+## Choosing Between Probit and Logit
+
+- **In practice, the choice rarely matters much.**
+  - The Normal and Logistic distributions are very similar, except the Logistic has slightly "fatter tails" (it's less sensitive to outliers).
+  - Predicted probabilities from both models are usually very close.
+
+- **Rule of Thumb:**
+  - Logit coefficients are larger than Probit coefficients by a factor of ~1.6 - 1.8.
+  - Logit Marginal Effects $\approx$ Probit Marginal Effects.
+  - **Logit is often preferred** due to the simpler interpretation of coefficients as log-odds and the direct calculation of odds ratios.
+  
+# Prediction
+
+## Prediction on Unseen Data 
+
+- Once a model is trained, its primary purpose is often to make predictions on new data where the outcome is unknown.
+
+- The LPM is simply an OLS linear regression model where the dependent variable (Y) is binary (0 or 1).
+
+  $$
+    Y = \beta_0 + \beta_1X_1 + \dots + \beta_kX_k + \epsilon
+  $$
+
+- The predicted value, $\hat{Y}$, is interpreted as the predicted probability of the event occurring ($P(Y=1)$).
+  - To predict on new data, you simply plug the new values of the predictor variables ($X_i$) into the estimated regression equation.
+  - Because the LPM is a simple linear model, its predictions are not bounded between 0 and 1. It is possible—and common—to get predicted "probabilities" that are negative or greater than 1, which are nonsensical.
+
+## Predicting in Software
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+# Create some sample data for training
+set.seed(42)
+train_data <- data.frame(
+  age = sample(20:70, 100, replace = TRUE),
+  purchased = rbinom(100, 1, prob = seq(0.1, 0.9, length.out = 51)[-1])
+)
+
+# Fit the Linear Probability Model on the training data
+lpm_model <- lm(purchased ~ age, data = train_data)
+summary(lpm_model)
+
+# Create new, "unseen" data for which we want to make predictions
+unseen_data <- data.frame(
+  age = c(18, 25, 45, 68, 85) # Note the ages outside the original range
+)
+
+# Use the predict() function to get predicted probabilities
+unseen_data$predicted_prob_lpm <- predict(lpm_model, newdata = unseen_data)
+
+print(unseen_data)
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{python}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# 1. Create some sample data for training
+np.random.seed(42) # for reproducibility
+
+# R's rbinom recycles the probability vector. We replicate that behavior here.
+# seq(0.1, 0.9, length.out = 51)[-1] in R becomes:
+prob_vector = np.linspace(0.1, 0.9, 51)[1:] # creates a vector of 50 probabilities
+recycled_probs = np.tile(prob_vector, 2) # repeats the vector twice to get 100 probabilities
+
+train_data = pd.DataFrame({
+  'age': np.random.randint(20, 71, 100), # np.randint is exclusive of the high end
+  'purchased': np.random.binomial(1, p=recycled_probs)
+})
+
+# 2. Fit the Linear Probability Model (LPM) on the training data
+# The formula syntax 'purchased ~ age' is identical to R's
+lpm_model = smf.ols('purchased ~ age', data=train_data).fit()
+
+# Print a summary of the model, similar to R's summary()
+print("--- Linear Probability Model Summary ---")
+print(lpm_model.summary())
+print("\n" + "="*80 + "\n") # Separator for clarity
+
+# 3. Create new, "unseen" data for which we want to make predictions
+unseen_data = pd.DataFrame({
+  'age': [18, 25, 45, 68, 85]
+})
+
+# 4. Use the .predict() method to get predicted probabilities
+# This is the direct equivalent of predict(model, newdata=...)
+unseen_data['predicted_prob_lpm'] = lpm_model.predict(unseen_data)
+
+# 5. Print the final predictions
+print("--- Predictions on Unseen Data ---")
+print(unseen_data)
+```
+
+:::
+
+### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{stata}
+#| eval: false
+#| echo: true
+#| code-fold: true
+* Set up the environment
+clear all
+set seed 42
+
+* --- 1. Create some sample data for training ---
+
+* Set the number of observations to 100
+set obs 100
+
+* Generate 'age' variable (a random integer between 20 and 70, inclusive)
+gen age = floor(runiform()*51) + 20
+
+* Replicate R's recycled probability vector for the binomial distribution.
+* This creates a sequence of 50 probabilities that is used twice.
+gen p = 0.1 + (((_n-1) % 50) + 1) * (0.8/50)
+
+* Generate the binary outcome variable 'purchased' using the probability vector 'p'
+gen purchased = rbinomial(1, p)
+
+* Remove the temporary probability variable as it's no longer needed
+drop p
+
+* Save the current training dataset in memory. We will restore it later.
+preserve
+
+
+* --- 2. Fit the Linear Probability Model (LPM) on the training data ---
+
+* An LPM is simply an OLS regression with a binary dependent variable.
+* The 'regress' command fits the model and its output is the full summary.
+display "--- Linear Probability Model Summary ---"
+regress purchased age
+
+
+* --- 3. Create new, "unseen" data for which we want to make predictions ---
+
+* Clear the training data from memory (it's safe because of 'preserve')
+clear
+
+* Input the new ages for the unseen data directly into the editor
+input age
+18
+25
+45
+68
+85
+end
+
+
+* --- 4. Use the predict command to get predicted probabilities ---
+
+* 'predict' automatically uses the coefficients from the last model that was fit (the LPM).
+* We will name the new variable containing the predictions 'predicted_prob_lpm'.
+predict predicted_prob_lpm
+
+
+* --- 5. Print the final predictions ---
+
+* 'list' displays the data currently in memory to the console.
+display "" // Add a blank line for readability
+display "--- Predictions on Unseen Data ---"
+list, noobs // The 'noobs' option hides the observation numbers for a cleaner look
+```
+
+
+:::
+
+:::
+
+- This output clearly illustrates the main weakness of the LPM: for plausible but extreme values of the predictor variables (like an age of 85), the model can predict probabilities outside of the logical range.
+
+
+## Prediction with Logit
+
+- The Logit model solves the prediction problem of the LPM by using a logistic function to ensure that predicted probabilities are always between 0 and 1.
+
+- The model predicts the natural logarithm of the odds of the event occurring:
+
+$\ln\left(\frac{P(Y=1)}{1-P(Y=1)}\right) = \beta_0 + \beta_1X_1 + \dots + \beta_kX_k$
+
+- To get the predicted probability, we solve for $P(Y=1)$.
+
+  1.  **Predict the Log-Odds:** The model first calculates the predicted log-odds (the "link") for the new data.
+  2.  **Convert to Probability:** The log-odds are then transformed into a probability using the logistic function:
+      $P(Y=1) = \frac{e^{\text{log-odds}}}{1 + e^{\text{log-odds}}}$
+
+- In software, this happens automatically.
+
+## Logit Prediction in Software
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+# Use the same training data as before
+# train_data <- data.frame(...)
+
+# Fit the logistic regression model on the training data
+logit_model <- glm(purchased ~ age, data = train_data, family = "binomial")
+
+# Use the same "unseen" data
+# unseen_data <- data.frame(age = c(18, 25, 45, 68, 85))
+
+# Predict the log-odds (the default)
+unseen_data$predicted_log_odds <- predict(logit_model, newdata = unseen_data, type = "link")
+
+# Predict the probability directly
+# The 'type = "response"' argument handles the conversion for us
+unseen_data$predicted_prob_logit <- predict(logit_model, newdata = unseen_data, type = "response")
+
+# We can also generate a class prediction using a 0.5 threshold
+unseen_data$predicted_class <- ifelse(unseen_data$predicted_prob_logit > 0.5, "Purchase", "No Purchase")
+
+print(unseen_data)
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# 1. Estimate logit model
+model = smf.logit("purchased ~ age", data=train_data).fit()
+
+# 2. Create the unseen data
+# --- 2. Use the same "unseen" data ---
+unseen_data = pd.DataFrame({
+  'age': [18, 25, 45, 68, 85]
+})
+
+# 3. Put the data inside an Array for Prediction
+X_unseen = unseen_data[['age']]
+
+# 4. Use the predict method to find the predicted probabilities
+predicted_probabilities = model.predict(X_unseen)
+
+# 5. Make the prediction on the basis of the 0.5 cutoff
+unseen_data['predicted_class'] = np.where(predicted_probabilities > 0.5, "Purchase", "No Purchase")
+print(unseen_data)
+```
+
+
+:::
+
+### Stata
+
+::: {.scroll-container style="overflow-y: scroll; height: 200px; font-size: 0.7em;"}
+
+```{stata}
+#| code-fold: true
+#| eval: false
+#| echo: true
+
+* --- 1. Fit the logistic regression model on the training data ---
+logit purchased age
+
+* --- 2. Create new, "unseen" data for which we want to make predictions ---
+
+* Clear the training data (it's safe because of the 'preserve' command)
+clear
+
+* Input the new ages for the unseen data directly
+input age
+18
+25
+45
+68
+85
+end
+
+* --- 3. Use the 'predict' command to find the predicted probabilities ---
+
+* 'predict' uses the coefficients from the last model that was fit (the logit model).
+* The 'pr' option specifies that we want the probability of a positive outcome.
+predict predicted_prob_logit, pr
+
+* --- 4. Make the prediction on the basis of the 0.5 cutoff ---
+
+* The cond() function is a direct equivalent of Python's np.where() or R's ifelse().
+* It creates a new string variable based on the condition.
+gen predicted_class = cond(predicted_prob_logit > 0.5, "Purchase", "No Purchase")
+
+* --- 5. Print the final results ---
+* 'list' displays the data currently in memory, now containing the predictions.
+* We drop the probability column to exactly match the final Python output.
+drop predicted_prob_logit
+display "" // Add a blank line for readability
+display "--- Logistic Regression Predictions on Unseen Data ---"
+list, noobs // The 'noobs' option hides observation numbers for a cleaner look
+
+* --- (Optional but good practice) Restore the original training data ---
+restore
+
+```
+
+:::
+
+:::
+
+- Notice how even for the extreme age of 85, the predicted probability from the logit model is 0.99—very high, but logically bounded within the range. 
+  - This makes the logit model a much more robust choice for prediction in binary outcome scenarios.
 
 
 # Limited Dependent Variable Models
@@ -1162,6 +1753,14 @@ plt.show()
 
 - **Interpretation**: 
   - We found that raw coefficients are not marginal effects, we can use **Average Marginal Effects (AMEs)** to talk about changes in probability. In logit, we can use use **Odds Ratios** for Logit models for a multiplicative interpretation.
+  
+## What did we do? (Cont.)
+
+- **Goodness-of-fit**: 
+  - We discussed various ways of evaluating binary outcome models, and discussed their pros and cons. 
+  
+- **Prediction**:
+  - We talked about prediction on unseen data using different methods. 
 
 
 # The End
