@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Lecture 4: The Linear Model and Time Series"
+subtitle: "Lecture 4: Panel Data I"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,9 +11,7 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Lecture 4 - Linear Model and Time Series'
-resources:
-  - demo.pdf
+    footer: 'Empirical Economics: Lecture 4 - Panel Data I'
 ---
 
 ```{r setup}
@@ -27,1313 +25,1818 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
-# Introduction
+# Outline
 
 ## Course Overview
 
-- Statistics and Probability - Basic Concepts
-- Statistics and Probability - Hypothesis Testing
-- The Linear Regression Model
-- Time Series Data
-- Panel Data (FE) and Control Variables
+- Linear Model I
+- Linear Model II
+- Time Series and Prediction
+- Panel Data I
+- Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
 - Hands-on Econometrics in Practice
 
 
-## What is Time Series Data?
+## This lecture
 
-:::{.callout-note title="Definition: Time Series Data"}
-Time series data consists of observations of a variable or several variables over time.
-:::
+* Motivation
+* Advantage of Panel Data
+* Main features of panel models
+* The individual specific effect
+* Strict exogeneity
+* Between and within variation
+* Classification
+* The first-difference estimator
+* Pooled OLS estimator
 
-- **Key Feature:** The data is ordered chronologically.
+* **Material:** Wooldridge Chapter 13: 13.1, 13.3, 13.4, 13.5
 
-:::{.callout-tip title="Examples: Time Series Data"}
-- Gross Domestic Product (GDP) measured quarterly
-- Monthly inflation rates
-- Daily stock prices
-- Annual government budget deficits
-:::
+## Motivation
+
+* How to estimate the impact of the Covid-outbreak March 2020 on behaviour by individual persons?
+* The Netherlands: Lockdown from March 16th 2020 onwards.
+* What data do we need to investigate the impact of the lockdown?
+* Requirement 1: We need information from before the lockdown and during the lockdown. Dimension: time
+* Requirement 2: We need information from the same persons (or firms) in consecutive periods. Dimension: cross-sectional dimension.
+* Methodological claim: empirical analyses that are not based on panel data are in general terms not very strong (= the results can easily be falsified).
+* The two figures below give an impression about what happened in 2020 in the Netherlands. (source: Jordy Meekes, Wolter Hassink, Guyonne Kalb, *Oxford Economic Papers*, 2024)
+
+Image: [A thumbnail of the first page of an academic paper titled "Essential work and emergency childcare: identifying gender differences in COVID-19 effects on labour demand and supply"]
+
+
+## COVID-19 cases and timeline of policies in the Netherlands in 2020
+
+Image: [A line graph showing the number of COVID-19 cases per 100,000 population in the Netherlands from March to December 2020, with key policy dates and events marked along the x-axis.]
+
+**Legend:**
+- Daily COVID-19 confirmed cases per 100,000 population
+- Mar 15: First full lockdown in the Netherlands until May
+- Mar 16: Emergency childcare available for essential workers until June
+- Mar 31: NOW I available from March until May
+- May 11: Primary schools and childcare facilities partly reopened
+- Jun-Jul: Relaxation of preventive measures
+- Jun 22: NOW II available from June until September
+- Sep 30: NOW III available from October until December
+- Oct 14: Second partial lockdown introduced
+- Nov: Tightening of preventive measures
+- Dec 15: Second full lockdown introduced, emergency childcare available
+
+
+
+## Employment and Working Hours
+
+**A) Employment**
+
+Image: [A line graph showing the employment proportion from month 1 to 12 of 2020. There are four lines representing Female essential workers, Male essential workers, Female non-essential workers, and Male non-essential workers.]
+
+**B) Working hours**
+
+Image: [A line graph showing the number of monthly working hours from month 1 to 12 of 2020. There are four lines representing Female essential workers, Male essential workers, Female non-essential workers, and Male non-essential workers.]
+
+**Legend:**
+- Female essential workers
+- Male essential workers
+- Female non-essential workers
+- Male non-essential workers
+
+
+## Advantage of Panel Data
+
+
+*Aim: to motivate the use of panel-data models*
+* Advantage of (pseudo)panel over cross section data (I)
+
+*   **Panel data:** the same individuals (households, companies) are followed over time.
+
+**Example 1:**
+*   ‘year-of-birth’ cohorts are followed across time.
+*   The question is ‘do households sell their house when they become old’?
+*   The figure below cannot address this question because from one cross-section to another, it is not possible to disentangle cohort effects from age effects.
+
+**Figure 1: Home ownership rate by age in 1996 (Netherlands)**
+
+Image: [A line graph showing the home ownership rate on the y-axis against age on the x-axis, for the year 1996 in the Netherlands. The rate increases from age 20, peaks around ages 40-55, and then declines.]
+
+## Home Ownership
+
+
+*   The figure below is constructed by panel data.
+*   The figure indicates strong cohort effects! For each birth cohort (cohort 1913 to cohort 1968), in various years (t= 1,2,3,...,12) the average Dutch homeownership is given.
+*   From the cross section it looks like (on average) home ownership rate peaks at around 69%. However, this not necessarily the same for two different cohorts. E.g., compare the 1953 with the 1948 cohort.
+
+.681542
+Image: [A line graph showing multiple trend lines for home ownership rates by age for different birth cohorts. The y-axis ranges from .152975 to .681542, and the x-axis represents age from 20 to 90. Several cohort years are labeled on the graph (e.g., 68, 63, 58, 53, 48, 43, 38, 33).]
+.152975
+**Home ownership rate by age and cohort**
+Figure 5a
+
+## Advantage of true panel data (II)
+
+*Aim: to motivate the use of panel-data models*
+
+* Advantage of true panel data over (a time series of) cross sections (II)
+
+- Estimation of dynamic models (or transition models) is impossible in the case of a time series of cross sections (panel data).
+
+**Example 2:** Let's assume that a cross-section study suggests that female labor force participation is equal to 50%.
+- There are two extreme possibilities that we cannot distinguish between cross-sections:
+    - Possibility 1: 50% of the females are always employed (annual job turnover rate is 0%)
+    - Possibility 2: In a homogenous population, there is a 50% turnover rate each year.
+- We need panel data to solve this issue.
+
+## Advantage of true panel data (III)
+
+*Aim: to further motivate the use of panel-data models*
+
+* The primary reason for using panel data is to solve the statistical problem of omitted variables. See the figure below. For each of the *N* individuals (here four individuals) there is a separate scatter diagram.
+* The slope of the solid line is the slope of the regression equation of OLS on all data of all individuals together.
+* The slope of the dashed line is the slope of the regression equation in which it is corrected for the individual effect.
+* In the figures below, the slope of the dashed lines is different from the slope of the solid line.
+
+**1.2 Utilizing panel data**
+
+Image: [Three scatter plots (Fig. 1.1, Fig. 1.2, Fig. 1.3) showing relationships between x and y. Fig 1.1 shows a single upward-sloping solid line through a set of points. Fig 1.2 shows four separate clusters of points, each with a dashed upward-sloping line, but the overall trend (solid line) is flat. Fig 1.3 shows four clusters of points where each cluster has a downward-sloping dashed line, but the overall trend (solid line) is upward-sloping.]
+
+## Introduction to panel data models
+
+*Aim: to relate panel data to cross sections and time series. To introduce the assumption of no correlation between individual-specific effects and explanatory variables.*
+
+Note the different subscripts in each of the specifications.
+
+**Specification 1: Cross section:**
+In the first week we considered cross sections:
+A random sample of *N* firms may have the following regression equation:
+
+profits = β₀ + β₁innovation + β₂frmsize + u (1)
+
+*   Cross-sectional dimension: *N*.
+*   Important: the explanatory variables may be correlated.
+*   There is one intercept β₀. Equation (1) can be reformulated as by adding a subscript *i* for the *i*-th individual firm:
+
+profitsᵢ = β₀ + β₁innovationᵢ + β₂frmsizeᵢ + uᵢ  i=1,...,*N* (1)
+
+**Specification 2: Time series**
+In the second week we considered the following static time-series model. It is based on a data set containing outcomes for one firm, which is observed over *T* periods.
+
+profitsₜ = β₀ + β₁innovationₜ + β₂frmsizeₜ + uₜ  t=1,...,*T* (2)
+
+*   Again, there is one intercept β₀
+*   In equation (2), we add a subscript *t* for the *t*-th period:
+*   Time dimension: *T*.
+
+
+**Specification 3: Panel data**
+Equation (3) is a combination of equations (1) and (2)
+
+profitsᵢₜ = β₀ + β₁innovationᵢₜ + β₂frmsizeᵢₜ + uᵢₜ
+i=1,...,*N*;t=1,...,*T* (3)
+
+* Again, the only intercept is β₀. It has a cross-sectional dimension N and a time dimension T.
+* Subscript i refers to individual (firm) and subscript t denotes time.
+* Important: the explanatory variables innovation and frmsize may be correlated.
+* **Issue 1:** Can equation (3) be generalized by N intercepts aᵢ. Thus each firm (subscript i) has its own intercept?
+
+profitsᵢₜ = aᵢ + β₁innovationᵢₜ + β₂frmsizeᵢₜ + uᵢₜ
+i=1,...,*N*;t=1,...,*T* (4)
+
+* **Issue 2:** Is there any correlation between these N intercepts aᵢ and each of the explanatory variables innovation and frmsize?
+* **Issue 3:** Should variables that remain constant within individual firms be treated differently? E.g. in the following specification, firm size does not change across time. Thus, frmsizeᵢ has no subscript t, in case the size of the firms is constant in all of the T periods.
+
+profitsᵢₜ = aᵢ + β₁innovationᵢₜ + β₂frmsizeᵢ + uᵢₜ
+i=1,...,*N*;t=1,...,*T* (5)
+
+* **Issue 4:** Are the explanatory variables of the regression equation strictly exogenous? This is an econometric issue that is required for unbiased estimators. It will be explained below further.
+
+## The individual-specific effect
+
+*Aim: to formalize the use of the unobserved effect aᵢ*
+
+*   Suppose the following ‘true model’
+    yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ     i=1,...,*N*;t=1,...,*T*
+    Where:
+    *   aᵢ is the individual-specific effect (a random variable)
+    *   uᵢₜ is the idiosyncratic (i.i.d.: identically and independently distributed) error term with expected value zero and constant variance.
+    *   *N*: cross-sectional dimension; *T*: time-dimension
+    *   There are *k* different explanatory variables.
+
+*   aᵢ captures all individual-specific variables that are not observed by the researcher; e.g. motivation (it is referred to as unobserved heterogeneity).
+*   It is possible that E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) ≠ 0 (e.g. in an equation where wage is the dependent variable, ‘motivation’ (subsumed in aᵢ) might be correlated with the RHS-variable ‘experience’).
+    *all k explanatory variables in all T time periods*
+*   Suppose that instead one estimates the following model by OLS:
+    yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ    i=1,...,*N*;t=1,...,*T* (6)
+    *k explanatory variables*
+*   Where vᵢₜ = aᵢ + uᵢₜ (=individual specific effect + idiosyncratic error term)
+*   In model (1), is it assumed that
+    E(vᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 so that
+    *all k explanatory variables in all T time periods*
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 and
+    *all k explanatory variables in all T time periods*
+
+
+E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ, aᵢ) = 0
+*all k explanatory variables in all T time periods*
+
+*   Violation of this assumption leads to a biased estimate of the regression parameters β.
+*   An application will be given later.
+
+
+## Strict exogeneity (see also lecture 2)
+
+*Aim: to formalize a linear panel-data model*
+
+*   **Assumption TS.2 (strict exogeneity)**
+    For each *t*, the expected value of uₜ, given ALL of the *k* explanatory variables FOR ALL *T* time periods, is equal to zero: E(uₜ | **X**) = 0
+
+*   **Assumption TS.2’ (contemporaneous exogeneity)**
+    For each *t*, the expected value of uₜ, given ALL of the *k* explanatory variables in period *t*, is equal to zero: E(uₜ | xₜ₁,...,xₜₖ) = E(uₜ | **x**ₜ) = 0
+    This assumption implies that the error term in period *t* is uncorrelated with all *k* regressors in the same period, *t*: Corr(uₜ,xₜⱼ)=0   *j*=1,...,*k*
+
+
+
+## Violation of Exogeneity
+
+* Violation of the strict exogeneity assumption while assumption contemporaneous exogeneity is satisfied
+
+*Aim: to reconsider the issue of strict exogeneity for panel data models. Models with a lagged dependent variable (yₜ₋₁) or with a feedback mechanism are NOT strictly exogenous.*
+
+**Example 3:** Dynamic variable with lagged dependent variable
+yₜ = α₀ + α₁yₜ₋₁ + δ₁zₜ + uₜ (7)
+* uₜ is assumed to be an idiosyncratic error term and contemporaneously exogenous: E(uₜ | yₜ₋₁, zₜ) = 0, so that OLS yields consistent estimates.
+* However, yₜ₋₁ is NOT a strictly exogenous variable:
+    * The assumption of strict exogeneity implies that uₜ is uncorrelated not only with **x**ₜ = (yₜ₋₁, zₜ)' , but also with **x**ₜ₊₁ = (yₜ, zₜ₊₁)'
+    * According to equation (7), yₜ and uₜ are related to each other. In other words, E(uₜ | **x**ₜ₊₁) = E(uₜ | yₜ, zₜ₊₁) ≠ 0,
+* **THUS THE LAGGED DEPENDENT VARIABLE yₜ₋₁ IS NOT STRICTLY EXOGENOUS IN EQUATION (7).**
+
+## Examples
+
+**Example 4:** Models with a feedback mechanism:
+gGDPₜ = α₀ + δ₀rₜ + uₜ (8)
+* gGDP: GDP-growth rate
+* rₜ: Interest rate, which is assumed to be contemporaneously exogenous: E(uₜ | rₜ) = 0
+* The independent variable rₜ depends on the lagged value of the dependent variable: (feedback mechanism):
+  rₜ = γ₀ + γ₁(gGDPₜ₋₁ – 3) + vₜ (9)
+* Equation (9) implies that rₜ₊₁ depends on gGDPₜ and consequently on uₜ.
+* E(uₜ | **x**ₜ₊₁) = E(uₜ | rₜ₊₁) ≠ 0
+* **THUS rₜ IS NOT STRICTLY EXOGENOUS IN EQUATION (8)**
+
+
+
+## Between variation versus within variation?
+*Aim: to discuss the measurement of between variation and within variation.*
+
+**Between variation:** the cross-sectional variation (across individuals). For example:
+
+| | Profit (= dependent variable) | Innovation (=explanatory variable) |
+|---|---|---|
+| Firm A | 500 thousand Euros | 1 percent |
+| Firm B | 750 thousand Euros | 3 percent |
+
+**Between variation** (across firms): as a result of the increased innovation (from 1 percent to 3 percent) the profits increase from 500 thousand Euros to 750 thousand Euros.
+
+**Within variation:** the time-series variation (for a given individual). So the variation within individuals. For example:
+
+| | Profit (= dependent variable) | Innovation (=explanatory variable) |
+|---|---|---|
+| Time 1 | 500 thousand Euros | 1 percent |
+| Time 2 | 550 thousand Euros | 3 percent |
+
+**Within variation** (for a given firm): as a result of the increased innovation (from 1 percent to 3 percent (thus by 2 percentage points) the profits increase from 500 thousand Euros to 550 thousand Euros from *t*=1 to *t* = 2.
+
+Economists are usually interested in the within variation more than in the between variation.
+
+To measure the within variation of *x* on *y*, we need to control for individual effects. Consequently, it allows for correlation between the individual effect and the explanatory variable.
+
+22
 
 ---
 
-## Characteristics of Time Series Data
+## Classification
 
-- **Temporal Ordering:** Unlike cross-sectional data, the order of observations in time series data matters. The past can affect the future, but the future cannot affect the past.
-- **Serial Correlation (or Autocorrelation):** Observations in a time series are often correlated with their own past values. For example, a high GDP in one quarter may suggest a high GDP in the next quarter.
-- **Seasonality:** Many time series exhibit regular patterns at certain times of the year (e.g., retail sales are higher in the fourth quarter).
-- **Trends:** A time series may have a long-term upward or downward movement.
+### Static model: a classification
+*Aim: to classify the different estimation techniques for static panel data models.*
 
-## Objectives of Time Series Analysis
+*   Consider the following equation:
+    yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ   i=1,...,*N*;t=1,...,*T* (10)
+*   The assumptions in the table on the next slide are necessary to estimate equation (10). It leads to the following two questions:
+*   **Question 1:** Is there any nonzero correlation between aᵢ and all of the k RHS vars xᵢₜ? Is it nonzero in all T time periods?
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 or
+    *all k explanatory variables in all T time periods*
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) ≠ 0?
+    *all k explanatory variables in all T time periods*
+*   **Question 2:** Are all of the k variables xᵢₜ strictly exogenous (conditional on the unobserved individual effect aᵢ)?
+    E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ, aᵢ) = 0
+    *all k explanatory variables in all T time periods*
+    (thus, no lagged dependent variables, no feedback mechanism)
+*   In all of the estimators of this week we assume that the exogenous time-varying regressors are strictly exogenous. (conditional on the unobserved effect):
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0
+    *all k explanatory variables in all T time periods*
+*   So again: no lagged dependent variables; no feedback mechanism.
+*   In explaining estimation procedures, we assume a **balanced panel**: for every cross-sectional unit, we have the same number of time periods *T*.
+    Model: yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ   i=1,...,*N*;t=1,...,*T* (10)
+*   Stata allows for estimation of **unbalanced panels**, in which not all units have *T* observations. Thus the i-th individual has Tᵢ observations.
 
-- There are various objectives of time series econometrics:
 
-1. **Forecasting:** Predicting future values of a variable is a primary objective. For instance, forecasting inflation is crucial for central banks.
-2. **Policy Analysis:** Economists use time series models to assess the impact of policy changes. For example, what is the effect of an interest rate hike on unemployment?
-3. **Understanding Dynamic Economic Relationships:** Time series analysis helps us understand how economic variables interact over time.
+**Table A: Estimation methods under different assumptions of strict exogeneity and on the correlation between the individual effect and RHS-variables:**
 
-## Notation and Basic Concepts
+| | E(aᵢ | Xᵢ₁₁,..,Xᵢ₁ₖ,..,Xᵢₜ₁,..,Xᵢₜₖ) ≠ 0 Correlation between aᵢ and all of the explanatory variables is allowed to be nonzero | E(aᵢ | Xᵢ₁₁,..,Xᵢ₁ₖ,..,Xᵢₜ₁,..,Xᵢₜₖ) = 0 A zero correlation between aᵢ and all of the explanatory variables is assumed. |
+| :--- | :--- | :--- |
+| **All xᵢₜ strictly exogenous** | 1. First differences <br> 2. LSDV procedure <br> 3. Within estimation | 4. Random effects |
+| **Some xᵢₜ not strictly exogenous** | Instrumental Variables (IV) | 5. Pooled OLS (no lagged dependent variables) <br> 6. Instrumental variables (IV) (lagged dep. vars. Included) |
 
-- $Y_t$:  The value of the variable Y at time period t.
-- $Y_{t-1}$: The value of Y in the previous period (the first lag).
-- $Y_{t-s}$: The value of Y s periods ago (the s-th lag).
-- $\Delta Y_t = Y_t - Y_{t-1}$: The first difference of $Y$, which represents the change in $Y$ from the previous period to the current period.
+yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ i=1,...,*N*;t=1,...,*T*
 
-# Introduction to Dynamic Processes
+---
 
-## A Time Series as a Stochastic Process
+**Table B: Estimating the effect of time-invariant variables zᵢ**
 
-:::{.callout-note title="Definition: Time Series (Mathematical)"}
-A time series is a set of random variables indexed by time, denoted as $\{Y_1, Y_2, \dots, Y_T\}$ or simply $\{Y_t\}$. 
+| | No estimation of γ: no effect of zᵢ on yᵢₜ | Estimation of γ: effect of zᵢ on yᵢₜ |
+| :--- | :--- | :--- |
+| **All xᵢₜ strictly exogenous** | 1. First differences<br>2. LSDV procedure<br>3. Within estimation | 4. Random effects |
+| **Some xᵢₜ not strictly exogenous** | Instrumental Variables (IV) | 5. Pooled OLS (no lagged dependent variables)<br>6. Instrumental variables (IV) (lagged dep. vars. Included) |
+
+yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + γ₁z₁ᵢ + ... + γₕzₕᵢ + uᵢₜ   i=1,...,*N*;t=1,...,*T*
+
+* The variables z do not change across time but they are different across individuals
+* E.g. zᵢ: gender and ethnicity in wage equation
+* zᵢ picks up the between variation (between individuals).
+    * Between individuals: cross-sectional perspective
+* xᵢₜ picks up the within variation (within individuals)
+    * Within individuals: time-series perspective for a given individual
+* Economists are usually more interested in within variation.
+
+
+## First Differences Estimator
+
+* An estimator for a non-zero correlation between aᵢ and the explanatory variables
+*Aim: to introduce an estimation technique for models with a correlation between aᵢ and the explanatory variables.*
+
+*   The regression equation is: yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ
+*   Recall that in regression equations the explanatory variables xᵢₜ are allowed to be correlated. E.g. education and experience are correlated in a wage equation.
+*   This is also the case in the fixed effects model. Equation (10) allows for correlation between the explanatory variable aᵢ and the other explanatory variables x₁ᵢₜ...xₖᵢₜ.
+*   There are three methods to estimate parameter β consistently:
+    *   The first-differences estimator (method 1 from Table A; this week).
+    *   The Least Squares Dummy Variable estimator (LSDV-method). (method 2 from Table A; next week)
+    *   The within estimator (method 3 from Table A; next week)
+
+## Estimation method 1: first-differences estimator
+*Aim: to introduce the first-difference estimator.*
+
+*   Let’s assume there is only one explanatory variable x
+*   It is possible to consistently estimate the β parameter by taking first differences
+    yᵢₜ = βxᵢₜ + aᵢ + uᵢₜ (the regression equation in period t) (8a)
+    yᵢ,ₜ₋₁ = βxᵢ,ₜ₋₁ + aᵢ + uᵢ,ₜ₋₁ (the regression equation in period t-1) (8b)
+*   Difference of (8a) and (8b):
+    yᵢₜ – yᵢ,ₜ₋₁ = βxᵢₜ – βxᵢ,ₜ₋₁ + aᵢ – aᵢ + uᵢₜ – uᵢ,ₜ₋₁
+    or
+    Δyᵢₜ = βΔxᵢₜ + Δuᵢₜ       i = 1,...,*N*; t = 2,...,*T* (11)
+*   It means that all variables of equation (11) have the same first-differences transformation Δ
+*   By taking first differences, the individual effect aᵢ is removed from the model.
+*   We calculate the OLS estimator for equation (11): the so-called first-difference estimator of the regression parameter β
+*   Denote the first-difference estimator by β̂fdif
+*   Note that the first period t=1 is used for Δyᵢ₂, Δxᵢ₂, Δuᵢ₂,
+*   Why is β̂fdif a consistent (or unbiased) estimator? Let’s assume for simplicity we have a bivariate model: yᵢₜ = xᵢₜβ + aᵢ + uᵢₜ and Δyᵢₜ = Δxᵢₜβ + Δuᵢₜ
+*   Consistency requires that the error term is uncorrelated with the explanatory variable:
+    Corr(Δuᵢₜ, Δxᵢₜ) = Corr(uᵢₜ – uᵢ,ₜ₋₁, xᵢₜ – xᵢ,ₜ₋₁) = 0
+    It means that uᵢₜ is uncorrelated with xᵢ,ₜ₋₁, xᵢₜ, xᵢ,ₜ₊₁. In other words, strict exogeneity is needed (no lagged dependent variable, no feedback effects) for consistency (unbiasedness) of the first-difference estimator.
+
+
+## Contemporaneous Exogeneity
+
+*   Note that contemporaneous exogeneity is too weak to prove consistency of the first-difference estimator β̂fdif, because it does not exclude consistency between uᵢₜ and xᵢ,ₜ₋₁.
+*   Furthermore, it is assumed that the error term uᵢₜ follows a random walk, i.e.:
+    *   uᵢₜ = uᵢ,ₜ₋₁ + eᵢₜ
+    *   E(eᵢₜ) = 0; Var(eᵢₜ) = σₑ² (expected value of zero; constant variance)
+    *   eᵢₜ is independent over time and across individuals
+
+Then one can show that (here less important):
+*   êᵢₜ = Δyᵢₜ – Δxᵢₜβ̂fdif
+*   σ̂ₑ² = (Σᵢ₌₁ᴺ Σₜ₌₁ᵀ êᵢₜ²) / (N(T-1) - k)
+*   Consistent estimates of Var(β̂within) (using σ̂ₑ²)
+*   In other words, OLS estimation of equation (11) gives the correct standard errors of β̂fdif.
+*   Suppose that there is autocorrelation and heteroskedasticity in eᵢₜ. In that case Var(β̂fdif) is incorrect, because σ̂ₑ² is incorrect: robust Newey-West standard errors are necessary.
+    *   Note that it is a different estimator for Var(β̂fdif) than the robust standard error (that only corrects for heteroskedasticity)
+    *   Stata: cluster option: corrects for heteroskedasticity and autocorrelation.
+
+
+## Some useful Stata commands
+*Aim: to introduce specific Stata commands*
+
+*   Use the `tsset` command at the beginning of the do-file:
+    *   `tsset i t`
+    *   ‘i’ is the name of the variable that refers to the individual
+    *   ‘t’ is the name of the variable that refers to time
+    *   alternative: `xtset i t`
+
+*   summary statistics that take into account of both dimensions (individuals and time):
+    *   `xtsum y x`
+
+*   First differences
+    *   `reg d.y d.x`
+    *   `reg d.y d.x, robust`
+    *   `reg d.y d.x, cluster(number)`
+    *   Some students make the following mistake:
+        `xtreg d.y d.x`
+
+---
+
+## Example 5: xtsum and first differences
+
+niels1.dta
+```
+. use "niels1.dta", clear
+. tabstat year, statistics(n min max) by(country)
+```
+
+Summary for variables: year
+by categories of: country (country/economy)
+
+| country | N | min | max |
+| :--- | --: | --: | --: |
+| Algeria | 4 | 2009 | 2013 |
+| Angola | 4 | 2008 | 2014 |
+| Argentina | 13 | 2003 | 2016 |
+| Australia | 9 | 2003 | 2016 |
+| Austria | 3 | 2005 | 2012 |
+| Bangladesh | 1 | 2011 | 2011 |
+| Barbados | 4 | 2011 | 2015 |
+| Belgium | 13 | 2003 | 2015 |
+| Belize | 2 | 2014 | 2016 |
+| Bolivia | 3 | 2008 | 2014 |
+| Bosnia and Herze | 7 | 2008 | 2014 |
+| Botswana | 4 | 2012 | 2015 |
+| Brazil | 12 | 2003 | 2015 |
+| Bulgaria | 2 | 2015 | 2016 |
+| Burkina Faso | 2 | 2015 | 2016 |
+| ... | | | |
+| United Kingdom | 14 | 2003 | 2016 |
+| United States | 10 | 2003 | 2016 |
+| Uruguay | 11 | 2006 | 2016 |
+| Vanuatu | 1 | 2010 | 2010 |
+| Venezuela | 4 | 2003 | 2011 |
+| Vietnam | 3 | 2013 | 2015 |
+| Yemen | 1 | 2009 | 2009 |
+| Zambia | 3 | 2010 | 2013 |
+| **Total** | **687** | **2003** | **2016** |
+
+32
+
+---
+
+```
+. sort ccountry year
+. xtset ccountry year
+     panel variable: ccountry (unbalanced)
+      time variable: year, 2003 to 2016, but with gaps
+              delta: 1 unit
+```
+**Structure of the dataset:**
+
+Image: [A screenshot of the Stata data editor showing a panel dataset. The columns include 'ccountry', 'country', 'year', and several economic indicators like 'entrepreneurship', 'opportunity', 'capable', etc. The variables and properties panes are also visible.]
+
+---
+```
+. tab year
+
+| year | Freq. | Percent | Cum. |
+|---|---|---|---|
+| 2003 | 31 | 4.51 | 4.51 |
+| 2004 | 34 | 4.95 | 9.46 |
+| 2005 | 35 | 5.09 | 14.56 |
+| 2006 | 42 | 6.11 | 20.67 |
+| 2007 | 41 | 5.97 | 26.64 |
+| 2008 | 43 | 6.26 | 32.90 |
+| 2009 | 54 | 7.86 | 40.76 |
+| 2010 | 58 | 8.44 | 49.20 |
+| 2011 | 47 | 6.84 | 56.04 |
+| 2012 | 58 | 8.44 | 64.48 |
+| 2013 | 66 | 9.61 | 74.09 |
+| 2014 | 63 | 9.17 | 83.26 |
+| 2015 | 54 | 7.86 | 91.12 |
+| 2016 | 61 | 8.88 | 100.00 |
+| Total | 687 | 100.00 | |
+
+. describe
+
+Contains data from niels1.dta
+ obs: 687
+ vars: 9 29 Aug 2017 13:54
+ size: 34,350
+---
+| storage | display | value |
+| variable name | type | format | label | variable label |
+|---|---|---|---|---|
+| ccountry | int | %10.0g | | country code (numeric) |
+| country | str22 | %22s | | country/economy |
+| year | int | %10.0g | | year |
+| entrepreneurs~p | float | %9.0g | | |
+| opportunity | float | %9.0g | | |
+| capable | float | %9.0g | | |
+| fearfailure | float | %9.0g | | |
+| pfemale | float | %9.0g | | |
+| status | float | %9.0g | | |
+---
+Sorted by: ccountry year
+ Note: dataset has changed since last saved
+```
+34
+
+---
+```
+. sum
+| Variable | Obs | Mean | Std. Dev. | Min | Max |
+|---|---|---|---|---|---|
+| ccountry | 687 | 241.3901 | 276.1463 | 1 | 995 |
+| country | 0 | | | | |
+| year | 687 | 2010.323 | 3.863612 | 2003 | 2016 |
+| entreprene~p | 687 | 18.75245 | 11.20719 | 3.27 | 75.29 |
+| opportunity | 687 | 40.05189 | 16.22148 | 2.85 | 85.54 |
+| capable | 687 | 49.5062 | 15.31129 | 8.65 | 87.93 |
+| fearfailure | 687 | 34.49453 | 9.001162 | 10.43 | 75.42 |
+| pfemale | 687 | 6.443654 | 19.40803 | .05 | 123.81 |
+| status | 687 | 69.54263 | 10.72374 | 31.47 | 100 |
+
+. xtsum
+| Variable | | Mean | Std. Dev. | Min | Max | Observations |
+|---|---|---|---|---|---|---|
+| ccountry | overall | 241.3901 | 276.1463 | 1 | 995 | N = 687 |
+| | between | | 312.7506 | 1 | 995 | n = 106 |
+| | within | | 0 | 241.3901 | 241.3901 | T-bar = 6.48113 |
+| country | overall | | | | | N = 0 |
+| | between | | | | | n = 0 |
+| | within | | | | | T = |
+| year | overall | 2010.323 | 3.863612 | 2003 | 2016 | N = 687 |
+| | between | | 2.223647 | 2004 | 2016 | n = 106 |
+| | within | | 3.438053 | 2002.18 | 2018.523 | T-bar = 6.48113 |
+| entrep~p | overall | 18.75245 | 11.20719 | 3.27 | 75.29 | N = 687 |
+| | between | | 12.70803 | 6.09 | 75.29 | n = 106 |
+| | within | | 4.312329 | 5.345778 | 37.99411 | T-bar = 6.48113 |
+| opport~y | overall | 40.05189 | 16.22148 | 2.85 | 85.54 | N = 687 |
+| | between | | 15.44536 | 8.769167 | 84.13 | n = 106 |
+| | within | | 7.770043 | 14.8242 | 82.21989 | T-bar = 6.48113 |
+| capable | overall | 49.5062 | 15.31129 | 8.65 | 87.93 | N = 687 |
+| | between | | 15.51558 | 13.12167 | 86.21667 | n = 106 |
+| | within | | 5.001509 | 26.30159 | 69.98335 | T-bar = 6.48113 |
+| fearfa~e | overall | 34.49453 | 9.001162 | 10.43 | 75.42 | N = 687 |
+| | between | | 9.658087 | 14.94333 | 72.01 | n = 106 |
+| | within | | 5.303271 | 14.42453 | 66.01453 | T-bar = 6.48113 |
+| pfemale | overall | 6.443654 | 19.40803 | .05 | 123.81 | N = 687 |
+| | between | | 10.9578 | .1366667 | 46.6 | n = 106 |
+| | within | | 18.12183 | -39.28635 | 104.6797 | T-bar = 6.48113 |
+| status | overall | 69.54263 | 10.72374 | 31.47 | 100 | N = 687 |
+| | between | | 10.26139 | 47.97333 | 100 | n = 106 |
+| | within | | 5.853495 | 37.07571 | 89.32264 | T-bar = 6.48113 |
+```
+
+## First-differences
+
+```stata
+. reg d.entrepreneurship d.opportunity d.capable d.fearfailure d.pfemale d.status
+---------------------------------------------------------------------------------
+      Source |       SS           df       MS           Number of obs   =     483
+-------------+----------------------------------         F(5, 477)       =    6.13
+       Model |  580.703558         5   116.140712         Prob > F        =  0.0000
+    Residual |  9033.89875       477   18.9389911         R-squared       =  0.0604
+-------------+----------------------------------         Adj R-squared   =  0.0505
+       Total |    9614.6023       482   19.9473077         Root MSE        =  4.3519
+---------------------------------------------------------------------------------
+          D. |
+entreprene~p |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+--------------------------------------------------------------------
+ opportunity |
+         D1. |   .0085752   .0285149     0.30   0.764    -.0474551    .0646056
+     capable |
+         D1. |   .1838622   .0405581     4.53   0.000     .1041675    .2635569
+ fearfailure |
+         D1. |  -.0413421   .0306715    -1.35   0.178     -.10161     .0189257
+     pfemale |
+         D1. |   .0066679   .0100145     0.67   0.506    -.0130101    .0263459
+      status |
+         D1. |   .0005231   .0338882     0.02   0.988    -.0660656    .0671117
+       _cons |   .2839998   .2079547     1.37   0.173    -.1246207    .6926203
+---------------------------------------------------------------------------------
+
+. predict vhat, resid
+(204 missing values generated)
+
+. reg vhat l.vhat d.opportunity d.capable d.fearfailure d.pfemale d.status
+---------------------------------------------------------------------------------
+      Source |       SS           df       MS           Number of obs   =     371
+-------------+----------------------------------         F(6, 364)       =   13.54
+       Model |  948.903762         6   158.150627         Prob > F        =  0.0000
+    Residual |  4250.3595        364   11.6768118         R-squared       =  0.1825
+-------------+----------------------------------         Adj R-squared   =  0.1690
+       Total |  5199.26327       370   14.0520629         Root MSE        =  3.4171
+---------------------------------------------------------------------------------
+        vhat |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+--------------------------------------------------------------------
+        vhat |
+         L1. |  -.3907954   .0437721    -8.93   0.000    -.4768734   -.3047174
+ opportunity |
+         D1. |   .0065333   .0250719     0.26   0.795    -.0427707    .0558372
+     capable |
+         D1. |   .0185389   .039742      0.47   0.641    -.0596139    .0966917
+ fearfailure |
+         D1. |   .0211696   .0299744     0.71   0.480    -.0377752    .0801144
+     pfemale |
+         D1. |  -.0109633   .0088292    -1.24   0.215    -.028326     .0063995
+      status |
+         D1. |  -.0002112   .0319314    -0.01   0.995    -.0630045    .062582
+       _cons |   .0687234   .1865105     0.37   0.713    -.2980501    .4354968
+---------------------------------------------------------------------------------
+```36
+
+---
+```stata
+. reg d.entrepreneurship d.opportunity d.capable d.fearfailure d.pfemale d.status, cluster(ccountry)
+
+Linear regression                                    Number of obs   =      483
+                                                     F(5, 83)        =     2.79
+                                                     Prob > F        =   0.0221
+                                                     R-squared       =   0.0604
+                                                     Root MSE        =   4.3519
+
+                                (Std. Err. adjusted for 84 clusters in ccountry)
+---------------------------------------------------------------------------------
+             |            Robust
+D. entreprene~p|      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+--------------------------------------------------------------------
+   opportunity |
+          D1.|   .0085752   .0310053     0.28   0.783    -.0530932    .0702436
+       capable |
+          D1.|   .1838622   .0521886     3.52   0.001     .0800613    .2876631
+   fearfailure |
+          D1.|  -.0413421   .0297418    -1.39   0.168    -.1004975    .0178132
+       pfemale |
+          D1.|   .0066679   .0080202     0.83   0.408     -.009284    .0226197
+        status |
+          D1.|   .0005231   .0408331     0.01   0.990    -.0806923    .0817384
+         _cons |   .2839998   .1632255     1.74   0.086    -.0406493    .6086488
+---------------------------------------------------------------------------------
+```
+
+**Estimation procedure:**
+* We started with the first-difference estimator β̂fdif
+* Next, we checked for autocorrelation, using the Breusch Godfrey test.
+* The parameter on the lagged residual was statistically different from zero (t-value: -8.93).
+* We re-estimated the model with the first-difference estimator, using clustered standard errors.
+
+
+
+## Pooled OLS
+
+* An estimator for a zero correlation between $\alpha_i$ and the explanatory variables
+*Aim: to introduce the estimator that assumes there is no correlation between aᵢ and the explanatory variables*
+
+*   Now we assume that there is no correlation between aᵢ and xᵢₜ.
+*   Consider the following methods:
+    *   Random effects (method 4 from Table A; next week)
+    *   Pooled OLS (method 5 from Table A)
+
+
+## Estimation method 5: Pooled OLS
+
+*Aim: to introduce the OLS-estimator for a panel data specification.*
+
+*   Now we assume that there is no correlation between aᵢ and all of the k explanatory variables xᵢₜ.
+*   Equation (12) can be estimated with OLS. This is referred to as pooled OLS:
+*   yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ (12)
+    *   For which vᵢₜ = aᵢ + uᵢₜ where uᵢₜ is i.i.d.
+    *   As a result of the identical distribution: Var(vᵢₜ) = Var(vᵢ,ₜ₋₁)
+    *   In a pooled regression vᵢₜ = aᵢ + uᵢₜ
+    *   So, in equation (12), it is assumed that:
+
+        E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ) = 0 and
+        E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ, aᵢ) = 0
+
+*   aᵢ is uncorrelated with all of the explanatory variables.
+*   uᵢₜ is uncorrelated with all of the explanatory variables and aᵢ
+
+*   Autocorrelation between the error terms vᵢₜ and vᵢ,ₜ₋₁ of equation (12) is:
+*   Corr(vᵢₜ,vᵢ,ₜ₋₁) = Cov(vᵢₜ,vᵢ,ₜ₋₁) / sqrt(Var(vᵢₜ)Var(vᵢ,ₜ₋₁)) = Cov(vᵢₜ,vᵢ,ₜ₋₁) / Var(vᵢₜ)
+
+*   We can show that the numerator:
+    Cov(vᵢₜ,vᵢ,ₜ₋₁) = Cov(aᵢ + uᵢₜ, aᵢ + uᵢ,ₜ₋₁) =
+    = Cov(aᵢ,aᵢ) + Cov(aᵢ,uᵢ,ₜ₋₁) + Cov(uᵢₜ, aᵢ) + Cov(uᵢₜ,uᵢ,ₜ₋₁)
+    =σₐ² (=0) (=0) (=0)
+    = Var(aᵢ) + 0 + 0 + 0
+
+40
+
+---
+
+= σₐ²
+
+*   And the denominator:
+    Var(vᵢₜ) = Var(aᵢ + uᵢₜ)
+    = Var(aᵢ) + Var(uᵢₜ) + 2Cov(aᵢ,uᵢₜ) =
+    =σₐ² + σᵤ² (=0)
+    = σₐ² + σᵤ²
+
+*   So that: Cov(vᵢₜ,vᵢ,ₜ₋₁) / Var(vᵢₜ) = σₐ² / (σₐ² + σᵤ²)
+
+*   Conclusion: In pooled OLS there is always autocorrelation.
+*   The estimation procedure for pooled OLS: OLS on (12), with Newey-West robust standard errors, which is also referred to as clustered standard errors. It corrects for both heteroskedasticity and autocorrelation. Stata command Pooled OLS: reg y x, cluster(i)
+
+---
+
+## Example 5 (continued): Pooled OLS
+```stata
+. reg entrepreneurship status
+------------------------------------------------------------------------------
+      Source |       SS           df       MS           Number of obs   =      687
+-------------+----------------------------------         F(1, 685)       =    74.47
+       Model |  8448.43236         1  8448.43236         Prob > F        =   0.0000
+    Residual |  77713.8823       685  113.450923         R-squared       =   0.0981
+-------------+----------------------------------         Adj R-squared   =   0.0967
+       Total |  86162.3147       686  125.601042         Root MSE        =   10.651
+------------------------------------------------------------------------------
+entreprene~p |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      status |   .3272499   .0379224     8.63   0.000     .2527919    .401708
+       _cons |  -4.005375   2.668347    -1.50   0.134    -9.244497    1.233746
+------------------------------------------------------------------------------
+
+. reg entrepreneurship opportunity capable fearfailure pfemale status
+------------------------------------------------------------------------------
+      Source |       SS           df       MS           Number of obs   =      687
+-------------+----------------------------------         F(5, 681)       =   112.58
+       Model |  38989.9631         5  7797.99262         Prob > F        =   0.0000
+    Residual |  47172.3516       681  69.2692388         R-squared       =   0.4525
+-------------+----------------------------------         Adj R-squared   =   0.4485
+       Total |  86162.3147       686  125.601042         Root MSE        =    8.3228
+------------------------------------------------------------------------------
+entreprene~p |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ opportunity |   .136798    .0261802     5.23   0.000     .0853944    .1882015
+     capable |   .3941343   .0286309    13.77   0.000     .3379188    .4503497
+ fearfailure |   .1020699    .039778     2.57   0.011     .0239677    .1801721
+     pfemale |   .0167714   .0164528     1.02   0.308    -.015533     .0490758
+      status |   .0545589   .0331565     1.65   0.100    -.0105423    .1196601
+       _cons |  -13.66175   2.719823    -5.02   0.000      -19.002   -8.321506
+------------------------------------------------------------------------------
+
+. predict uhat, resid
+
+. reg uhat l.uhat opportunity capable fearfailure pfemale status
+------------------------------------------------------------------------------
+      Source |       SS           df       MS           Number of obs   =      483
+-------------+----------------------------------         F(6, 476)       =   131.42
+       Model |  15829.8654         6  2638.31091         Prob > F        =   0.0000
+    Residual |  9555.84622       476  20.0753072         R-squared       =   0.6236
+-------------+----------------------------------         Adj R-squared   =   0.6188
+       Total |  25385.7117       482  52.6674516         Root MSE        =    4.4805
+------------------------------------------------------------------------------
+        uhat |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        uhat |
+         L1. |   .7642528   .0273884    27.90   0.000     .7104357    .8180699
+ opportunity |   .0001926   .0167499     0.01   0.991    -.0327203    .0331055
+     capable |  -.0089727   .0187121    -0.48   0.632    -.0457413    .027796
+ fearfailure |  -.0412445   .0275817    -1.50   0.135    -.0954414    .0129524
+     pfemale |   .0008219   .0103745     0.08   0.937    -.0195636    .0212074
+      status |  -.0243557   .0218146    -1.12   0.265    -.0672206    .0185091
+       _cons |   3.616266   1.851214     1.95   0.051    -.0212952    7.253827
+------------------------------------------------------------------------------
+```
+
+---
+```stata
+. reg entrepreneurship opportunity capable fearfailure pfemale status, cluster(ccountry)
+
+Linear regression                                    Number of obs   =      687
+                                                     F(5, 105)       =    14.91
+                                                     Prob > F        =   0.0000
+                                                     R-squared       =   0.4525
+                                                     Root MSE        =   8.3228
+
+                               (Std. Err. adjusted for 106 clusters in ccountry)
+---------------------------------------------------------------------------------
+             |            Robust
+entreprene~p |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+--------------------------------------------------------------------
+ opportunity |   .136798    .0378957     3.61   0.000     .0616578    .2119381
+     capable |   .3941343   .0576298     6.84   0.000      .279865    .5084035
+ fearfailure |   .1020699   .0913241     1.12   0.266    -.0790089    .2831487
+     pfemale |   .0167714   .0142713     1.18   0.243    -.0115259    .0450686
+      status |   .0545589   .0619831     0.88   0.381    -.0683422     .17746
+       _cons |  -13.66175   6.119695    -2.23   0.028    -25.79598   -1.527528
+---------------------------------------------------------------------------------
+```
+
+**Estimation procedure:**
+*   We started with the pooled OLS estimator.
+*   Next, we checked for autocorrelation, using the Breusch Godfrey test.
+*   The parameter on the lagged residual was statistically different from zero (t-value: 27.90).
+*   We re-estimated the model with the pooled OLS estimator, using clustered standard errors.
+
+
+## Winding up
+
+**Issues:**
+*   Within variation versus between variation.
+*   Within effects versus between effects.
+*   Estimator for within effects: the first-difference estimator.
+*   Advantage: we correct for unobserved effects, which are allowed to correlate with the explanatory variables.
+*   Estimator for between effects: Pooled OLS estimator; we need to compute clustered standard errors.
+
+## What do we do today?
+
+- We have seen _cross sectional_ and _time series_ data
+
+- This lecture, we will talk about methods used when we can _combine_ features of cross-sectional and time-series data
+
+- We will introduce two workhorse econometrics models, the Fixed Effects (FE) model, and the Random Effects (RE) model
+
+- We discuss a special case of panel data in the form of _event studies_. 
+
+# Introduction
+
+## What is Panel Data?
+
+- A panel dataset (or longitudinal dataset) follows the **same** set of individuals over **multiple** time periods.
+
+- Structure: 
+  - **$N$**: The number of individuals or entities (e.g., people, firms, countries, schools).
+  - **$T$**: The number of time periods (e.g., years, quarters, days).
+
+- The total number of observations is $N \times T$ (for a balanced panel).
+
+:::{.callout-tip title="Examples: Panel Data"}
+**PSID (Panel Study of Income Dynamics):** Tracks thousands of families and their descendants over many years.
+
+**Compustat:** Financial data for thousands of public firms over many years.
+
 :::
 
-- Stochastic vs. Deterministic: We treat a time series as a stochastic process because we don't know the future values with certainty. We can only talk about their probability distributions.
+## Structure of Panel Data{#sec-structure}
 
-- One Realization: The actual data we have (e.g., GDP from 1950-2024) is just one of many possible paths the process could have taken. 
-- Our goal is to infer the properties of the underlying process from this single realization.
+- Imagine tracking the GDP and foreign investment for 3 countries over 4 years.
 
-## Basic Statistical Properties
+:::{style="font-size: 1.5em;"}
 
-- Just like any random variable, each point in a time series has statistical properties.
+| Country (i) | Year (t) | GDP ($y_{it}$) | Investment ($X_{it}$) |
+|:-----------:|:--------:|:--------------:|:---------------------:|
+|     USA     |   2019   |      21.4      |         0.25          |
+|     USA     |   2020   |      20.9      |         0.16          |
+|     USA     |   2021   |      23.0      |         0.36          |
+|     USA     |   2022   |      25.4      |         0.13          |
+|   Germany   |   2019   |      3.8       |         0.14          |
+|   Germany   |   2020   |      3.8       |         0.13          |
+|   ...       |   ...    |      ...       |          ...          |
+|    Japan    |   ...    |      ...       |          ...          |
 
-  - Mean: The expected value of the process at time t: $E(Y_t) = \mu_t$
-  - Variance: The variance of the process at time t: $Var(Y_t) = E[(Y_t - \mu_t)^2] = \sigma_t^2$
-
-- Crucially, in general, the mean and variance could be different at each point in time.
-
-
-## Autocovariance 
-
-- Covariance: 
-  - Recall that covariance measures how two variables move together.
-
-- Autocovariance
-  - Autocovariance is the covariance of a time series with its own past values. It measures the linear dependence between different points in the series.
-  
-:::{.callout-note title="Definition: Autocovariance"}
-The $k$-th Order Autocovariance ($\gamma_k$):
-
-  $$
-    \gamma(t, t-k) = Cov(Y_t, Y_{t-k}) = E[(Y_t - \mu_t)(Y_{t-k} - \mu_{t-k})]
-  $$
 :::
 
-- This measures the covariance between the series at time t and time t-k.
+- Here, $N=3$ and $T=4$.
+- The data has both a **cross-sectional** dimension (comparing USA, Germany, Japan in one year) and a **time-series** dimension (tracking the USA from 2019-2022).
 
-## Stationarity: A Key Simplifying Assumption
 
-- For analysis to be tractable, we often assume the series is covariance stationary (or weakly stationary).
+## Advantages of Panel Data
 
-- This means the three aforementioned statistical properties do not change over time. Three conditions must hold:
+- **Controlling for Unobserved Heterogeneity:**
+    - This is the biggest advantage! We can control for factors that are unobserved and constant over time for each individual (e.g., intrinsic ability, corporate culture, national institutions).
+    - This helps us mitigate omitted variable bias.
 
-:::{.callout-note title="Definition: Stationarity"}
-- Constant Mean: $E(Y_t) = \mu$ for all t. The series fluctuates around a constant level.
-- Constant Variance: $Var(Y_t) = \sigma^2$ for all t. The volatility of the series is constant.
-- Constant Autocovariance: $Cov(Y_t, Y_{t-k}) = \gamma_k$ for all t. The covariance between two points depends only on the lag $k$ (how far apart they are), not on their position in time.
+- **Increased Degrees of Freedom:**
+    - Panel datasets are often much larger than pure cross-sectional or time-series datasets.
+    - More data leads to more precise estimates (lower standard errors).
+
+- **Analyzing Dynamics:**
+    - We can study how variables change over time and the speed of adjustment.
+    - For example, how long does it take for a change in policy to affect unemployment? You can't answer this with a single cross-section.
+
+
+## Notation for Panel Data Models
+
+- A standard panel data regression model is written as:
+
+:::{.callout-note title="Definition: Panel Regression Model"}
+
+$$ y_{it} = \beta_0 + \beta_1 X_{1,it} + ... + \beta_k X_{k,it} + u_{it} $$
+
+Where:
+
+  - $i = 1, ..., N$ indexes the individual or entity.
+  - $t = 1, ..., T$ indexes the time period.
+  - $y_{it}$: The dependent variable for individual $i$ at time $t$.
+  - $X_{k,it}$: The $k^{th}$ independent variable for individual $i$ at time $t$.
+  - $\beta_k$: The coefficient for variable $X_k$.
+  - $u_{it}$: The error term for individual $i$ at time $t$.
+
 :::
 
-## Autocorrelation Function (ACF)
+- The key is what we assume about the error term, $u_{it}$.
 
-- The value of the autocovariance ($\gamma_k$) depends on the units of the variable $Y$. This makes it hard to compare across different series.
+# The Pooled OLS Model
 
-- Autocorrelation: standardize the autocovariance to get the autocorrelation, which is unit-free.
+## The Pooled OLS Model
 
-:::{.callout-note title="Definition: Autocorrelation"}
+- The simplest approach is to ignore the panel structure entirely.
 
-The $k$-th Order Autocorrelation ($\rho_k$): 
+:::{.callout-note title="Definition: Pooled OLS Model"}
+  $$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+:::
+- **Method:**
+  - Stack all $N \times T$ observations together.
+  - Run a single OLS regression as if it were one large cross-section.
 
-  $$
-    \rho_k = \frac{ Cov(Y_t, Y_{t-k}) }{\sqrt{Var(Y_t) Var(Y_{t-k})}}
-  $$
+- **Key Assumption:**
+  - The error term $u_{it}$ is uncorrelated with the regressors $X_{it}$.
+  - This implicitly assumes that there are **no unobserved individual-specific or time-specific effects** that are correlated with our $X$ variables. 
+  - This assumption is almost always violated in practice! It ignores the very heterogeneity that panel data is designed to address, leading to biased estimates.
 
-If the series is stationary, this simplifies to:
+## Unobserved Heterogeneity
 
-  $$
-    \rho_k = \frac{\gamma_k}{\gamma_0}
-  $$
-  
-where $\gamma_0$ is the variance, $Var(Y_t)$. 
-  
+- The error term $u_{it}$ in a panel model is often thought to have multiple parts:
+
+  $$ u_{it} = \alpha_i + \lambda_t + \epsilon_{it} $$
+
+- $\alpha_i$: **Individual-specific effect**. This is an unobserved factor that is constant over time for a given individual $i$, but varies across individuals.
+- $\lambda_t$: **Time effect**. This is an unobserved factor that is constant for all individuals at a given time $t$, but varies over time.
+- $\epsilon_{it}$: The idiosyncratic error term that varies across both $i$ and $t$.
+- The core challenge of panel data is how to deal with $\alpha_i$ and $\lambda_t$.
+
+## Unobserved Heterogeneity Examples
+
+:::{.callout-tip title="Example: Unobserved Heterogeneity"}
+
+$\alpha_i$:  An individual's innate ability, a firm's management quality, a country's cultural norms. All of these affect a particular individual, firm, or country $i$ in a way that is constant over time.
+
+$\lambda_t$: A global financial crisis, a major policy change, a technological shock. All of these affect an entire cross-section at particular point in time $t$.
+
 :::
 
-## Interpretation of the Autocorrelation Function (ACF)
+# The Fixed Effects Estimator
 
-- The ACF, denoted by $\rho_k$, measures the "memory" or persistence of a time series.
-  - It is a value between -1 and +1.
-  - $\rho_1$: The correlation between $Y_t$ and $Y_{t-1}$("today" and "yesterday").
-  - $\rho_k$: The correlation between $Y_t$ and $Y_{t-k}$
-  - A high $\rho_k$ suggests that a shock in one period will have a persistent effect k periods later.
+## Fixed Effects
 
-- For a stationary series, we expect $\rho_k \rightarrow 0$ as $k$ gets larger.
+- **Core Idea:** Treat the individual-specific effects, $\alpha_i$, as **parameters to be estimated**. Each individual gets their own intercept.
 
-## The Correlogram (ACF Plot)
+:::{.callout-note title="Definition: Fixed Effects Model"}
 
-- A correlogram is a bar chart that plots the sample autocorrelations ($r_k$) for different lags ($k = 1, 2, 3, \dots$).
-  - It provides a visual summary of the persistence in a time series. We can see how quickly the correlations die out.
-  - Correlograms usually include confidence bands. Autocorrelations that fall outside these bands are considered statistically different from zero.
+$$ y_{it} = (\beta_0 + \alpha_i) + \beta_1 X_{it} + \epsilon_{it} $$
+or more simply:
+$$ y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it} $$
+(Here, the $\alpha_i$ represent the individual-specific intercepts)
+
+:::
+
+- The term "fixed effects" implies that we are making no assumptions about the distribution of the $\alpha_i$ or their correlation with $X_{it}$. We allow them to be correlated with the regressors.
+
+## The "Within" Estimator for FE
+
+- It is easy to estimate a fixed effects model: it is actually OLS estimation on transformed data
+- This fact allows us to estimate the FE model without explicitly estimating $N$ different intercepts? 
+- The goal is to eliminate the fixed effect $\alpha_i$ in $Y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
+
+## Within Transformation
+
+:::{.callout-note title="Definition: Within Transformation"}
+
+**Step 1:** For each individual $i$, calculate the time-average of their variables:
+$$ \bar{y}_i = \frac{1}{T} \sum_{t=1}^{T} y_{it} \quad \text{and} \quad \bar{X}_i = \frac{1}{T} \sum_{t=1}^{T} X_{it} $$
+
+**Step 2:** Subtract the individual-specific average from the original model:
+$$ y_{it} - \bar{y}_i = \beta_1 (X_{it} - \bar{X}_i) + (\epsilon_{it} - \bar{\epsilon}_i) $$
+The fixed effect $\alpha_i$ is time-constant, so $\alpha_i - \bar{\alpha}_i = \alpha_i - \alpha_i = 0$. It drops out!
+
+**Step 3:** Run OLS on the "de-meaned" data:
+$$ (y_{it} - \bar{y}_i) \text{ on } (X_{it} - \bar{X}_i) $$
+This gives a consistent estimate of $\beta_1$.
+:::
+
+
+## Least Squares Dummy Variable Model
+
+- An alternative, but **equivalent**, way to get FE estimates is the LSDV model.
+
+:::{.callout-note title="LSDV Model"}
+
+Create a dummy (0/1) variable for each individual $i$ (except for one, to avoid the dummy variable trap).
+
+Run a single OLS regression including these $N-1$ dummy variables.
+
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + d_1\alpha_1 + d_2\alpha_2 + ... + d_{N-1}\alpha_{N-1} + \epsilon_{it} $$
+
+The estimated coefficient $\beta_1$ from the LSDV model is **identical** to the one from the "Within" estimator.
+
+:::
+
+- The coefficients on the dummies ($\alpha_i$) are the estimated fixed effects.
+- LSDV is impractical for panels with very large $N$ (e.g., thousands of individuals) due to computational burden. The "Within" estimator is more efficient.
+
+## Interpretation of FE Coefficients
+
+:::{.callout-tip title="Interpretation of Fixed Effects models"}
+
+In a Fixed Effects model, the coefficient $\beta_1$ measures:
+
+The average change in $y$ for a one-unit increase in $X$ **within** a given individual over time.
+
+:::
+
+- The FE estimator uses only the variation *within* each individual (firm/country/etc.) to estimate the coefficients.
+- It effectively ignores variation *between* individuals. You are comparing individual A at time 1 to individual A at time 2, not to individual B.
+
+## Visualization Fixed Effects
 
 ```{r}
 #| echo: false
+#| fig.align: 'center'
+#| fig.width: 7
+#| fig.height: 6
+
+# Load required packages
+library(ggplot2)
+library(dplyr)
+library(lmtest)
+library(plm)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Parameters
+n_countries <- 3
+n_years <- 20
+countries <- c("Country A", "Country B", "Country C")
+
+# Create panel data
+panel_data <- expand.grid(country = countries, year = 1:n_years) %>%
+  mutate(
+    # Common slope (0.5) but different intercepts by country
+    intercept = case_when(
+      country == "Country A" ~ 1,
+      country == "Country B" ~ 3,
+      country == "Country C" ~ 5
+    ),
+    x = runif(n(), 0, 10),
+    epsilon = rnorm(n(), 0, 0.5),
+    y = intercept + 0.5 * x + epsilon
+  )
+
+# Estimate fixed effects model
+fe_model <- plm(y ~ x, data = panel_data, index = c("country", "year"), model = "within")
+
+# Create visualization
+ggplot(panel_data, aes(x = x, y = y, color = country)) +
+  geom_point(alpha = 0.7) +  # Plot actual points
+  geom_abline(aes(intercept = 1, slope = 0.5), color = "#F8766D", linetype = "solid", size = 1) +  # Country A line
+  geom_abline(aes(intercept = 3, slope = 0.5), color = "#00BA38", linetype = "solid", size = 1) +  # Country B line
+  geom_abline(aes(intercept = 5, slope = 0.5), color = "#619CFF", linetype = "solid", size = 1) +  # Country C line
+  labs(title = "Fixed Effects Regression Visualization",
+       subtitle = "Same slope (0.5) but different intercepts by country",
+       x = "Independent Variable (x)",
+       y = "Dependent Variable (y)",
+       color = "Country") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF"))
+
+```
+
+
+## Pros and Cons of the Fixed Effects Model
+
+- **Pros:**
+    - **Controls for all time-invariant omitted variables**, whether observed or unobserved. This is its most powerful feature. If you are worried that unobserved `ability` is correlated with both `education` (your X) and `wage` (your Y), FE solves this problem because `ability` is constant for an individual.
+    - It is consistent even if the unobserved effect $\alpha_i$ is correlated with the regressors $X_{it}$.
+
+- **Cons:**
+    - **Cannot estimate the effect of time-invariant variables.** The "Within" transformation wipes them out. 
+    - For example, you cannot estimate the effect of `gender` or `race` on wages using a standard FE model, because these variables do not change over time for an individual.
+    - May be less efficient than the Random Effects model if its stricter assumptions hold.
+    
+## Fixed Effects in Software
+
+- Arguably, the fixed effects model is one of the most often-used models in modern econometrics.
+
+- Standard statistical software such as `lm()` in R or `sm.OLS()` in Python can implement FE using the LSDV method, but this is often tedious. 
+
+- The `fixest` (R) and `pyfixest` (Python) package provide a very easy way to estimate FE proceding from a dataset that looks like the one on [Slide @sec-structure]. 
+
+- This is how that works in practice: 
+
+:::panel-tabset
+
+### R
+
+```{r}
+#| eval: false
+#| echo: true
+library(fixest)
+model <- feols(y ~ x1 + x2 | fe1 + fe2, data = dataset) 
+# fixed effects separated from ind. vars. by |
+summary(model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| eval: false
+import pyfixest as pf
+
+fit = pf.feols(fml="y ~ x1 + x2 | fe1 + fe2", data=data)
+# fixed effects separated from the ind. vars. by | 
+fit.summary()
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+
+xtset country year *\In order: $i$ variable, $t$ variable
+xtreg y x1 x2, fe1 fe2 *\fixed effects separated by a comma
+```
+
+:::
+
+# The Random Effects Estimator
+
+## The Random Effects (RE) Model
+
+- **Core Idea:** Instead of treating $\alpha_i$ as a fixed parameter for each individual, we treat it as a **random variable** that is part of the composite error term.
+
+:::{.callout-note title="Definition: Random Effects"}
+
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+
+Where the composite error term is:
+$$ u_{it} = \alpha_i + \epsilon_{it} $$
+
+- $\alpha_i$ is the random individual-specific error component.
+- $\epsilon_{it}$ is the idiosyncratic error.
+
+:::
+
+- The RE model is a compromise between Pooled OLS and Fixed Effects.
+
+## Random Effects Specification
+
+- The Random Effects Estimator can also be written as follows:
+
+  $$
+    y_{it} - \theta \bar{y_i}  = \beta_1( x_{1it} -\theta\overline{x_{1i}}) +\dots + \beta_k(x_{kit} - \theta\overline{x_{ki}}) + (u_{it} -\theta \bar{u}_i)
+  $$
+
+
+- $\bar{y_i} = (1/T) \sum_t y_{it}$ (the mean of $y$ for individual $i$). Similar for $\overline{x_{ji}}$.
+- $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T_i \sigma^2_\alpha + \sigma^2_\epsilon)}}$, with $\sigma^2_{.}$ denoting the variance of the $\epsilon$ and $\alpha$ terms respectively. 
+- $T_i$ is the no. of observations for individual $i.$ If balanced, $T_i = T$.
+
+
+## The Key Assumption for Random Effects
+
+- For the RE model to be valid (i.e., provide consistent estimates), we must assume:
+
+$$ E(\alpha_i | X_{it}) = 0 $$
+
+- **In English:** The unobserved individual-specific effects ($\alpha_i$) are **uncorrelated** with the explanatory variables ($X_{it}$) for all time periods.
+
+- This is a much stronger assumption than in the FE model.
+  - **Example where it might be violated:** In a wage regression, if unobserved `ability` ($\alpha_i$) is correlated with `education` ($X_{it}$), the RE assumption is violated, and the RE estimator will be biased.
+  - **Example where it might hold:** In an experiment where treatment ($X_{it}$) is randomly assigned, the assumption would hold by design.
+
+## Estimation of RE Models (GLS)
+
+- Estimating the RE model can "almost" be done using Pooled OLS. 
+  - If we run Pooled OLS on the data, assuming the RE model, the estimates of $\beta$ will be unbiased (if the key assumption holds), but they will be **inefficient**.
+
+- The composite error term $u_{it} = \alpha_i + \epsilon_{it}$ creates serial correlation within each individual. 
+  - The error for individual $i$ at time $t$ is correlated with their error at time $t+1$ because they share the same $\alpha_i$:
+  
+  $$\rho(u_{it}, u_{is}) \neq 0 \quad \text{for } t \neq s$$
+
+- **Solution:** Generalized Least Squares (GLS).
+    - GLS is a method that transforms the data to account for this specific error structure, producing efficient estimates.
+    - In practice, we use **Feasible GLS (FGLS)** because we have to estimate the components of the error correlation first. This is what statistical software does automatically.
+
+## Interpretation of RE Coefficients
+
+- The RE estimator uses a weighted average of the "within" and "between" variation in the data.
+
+:::{.callout-tip title="Interpretation of RE Estimates"}
+
+The coefficient $\beta_1$ from an RE model is interpreted as:
+
+The estimated change in $y$ for a one-unit increase in $X$, assuming the unobserved individual effects $\alpha_i$ are uncorrelated with $X$.
+
+:::
+
+- It's a more general interpretation than the FE coefficient.
+- The reliability of this interpretation hinges entirely on the key RE assumption holding true.
+
+## Pros and Cons of the Random Effects Model
+
+- **Pros:**
+    - **Can estimate the effects of time-invariant variables** (e.g., gender, race, industry), because it does not wipe them out.
+    - **More efficient** (i.e., has smaller standard errors) than the FE model, *if* the key assumption ($E(\alpha_i | X_{it}) = 0$) is met. It uses both "within" and "between" variation.
+
+- **Cons:**
+    - **Estimates are biased and inconsistent if the key assumption is violated.** This is the critical weakness. If the unobserved effects are correlated with your regressors, the RE model suffers from omitted variable bias.
+
+## Comparing FE and RE: The Hausman Test
+
+- So, which model should we use? FE or RE? The **Hausman Test** helps us decide.
+
+- **Intuition:**
+    - The FE estimator is **always consistent**, whether the unobserved effects $\alpha_i$ are correlated with $X$ or not.
+    - The RE estimator is **consistent AND efficient** if $\alpha_i$ and $X$ are uncorrelated, but **inconsistent** if they are correlated.
+
+- **The Test:** We compare the coefficient estimates from FE and RE.
+    - If the coefficients are "close" to each other, it suggests the RE assumption holds, and we should use the more efficient RE model.
+    - If the coefficients are "far apart" and statistically different, it suggests the RE assumption is violated. We must use the consistent FE model.
+
+
+## Hausman Test Statistic
+
+- The test is based on the difference between the coefficient vectors from the two models: $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$.
+
+- The Hausman statistic, $H$, is a measure of the squared distance between the two vectors of coefficients, weighted by the precision (1/variance) of this difference. 
+  - It is constructed so that large, systematic differences between the coefficients lead to a large test statistic.
+
+- Under the null hypothesis ($H_0$), the test statistic follows a Chi-squared distribution with $k$ degrees of freedom, where $k$ is the number of time-varying regressors in the model.
+
+$$ H \sim \chi^2(k) $$
+
+## $\chi^2$ Test Visualization
+
+- The $\chi^2$ distribution is one-sided.
+  - A significance level $\alpha$ gives you a critical value on the basis of which a test can be rejected. 
+  - Alternatively, the $p$-value can be calculated according to the cdf. 
+  
+```{r}
+#| echo: false
 #| fig-align: 'center'
-#| fig-height: 3
-#| fig-width: 6
+#| fig-width: 10
+#| fig-height: 4
+# Load required packages
+library(ggplot2)
 
-# Number of lags for the correlogram
-k <- 9
-n <- 100
+# Set degrees of freedom for the Chi-squared distribution
+df <- 5
 
-# Create a sequence of lags from 1 to k
-lags <- 1:k
+# Generate Chi-squared distribution data
+x <- seq(0, 20, length.out = 1000)
+chi_sq_density <- dchisq(x, df)
 
-# Simulate the autocorrelation values. 
-# A common pattern is an exponential decay, typical of an AR(1) process.
-# Let's simulate an ACF from a process with phi = 0.8.
-# The ACF for an AR(1) at lag k is phi^k.
-acf_values <- 0.8^lags
+# Create a data frame for plotting
+plot_data <- data.frame(x = x, density = chi_sq_density)
 
-# Create a data frame, which is the standard input for ggplot
-acf_df <- data.frame(
-  Lag = lags,
-  ACF = acf_values
-)
+# Generate a random critical value (greater than median for demonstration)
+set.seed(123)  # For reproducibility
+critical_value <- runif(1, qchisq(0.5, df), qchisq(0.99, df))
 
-#Confidence Bounds
-# This tests the null hypothesis that the autocorrelation at a given lag is zero.
-conf_limit <- 1.96 / sqrt(n)
+# Calculate the p-value (right-tailed test)
+p_value <- pchisq(critical_value, df, lower.tail = FALSE)
 
-# Create the plot object
-correlogram_plot <- ggplot(data = acf_df, aes(x = Lag, y = ACF)) +
-  
-  # Add the horizontal lines for the significance bounds (in blue)
-  geom_hline(yintercept = conf_limit, linetype = "dashed", color = "blue") +
-  geom_hline(yintercept = -conf_limit, linetype = "dashed", color = "blue") +
-  
-  # Add the vertical lines (segments) from y=0 to the ACF value
-  # This is the classic look of a correlogram
-  geom_segment(aes(xend = Lag, yend = 0), linewidth = 1) +
-  
-  # Add points at the top of the segments (optional but common)
-  geom_point(color = "black", size = 3) +
-  
-  # Add a solid line at y=0 for reference
-  geom_hline(yintercept = 0, color = "black") +
+# Find the y-position for the critical value label (just above the line)
+label_y <- dchisq(critical_value, df) * 1.1
 
-  # Set the x-axis to only show integer lags
-  scale_x_continuous(breaks = 1:k) +
+# Find the x-position for the p-value label (in the middle of the tail area)
+p_label_x <- critical_value + (max(x) - critical_value)/2
+p_label_y <- max(chi_sq_density)/4  # Position in the empty space
+
+# Plot the Chi-squared distribution
+p <- ggplot(plot_data, aes(x = x, y = density)) +
+  geom_line(color = "blue", linewidth = 1) +
+  geom_area(data = subset(plot_data, x > critical_value), 
+            aes(y = density), fill = "red", alpha = 0.3) +
+  geom_vline(xintercept = critical_value, color = "darkgreen", linetype = "dashed") +
   
-  # Set the y-axis limits
-  coord_cartesian(ylim = c(-1, 1)) +
+  # Critical value label positioned at the line
+  geom_text(aes(x = critical_value, y = label_y, 
+                label = paste("Critical value =", round(critical_value, 2))),
+            hjust = -0.1, vjust = 0, color = "darkgreen") +
   
-  # Add informative labels and a title
-  labs(
-    title = "Simulated Correlogram (ACF Plot)",
-    subtitle = paste("k =", k, "lags, assumed n =", n),
-    x = "Lag",
-    y = "Autocorrelation"
-  ) +
+  # p-value label positioned in the tail area
+  geom_text(aes(x = p_label_x, y = p_label_y, 
+                label = paste("p-value =", round(p_value, 4))),
+            color = "darkred") +
   
-  # Use a clean theme
+  labs(title = paste("Chi-squared Distribution with", df, "Degrees of Freedom"),
+       x = "Value", y = "Density") +
   theme_minimal()
 
-# Print the plot to the screen
-print(correlogram_plot)
+p
 ```
 
+## The Hausman Test: Application
 
-# Modeling a Single Time Series
+:::{.callout-note title="Hausman Test: Procedure"}
+- $H_0$: The Random Effects model is the appropriate model. (The difference in coefficients between FE and RE is not systematic, i.e., $E(\alpha_i | X_{it}) = 0$).
 
-## Why Model a Single Series?
+- $H_A$: The Fixed Effects model is the appropriate model. (The difference in coefficients is systematic, i.e., $E(\alpha_i | X_{it}) \neq 0$).
 
-- Before we ask how X affects Y, we must first understand the behavior of Y itself.
-- **Univariate models** describe the dynamic properties of a single time series using its own past.
-- Main uses:
-    1.  **Understanding Persistence:** How long do shocks to the economy last?
-    2.  **Forecasting:** Using the past of a series to predict its future.
+- Statistical software calculates a test statistic (Chi-squared) and a p-value.
+    - **If p-value < 0.05 (or your chosen significance level):** Reject the null hypothesis. The models are significantly different. Conclude that the RE assumption is likely violated. **Use the Fixed Effects model.**
+    - **If p-value >= 0.05:** Fail to reject the null hypothesis. You do not have evidence that the RE assumption is violated. **Use the more efficient Random Effects model.**
 
-## The White Noise Process
-
-- The Simplest Time Series: A process called "white noise" is the building block for more complex models. We often denote it as $u_t$
-
-:::{.callout-note title="Definition: White Noise Process"}
-A white noise is a time series such that:
-
-- $E(u_t) = 0$ (Zero mean)
-- $Var(u_t) = \sigma^2$ (Constant variance)
-- $Cov(u_t, u_s) = 0$ for all $t\neq s$ (No autocorrelation)
 :::
 
-- Interpretation: A white noise process is completely random and unpredictable. Its ACF will be zero for all lags $k > 0$. It is the ideal error term in a time series regression.
+# The First Difference Estimator
 
-## The Autoregressive (AR) Model: AR(1)
+## The First Difference Model
 
-- The simplest dynamic model is the first-order autoregressive, or AR(1), model:
+- There is another way to eliminate the fixed effect $\alpha_i$. Instead of de-meaning, we difference the data across time periods.
 
-$$
-  Y_t = α + \rho Y_{t-1} + u_t
-$$
+:::{.callout-note title="First Differences: Procedure"}
+**Original Model at time t:** $y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
 
-- $Y_t$: The value of Y at time t.
-- $Y_{t-1}$: The value of Y in the previous period.
-- $\rho$: The autoregressive coefficient, which measures the persistence of the series.
-- $u_t$: A white noise error term (uncorrelated with past values).
+**Model at time t-1:** $y_{i,t-1} = \alpha_i + \beta_1 X_{i,t-1} + \epsilon_{i,t-1}$
 
-## Visualization AR(1) Process
+**Subtracting the two:**
+  $$
+    (y_{it} - y_{i,t-1}) = \beta_1 (X_{it} - X_{i,t-1}) + (\epsilon_{it} - \epsilon_{i,t-1})
+  $$
+$$\Delta y_{it} = \beta_1 \Delta X_{it} + \Delta \epsilon_{it}$$
+
+The fixed effect $\alpha_i$ is eliminated. We can estimate $\beta_1$ by running OLS on the differenced data.
+
+:::
+
+
+
+## FD vs. FE: The Case of Random Walk Errors
+
+- The standard Fixed Effects (FE) estimator is the most efficient linear unbiased estimator when the idiosyncratic errors, $\epsilon_{it}$, are serially uncorrelated.
+  - But what happens if they are not?
+
+:::{.callout-tip title="Panel Data Model with a Random Walk Error"}
+- Consider the case where the error term follows a **random walk**: 
+
+$$ y_{it} = \beta_1 X_{it} + \alpha_i + \epsilon_{it} $$
+
+- Let's assume the error term $\epsilon_{it}$ is not i.i.d., but instead follows a random walk process. This means today's error is equal to yesterday's error plus a new, well-behaved shock, $\nu_{it}$.
+
+$$ \epsilon_{it} = \epsilon_{i,t-1} + \nu_{it} $$
+
+- Here, $\nu_{it}$ is a "white noise" error, meaning it is not serially correlated. The random walk structure means that $\epsilon_{it}$ is highly serially correlated.
+:::
+
+## Impact on the FE Estimator
+
+- The FE estimator transforms the model by de-meaning the data.
+- The resulting error term is:
+
+  $$
+    \tilde{\epsilon}_{it} = \epsilon_{it} - \bar{\epsilon}_i
+  $$
+
+- If the original error $\epsilon_{it}$ has a random walk structure, this transformed error $\tilde{\epsilon}_{it}$ will **still be serially correlated**. 
+- While the FE estimator remains consistent, it is no longer efficient, and standard errors will be biased unless we use robust (clustered) standard errors.
+
+## Impact on the FD Estimator
+
+- The First Differences (FD) estimator transforms the model by differencing the data.
+- The new error term is the difference of the original errors:
+
+  $$
+    \Delta \epsilon_{it} = \epsilon_{it} - \epsilon_{i,t-1}
+  $$
+
+- Now, let's substitute our random walk assumption into this equation:
+
+  $$
+    \Delta \epsilon_{it} = (\epsilon_{i,t-1} + \nu_{it}) - \epsilon_{i,t-1}
+  $$
+
+- This simplifies perfectly to $\Delta \epsilon_{it} = \nu_{it}$. 
+
+## Conclusion 
+
+- The FD transformation has converted the highly serially correlated random walk error ($\epsilon_{it}$) into a non-serially correlated error ($\nu_{it}$).
+
+- Because OLS on the transformed data is most efficient when the errors are not serially correlated, the **FD estimator will be more efficient than the FE estimator** under the specific condition of random walk errors. 
+  - This makes FD a powerful alternative, especially for panels with a long time dimension (large T) where such error dynamics are more plausible.
+
+- **Comparison with FE:**
+  - If $T=2$, FD and FE give identical results.
+  - For $T>2$, they are different. FE is more efficient if the original errors ($\epsilon_{it}$) are not serially correlated.
+  - FD can be better if the errors follow a random walk. FD is a popular choice for robustness checks.
+
+## Practical Considerations & Summary
+
+- In practice, researchers opt almost always for the FE model.
+  - However, if you want to be robust, you can follow this workflow: 
+
+:::{.callout-tip title="Workflow for Panel Models"}
+
+1.  Start by considering your research question. Are you interested in time-invariant variables? If yes, FE is not an option for those variables.
+2.  Run both FE and RE models.
+3.  Perform the Hausman test.
+4.  **If Hausman test rejects H0 (p < 0.05):** Use FE. The correlation between unobserved effects and your regressors is a significant problem that FE solves.
+5.  **If Hausman test fails to reject H0 (p >= 0.05):** You can justify using the more efficient Random Effects model.
+6.  Consider Pooled OLS only if you have a strong theoretical reason to believe there is no unobserved heterogeneity (very rare).
+7.  Consider the First Differences model as a robustness check.
+
+:::
+
+# Event Studies
+
+## What is an Event Study?
+
+- A special case of the panel data model is an _event study_
+
+- To measure the economic impact of a specific, identifiable **event** on an outcome of interest.
+
+:::{.callout-tip title="Example: Event Studies"}
+
+- **The "Event" could be:**
+  - A company-specific event: Merger announcement, CEO change, earnings surprise.
+  - A policy change: A new tax law, a change in minimum wage.
+  - A natural event: A major hurricane, a pandemic.
+
+- **The "Outcome" is often:**
+  - A firm's stock price (most common in finance).
+  - A firm's accounting performance (sales, profits).
+  - A macroeconomic variable (unemployment, inflation).
+
+:::
+
+- The central challenge is to determine what the outcome *would have been* if the event had not occurred.
+
+## Panel Event Study Model With Controls
+
+- The canonical event study model uses firm and time fixed effects and replaces the single interaction term with a series of dummies for time *relative to the event*.
+
+:::{.callout-note title="Definition: Panel Event Study Model (with Control Subjects)"}
+$$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it} $$
+
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all time-invariant differences between firms.
+-   $\lambda_t$: **Time Fixed Effects**. These absorb all shocks or trends common to all firms in a given year `t`. 
+-   $D_{it}^k$: A dummy variable equal to 1 if firm `i` in year `t` is `k` periods away from its event date. `k` is the **relative time** or **event time**.
+-   **$\delta_k$ are the key coefficients.** They measure the average change in the outcome for treated firms `k` periods away from the event, relative to the control group.
+
+:::
+
+## Example Dataset
+
+- A dataset for an event study would look as follows: 
+  - *Note: For simplicity, only dummy columns for $k = -2, -1, 0, 1$ are included - a full model would include dummies for all relevant pre/post periods (e.g., $k \leq 3$ and $k \geq 2$).*
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------: | :---------: | :---------: |
+| 1 (Control)   |    2021    |         NA         |              NA               |       2.0        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2022    |         NA         |              NA               |       2.1        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2023    |         NA         |              NA               |       2.2        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2024    |         NA         |              NA               |       2.3        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2025    |         NA         |              NA               |       2.4        |      0       |      0       |      0      |      0      |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      **1**   |      0       |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |      **1**   |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |      0       |     **1**   |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |      0       |      0      |     **1**   |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      **1**   |      0       |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |      **1**   |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |      0       |     **1**   |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |      0       |      0      |     **1**   |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |      0       |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      **1**   |      0       |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |      **1**   |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |      0       |     **1**   |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |      0       |      0      |     **1**   |
+
+## Interpretation of the Results
+
+- After running the regression, you will get a set of coefficients $\delta_k$ which are typically plotted on a graph:
+- **Testing Pre-Trends (`k < 0`):** The coefficients $\delta_{-K}, \dots, \delta_{-2}$ test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.^[The parameter $\delta_{-1}$ serves as the reference category, the "normalized difference".]
+- **The Effect at Impact (`k = 0`):** $\delta_0$ shows the immediate effect of the treatment in the event period itself.
+- **Dynamic Post-Treatment Effects (`k > 0`):** $\delta_1, \delta_2, \dots, \delta_L$ show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+
+## Event Study Visualization
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+
+# --- 1. Create a Sample Results Data Frame ---
+# In a real analysis, this data frame would be the output of your regression model
+# (e.g., from a model run with the 'fixest' or 'lfe' package).
+# The coefficients represent the difference-in-differences estimates (Treated - Control).
+
+results_df <- data.frame(
+  event_time = -5:5,
+  # We manually create plausible estimates for demonstration purposes
+  estimate = c(
+    0.05, -0.02, 0.08, 0.01, # Pre-event coeffs, should be near zero (parallel trends)
+    0.00,                     # The reference period (k=-1), coefficient is 0
+    1.20,                     # Sharp impact on event day
+    1.55,                     # Effect increases
+    1.30,                     # Effect begins to decay
+    0.90,
+    0.65,
+    0.40
+  ),
+  # Standard errors are typically estimated by the regression model
+  std_error = c(
+    0.18, 0.15, 0.16, 0.14,
+    0.00,
+    0.20,
+    0.22,
+    0.21,
+    0.23,
+    0.25,
+    0.28
+  )
+)
+
+# Calculate 95% confidence intervals
+# 1.96 is the z-score for a 95% CI
+z_score <- 1.96
+results_df <- results_df %>%
+  mutate(
+    conf_low = estimate - z_score * std_error,
+    conf_high = estimate + z_score * std_error
+  )
+
+# Set the reference period (k=-1) confidence interval to zero as well
+results_df[results_df$event_time == -1, c("conf_low", "conf_high")] <- 0
+
+# Print the final data frame to be plotted
+#print("Data frame with estimated coefficients and confidence intervals:")
+#print(results_df)
+
+
+# --- 2. Plot the Results using ggplot2 ---
+
+event_study_plot <- ggplot(
+  data = results_df, 
+  aes(x = event_time, y = estimate)
+) +
+  # Add a horizontal line at y=0 to represent no effect
+  geom_hline(
+    yintercept = 0, 
+    linetype = "dashed", 
+    color = "red",
+    linewidth = 0.8
+  ) +
+  # Add a vertical line to separate pre- and post-treatment periods
+  geom_vline(
+    xintercept = -0.5, 
+    linetype = "dashed", 
+    color = "gray40"
+  ) +
+  # Add the confidence interval as a shaded ribbon
+  geom_ribbon(
+    aes(ymin = conf_low, ymax = conf_high),
+    alpha = 0.2, # Transparency of the ribbon
+    fill = "steelblue"
+  ) +
+  # Add a line connecting the point estimates
+  geom_line(
+    color = "steelblue",
+    linewidth = 1
+  ) +
+  # Add points for the estimates
+  geom_point(
+    color = "steelblue",
+    size = 3
+  ) +
+  # --- Customize labels and scales ---
+  labs(
+    title = "Event Study: Effect of Treatment with a Control Group",
+    subtitle = "The coefficient represents the difference-in-differences estimate (Treated vs. Control)",
+    x = "Event Time (k, relative to treatment)",
+    y = "Estimated Coefficient (δ_k)"
+  ) +
+  # Ensure all event time periods are shown on the x-axis
+  scale_x_continuous(breaks = seq(min(results_df$event_time), max(results_df$event_time), by = 1)) +
+  # Use a clean, publication-ready theme
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 12),
+    panel.grid.minor = element_blank()
+  )
+
+# Display the plot
+event_study_plot
+```
+
+## What Happens Without a Control Group?
+
+- Imagine you removed the control firm (Firm 1) from the dataset. 
+  - Now, in the year 2023, the only firms you have are Firm 2 (which just got treated, k=0) and Firms 3 & 4 (which are pre-treatment, k=-1).
+
+- The regression would see that Firm 2's outcome went up in 2023. But it has no way to know:
+  - Was it because of the treatment ($\delta_0$)?
+  - Or was 2023 just a great year for everyone ($\lambda_{2023}$)?
+
+- Without the control group, the effect of being in the year 2023 ($\lambda_{2023}$) is perfectly collinear with the effect of being treated in 2023 ($\delta_0$).
+- The model cannot distinguish between them, and the regression will fail or produce meaningless results.
+
+
+# Event Studies Without Control Subjects
+
+## Event Study Without Control Subjects
+
+- There are, however, also event studies that do not need control firms. 
+
+- These tend to make use of an **estimation window:** a "clean" period **before** the event.
+
+- This is used to establish a baseline or "normal" behavior for the outcome variable. Typically, ~120 to ~250 days before the event window.
+
+- The period immediately surrounding (or after) the event date where we expect to see an impact. For example, from 5 days before to 5 days after the announcement ([-5, +5]).
+
+## Specification 
+
+:::{.callout-note title="Definition: Event Study (Without Control Group)"}
+
+- The model you can estimate with only treated units is:
+
+  $$
+    y_{it} = \alpha_i + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it}
+  $$
+
+-   $y_{it}$: The outcome for firm `i` at time `t`.
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all stable, time-invariant differences between the treated firms.
+-   $D_{it}^k$: A dummy variable = 1 if firm `i` in year `t` is `k` periods away from its event date.
+-   **$\delta_k$ are the key coefficients.** They measure the average outcome for a firm `k` periods from its event, *relative to the outcome in the omitted baseline period* (usually `k=-1`).
+
+- There are no $\lambda_t$ (time fixed effects). You cannot include them. 
+  - If you did, the model could not be estimated because your event-time dummies ($D^k$) would be perfectly predicted by the combination of firm and time fixed effects.
+
+:::
+
+
+## Example Required Dataset (No Control Group)
+
+- Let's use the same staggered adoption scenario as before, but we'll **remove the control firm (Firm 1)**.
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` (Baseline) | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------------------: | :---------: | :---------: |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      1       |            0             |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |            1             |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |            0             |      1      |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |            0             |      0      |      1      |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      1       |            0             |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |            1             |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |            0             |      1      |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |            0             |      0      |      1      |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |            0             |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      1       |            0             |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |            1             |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |            0             |      1      |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |            0             |      0      |      1      |
+
+## Crucial Caveat: The Problem with This Approach
+
+- Estimating this model means your results for $\delta_k$ are highly susceptible to bias from confounding factors.
+
+- **The coefficient $\delta_k$ now measures the sum of two things:**
+  - The true causal effect of the treatment at relative time `k`.
+  - **Any and all other unobserved shocks or trends that happened to occur at relative time `k`**.
+
+:::{.callout-tip title="Example: Confounding Factor"}
+Let's say a major economic boom started in 2023.
+
+- For Firm 2, its outcome `y` jumps in 2023. The model will attribute this entire jump to the treatment ($\delta_0$) because it has no control group to learn that *all* firms (even untreated ones) would have seen a jump in 2023.
+- Your estimate of the treatment effect will be severely biased upwards.
+:::
+
+## The Core Idea: Abnormal Returns
+
+- An event study with control firms works by isolating the "abnormal" part of an outcome's movement.
+
+:::{.callout-note title="Definition: Abnormal Return"}
+
+$$ \text{Abnormal Return}_{it} = \text{Actual Return}_{it} - \text{Normal Return}_{it} $$
+
+- **Actual Return ($R_{it}$):** The observed outcome for firm $i$ on day $t$. This is the raw data.
+- **Normal Return ($E[R_{it}]$):** The expected return for firm $i$ on day $t$, **conditional on the event not happening**. This is our counterfactual.
+:::
+
+- We need a model to estimate the Normal Return.
+
+## Estimating "Normal" Returns
+
+- The Normal Return is estimated using data from the **estimation window**.
+
+:::{.callout-tip title="Examples of Normal Return Models"}
+**Constant Mean Return Model:**  Assumes the normal return is just the firm's average return during the estimation period: $E[R_{it}] = \bar{R}_i$
+
+**Market Model:** Assumes the firm's return is related to the overall market return (e.g., S&P 500).
+
+- We run an OLS regression (one for each firm) using data **only from the estimation window**: $R_{it} = \alpha_i + \beta_i R_{mt} + e_{it}$
+- Here, $R_{mt}$ is the return on the market index. We get estimates for $\hat{\alpha}_i$ and $\hat{\beta}_i$.
+- The Normal Return for any day $t$ in the **event window** is then predicted as: $\widehat{E[R_{it}]} = \hat{\alpha}_i + \hat{\beta}_i R_{mt}$. 
+
+:::
+
+## Calculating Abnormal Returns (AR)
+
+- Once we have our estimate of the Normal Return, we can calculate the Abnormal Return (AR) for each firm $i$ on each day $t$ in the **event window**.
+
+$$ AR_{it} = R_{it} - (\hat{\alpha}_i + \hat{\beta}_i R_{mt}) $$
+
+- $AR_{it} > 0$ suggests positive news or impact.
+- $AR_{it} < 0$ suggests negative news or impact.
+- $AR_{it} \approx 0$ suggests no impact.
+
+## Aggregating Abnormal Returns (CAR)
+
+- We are usually interested in the overall effect, not just one firm on one day. We are interested in two things:
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**1. Average Abnormal Return (AAR):** Average the abnormal returns across all $N$ firms for a single day $t$ in the event window.
+    $$
+      AAR_t = \frac{1}{N} \sum_{i=1}^{N} AR_{it}
+    $$
+    
+  - This gives us the average effect on a specific day relative to the event (e.g., the effect on day t=+1).
+  
+:::
+
+## Aggregating Abnormal Returns (CAR) (Cont.)
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**2. Cumulative Average Abnormal Return (CAAR or CAR):** Sum the AARs over a period of time within the event window (from $t_1$ to $t_2$).
+  $$
+    CAR(t_1, t_2) = \sum_{t=t_1}^{t_2} AAR_t
+  $$
+    
+  - This tells us the total cumulative impact of the event over a specific window. For example, $CAR(-1, +1)$ measures the total effect from the day before to the day after the event.
+
+:::
+  
+## Visualizing Event Study Results
+
+- The standard way to present results is a plot of the Average Abnormal Return (AAR) over the event window.
 
 ```{python}
 #| echo: false
 #| fig-align: 'center'
 #| fig-width: 8
-import polars as pl
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+from event_study import *
+# 1. Simulate the data using the market model
+simulated_data = simulate_finance_event_data()
 
-T = 100      # Number of time periods to simulate
-rho = 0.9    # Autoregressive parameter (must be < 1 for stationarity)
-c = 2        # A constant/intercept term
-sigma = 1.0  # Standard deviation of the white noise error term
+# 2. Estimate the model using the standard AR/AAR finance methodology
+estimation_results = estimate_abnormal_returns(simulated_data)
 
-# Generate all the random shocks at once using NumPy
-np.random.seed(42) # for reproducibility
-epsilon = np.random.normal(loc=0, scale=sigma, size=T)
+# 3. Plot the results
+plot_event_study(estimation_results)
 
-# Initialize a Python list to store our time series values
-y_values = [0] * T
-
-# Set the initial value. A good choice is the unconditional mean of the process
-# E[Y] = c / (1 - rho), to start the series near its long-run equilibrium.
-y_values[0] = c / (1 - rho)
-
-# Loop to generate the AR(1) series recursively
-for t in range(1, T):
-    # Apply the AR(1) formula
-    y_values[t] = c + rho * y_values[t-1] + epsilon[t]
-
-# Create a DataFrame with a time index and the simulated series
-df = pl.DataFrame({
-    'time': range(T),
-    'ar_process': y_values
-})
-
-# Set the style and size for the plot
-sns.set_theme(style="whitegrid")
-plt.figure(figsize=(14, 7))
-
-# Create the line plot
-lineplot = sns.lineplot(
-    data=df,
-    x='time',
-    y='ar_process',
-    label=f'AR(1) Process (ρ={rho})'
-)
-
-# Add a horizontal line for the theoretical mean of the process
-mean_value = c / (1 - rho)
-plt.axhline(
-    mean_value,
-    color='red',
-    linestyle='--',
-    label=f'Theoretical Mean: {mean_value:.2f}'
-)
-
-# Add titles and labels for clarity
-plt.title('Simulation of a Stationary AR(1) Process', fontsize=16)
-plt.xlabel('Time Period', fontsize=12)
-plt.ylabel('Value', fontsize=12)
-plt.legend()
-
-# Show the plot
-plt.show()
 ```
 
-
-## Stationarity of an AR(1) Process
-
-- For the AR(1) model $Y_t = \alpha + \rho Y_{t-1} + u_t$:
-  - If $|\rho| < 1$:, the series is **stationary**. Any shock ($u_t$) will eventually die out.
-  - If $|\rho|=1$, the series is **non-stationary** and is called a **random walk**. Shocks have a permanent effect.
-  - If $|\rho|>1$, the series is **explosive** (this is rare in economics).
-
-- **Speed of Adjustment:** A value of $\rho$ close to 0 suggests that the effect of a past value dies out quickly.
-- **Persistence:** A value of $\rho$ close to 1 indicates that a shock to the system will persist for a long time. The series will return to its mean slowly.
-
-## The Random Walk Model
-
-- A special case of the AR(1) model where $\rho=1$:
-
-  $$
-    Y_t = Y_{t-1} + u_t
-  $$
-
-- The best forecast for tomorrow's value is today's value.
-- **Permanent Shocks:** The impact of a shock $u_t$ is permanent; it is carried forward in all future periods.
-  - **Examples:** The prices of financial assets are often modeled as random walks.
-
-## Visualization Random Walk
-
-```{python}
-#| echo: false
-#| fig-align: 'center'
-#| fig-width: 8
-import polars as pl
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-T = 500      # Number of time periods to simulate
-rho = 1    # Autoregressive parameter (must be < 1 for stationarity)
-c = 2        # A constant/intercept term
-sigma = 5.0  # Standard deviation of the white noise error term
-
-# Generate all the random shocks at once using NumPy
-np.random.seed(42) # for reproducibility
-epsilon = np.random.normal(loc=0, scale=sigma, size=T)
-
-# Initialize a Python list to store our time series values
-y_values = [0] * T
-
-# Set the initial value. A good choice is the unconditional mean of the process
-# E[Y] = c / (1 - rho), to start the series near its long-run equilibrium.
-y_values[0] = 0
-
-# Loop to generate the AR(1) series recursively
-for t in range(1, T):
-    # Apply the AR(1) formula
-    y_values[t] = c + rho * y_values[t-1] + epsilon[t]
-
-# Create a DataFrame with a time index and the simulated series
-df = pl.DataFrame({
-    'time': range(T),
-    'ar_process': y_values
-}, strict=False)
-
-# Set the style and size for the plot
-sns.set_theme(style="whitegrid")
-plt.figure(figsize=(14, 7))
-
-# Create the line plot
-lineplot = sns.lineplot(
-    data=df,
-    x='time',
-    y='ar_process',
-    label='Random Walk'
-)
-
-# Add titles and labels for clarity
-plt.title('Simulation of a Random Walk', fontsize=16)
-plt.xlabel('Time Period', fontsize=12)
-plt.ylabel('Value', fontsize=12)
-plt.legend()
-
-# Show the plot
-plt.show()
-```
-
-## Higher-Order AR(p) Models
-
-- We can include more lags of the dependent variable. An $AR(p)$ model includes $p$ lags:
-
-$$
-Y_t = \alpha + \rho_1 Y_{t-1} + \rho_2 Y_{t-2} + \dots + \rho_p Y_{t-p} + u_t
-$$
-
-- **Choosing p:** The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
-
-## The Moving Average Model
-
-- In the MA model, the current value is a function of the current and past **random shocks**.
-
-  $$
-    Y_t = \mu + u_t + \theta u_{t-1}
-  $$
-
-- $\mu$: The mean of the series.
-- $\theta$: The moving average coefficient.
-- The MA(1) process has a **finite memory**. A shock $u_{t-1}$ affects $Y_{t-1}$ and $Y_t$, but has no direct effect on $Y_{t+1}$. 
-
-## Estimation and Interpretation of MA Coefficients ($\theta$)
-
-- As you may have noticed, there are no independent variables in an MA model. 
-  - Usually, what we do is assume $u_0=0$, take a guess for $\mu$ and $\theta$, and solve for $u_t$: $u_t = Y_t - \mu - \theta u_{t-1}$
-  - If the true shocks came from a Normal distribution $N(0, \sigma^2_u)$, how likely was it to get this specific sequence of inferred shocks? The joint probability of observing this sequence is called the Likelihood.
-  - We try to find the most likely $\mu$ and $\theta$ that could have generated the actual data.[^1]
-  
-- Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. $Y_t$ is affected by $u_t$ and $u_{t-1}$, but $Y_{t+1}$ will not be affected by $u_t$.
-- The coefficient $\theta$ determines the extent to which a past shock affects the current observation.
-
-[^1]: More about this in Lecture 6. 
-
-## The Autoregressive Moving Average (ARMA) Model
-
-- We can combine the features of autoregressive and moving average models to create an ARMA(p,q) model.
-- For example, an ARMA(1,1) Model: $Y_t = \alpha + \rho Y_{t-1} + u_t + \theta u_{t-1}$
-- ARMA models are usually very flexible and can capture a wide range of time series dynamics. This is how they are implemented in Python/R/Stata:
-
-:::{.panel-tabset}
-
-### R
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-# Generate sample data
-set.seed(123)
-data <- rnorm(100)
-
-# Fit ARMA(1,1) model
-arma_model <- arima(data, order = c(1, 0, 1))  # (p, d, q) where d=0 for ARMA
-
-# Print summary
-summary(arma_model)
-```
-
-### Python
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-import numpy as np
-import statsmodels.api as sm
-
-# Generate sample data
-np.random.seed(123)
-data = np.random.randn(100)
-
-# Fit ARMA(1,1) model
-arma_model = sm.tsa.ARIMA(data, order=(1,0,1))
-arma_results = arma_model.fit()
-
-# Print summary
-print(arma_results.summary())
-```
-
-### Stata
-
-```{stata}
-#| eval: false
-#| code-fold: true
-
-* Generate sample data  
-set obs 100  
-set seed 123  
-gen y = rnormal()  
-
-* Estimate ARMA(1,1)  
-arima y, ar(1) ma(1)  
-
-* Display results  
-estimates table  
-```
-
-
-:::
-
-# Relationship Between Time Series
-
-## Linear Model in Time Series
-
-- The starting point for a relationship between time series is often the linear model. 
-
-- The model form is identical to its cross-sectional counterpart:
-
-  $$
-    Y_t = \alpha + \beta X_t + \epsilon_t
-  $$
-
-- This model posits a contemporaneous relationship between X and Y.
-- Question: Can we estimate this with OLS and trust the results?
-- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of finite variance:
-  
-  $$
-    \text{Var}(X_t) = \sigma^2
-  $$
-    
-## When does OLS work?
-
-- If $X$ is stationary, e.g. $X \sim AR(1)$ with $|\rho|<1$, this is a valid approach. 
-
-:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
-Let $X_t = \rho X_{t-1} + u_t$. Using the definition for $X_{t-1}$, we find that $X_t = \rho (\rho X_{t-2} + u_t$). 
-
-After recursively substituting, past values of $X_t$, we can express $X_t$ as:
-
-$$
-X_t = \rho^k X_{t-k} + \sum_{j=0}^{k-1} u_{t-j}
-$$
-As $k \rightarrow \infty$, we end up with $X_t = \sum_{j=0}^{\infty} \rho^j u_j$. 
-
-Taking the expected value of this, we immediately see that $E[X_t]=0$.
-
-:::
-
-## When does OLS work? (Cont.)
-
-- As for the variance:
-
-:::{style="font-size: 0.7em;"}
-
-:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
-
-  $$
-    \begin{align}
-    \text{Var}(X_t) &= \text{Var}(\sum_{j=0}^\infty \rho^j u_{t-j}) \\
-    &= \sum_{j=0}^\infty \text{Var}(\rho^j u_{t-j}) \quad \text{ Uncorrelated $u_t$} \\
-    &= \sum_{j=0}^\infty \rho^{2j} \text{Var}(u_{t-j}) \quad \text{Constant term in Var} \\
-    &= \sigma^2_u \sum_{j=0}^\infty \rho^{2j} \quad \quad \text{Constant variance of $u_t$} \\
-    \end{align}
-  $$
-
-Since $\sum_{j=0}^\infty \rho^{2j}=\frac{1}{1-\rho^2}$ if $|\rho|<1$, the variance is equal to $\frac{\sigma^2_u}{1-\rho^2}$.  
-
-:::
-
-:::
-
-## The Problem of Spurious Regression
-
-- OLS might also work in other cases where $X_t$ is stationary, or when $X_t$ and $Y_t$ are cointegrated.[^2]
-- However, in most situations, OLS may give a **deceptive relationship:**
-  - A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.
-- This often happens when both variables have a strong trend (are non-stationary), and especially, when $X$ is non-stationary. 
-  - The trend can be deterministic (predictable) or stochastic (random).
-
-[^2]: This means roughly that $X_t$ and $Y_t$ follow a common trend, but it is outside the scope of this lecture. 
-
-## Spurious Regression is Non-Stationarity
-
-- Let's look at the most common non-stationary process: the random walk.
-
-  $$
-    X_t = X_{t-1} + u_t
-  $$
-
-:::{.callout-note title="Theorem: Variance of a Random Walk"}
-Suppose $X_0=0$. Let us find the variance of $X_t$. 
-
-We know that $X_1 = u_i$. $X_2 = X_1 + u_2 = u_1 + u_2$, etc. 
-
-Hence, $X_t = \sum u_i$, and $Var(X_t) = Var(u_1 + u_2 + \dots + u_t)$. 
-
-Since the $u_i$ are uncorrelated (white noise), the variance of the sum is the sum of the variances:
-  $$
-    \begin{align}
-    Var(X_t) &= \sigma^2_u + \dots + \sigma^2_u \text{ ( t times)} \\
-            &= t \times \sigma^2_u
-    \end{align}
-  $$
-
-The variance depends on time $t$ and grows without bound. This is a clear violation of stationarity.
-
-:::
-
-## Failure of Reliable Estimation
-
-- Imagine two independent and unrelated random walks, $Y_t = Y_{t-1} + u_t$ and $X_t = X_{t-1} + v_t$, where $u_t$ and $v_t$ are independent white noise processes.
-
-- By construction, the true $\beta$ in a regression of $Y_t$ on $X_t$ is zero.
-
-- When we run $Y_t= \alpha + \beta X_t + u_t$,  we know $Var(Y_t)=Var(X_t)=t\times \sigma^2_u$. 
-  - $\hat{\beta}=\frac{\text{Cov}(X,Y)}{\text{Var}(X)}$. 
-
-- Since both $Y_t$ and $X_t$ are non-stationary, both the numerator and the denominator converge to a random variable, not to a particular number. 
-  - Hence, the OLS coefficient is **inconsistent**. 
-
-
-## Consequences of Spurious Regression
-
-- Since the OLS estimator converges to a random variable with variance tending to infinity, if you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
-  - You will likely find a **high R-squared**.
-  - The **t-statistics** for the estimated coefficients will likely be **significant**.
-  - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
-
-## Detecting Spurious Regression
-
-- **Rejection of the BG Test:** A key indicator of spurious regression is a rejection of the Breusch-Godfrey test.
-
-:::{.callout-note title="Definition: Breusch-Godfrey Test"}
-The BG test assesses whether the error term, $\epsilon_t$, follows an AR(p) process. You, the researcher, choose the number of lags (p) to test for. The assumed model for the error is:
-$$\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + \dots + \rho_p \epsilon_{t-p} + v_t,$$
-
-where $v_t$ is a white noise term. $H_0: \rho_1, \dots, \rho_p=0$, and $H_A$ is that at least one $\rho$ coefficient is non-zero: there is serial correlation up to some order $p$. 
-:::
-
-## Breusch-Godfrey Test
-
-:::{.callout-note title="Breusch-Godfrey Test: Procedure"}
-The BG test is performed in three simple steps:
-
-- Run the Main Regression: First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals,
-- Run an Auxiliary Regression. Run a new regression where the residual $e_t$ is the dependent variable. The independent variables are:
-  - All the original regressors from the main model. 
-  - The lagged residuals up to order $p$: $e_{t-1}, \dots, e_{t-p}$. 
-- Obtain the R-squared: Calculate the R-squared from this auxiliary regression. 
-
----
-
-- The Breusch-Godfrey test uses a Lagrange Multiplier (LM) statistic: $LM = T \times R^2_{aux}$, where $T$ is the number of observations used in the auxiliary regression and $R^2_{aux}$ is the $R^2$ from the auxiliary regression in Step 2.
-
-- Under the null hypothesis of no serial correlation, the LM statistic follows a $\chi^2$ distribution with p degrees of freedom (where p is the number of lagged residuals included).
-
-- If $LM > \chi^2_{crit}$, you reject the null hypothesis. You conclude there is significant evidence of serial correlation.
-  
-:::
-
-## Example BG Test
-
-- We demonstrate the BG test using autocorrelated errors: $Y_t = \alpha + \beta X_t + u_t$ where $u_t = \rho u_{t-1} + e_t$, with $e_t$ being white noise. 
-
-:::{.panel-tabset .hey}
-
-### R
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-library(lmtest)
-# Step 1: Simulate Data with Serially Correlated Errors
-
-# For reproducibility of the random numbers
-set.seed(42) 
-
-# Define simulation parameters
-n <- 200                 # Sample size
-alpha <- 5               # True intercept
-beta <- 2                # True slope for X
-
-# *** Key step: Define the autocorrelation structure for the errors ***
-# We will create an error term u_t = rho * u_{t-1} + e_t
-# where e_t is white noise.
-rho <- 0.8               # High positive autocorrelation coefficient
-sigma_e <- 1.5           # Standard deviation of the white noise component
-
-# Generate the independent variable X
-X <- rnorm(n, mean = 20, sd = 10)
-
-# Generate the serially correlated error term 'u'
-u <- numeric(n)
-e <- rnorm(n, mean = 0, sd = sigma_e) # White noise component
-
-# The first error term has no preceding term
-u[1] <- e[1] 
-
-# Generate the rest of the errors using the AR(1) formula
-for (t in 2:n) {
-  u[t] <- rho * u[t-1] + e[t]
-}
-
-# Generate the dependent variable Y using the regression equation
-# Y_t = alpha + beta*X_t + u_t
-Y <- alpha + beta * X + u
-
-# Combine into a data frame for easy use
-sim_data <- data.frame(Y = Y, X = X)
-
-# Step 2: Estimate the OLS Regression Model
-
-# We estimate the model Y ~ X, pretending we don't know about the
-# autocorrelation in the errors.
-ols_model <- lm(Y ~ X, data = sim_data)
-
-# Print the summary. The coefficients will likely be close to the true
-# values, but the standard errors and p-values are unreliable.
-print(summary(ols_model))
-
-
-#--------------------------------------------------------------------
-# Step 3: Conduct the Breusch-Godfrey Test
-#--------------------------------------------------------------------
-
-# The bgtest() function from the 'lmtest' package performs the test.
-# We need to specify the model and the order of autocorrelation to test for.
-# Since we created an AR(1) process, we will test for order 1.
-bg_test_order1 <- bgtest(ols_model, order = 1)
-print(bg_test_order1)
-
-# You can also test for higher orders. For example, testing up to order 3.
-# This would test the joint null hypothesis that the coefficients on the first
-# three lags of the residuals are all zero in the auxiliary regression.
-bg_test_order3 <- bgtest(ols_model, order = 3)
-print(bg_test_order3)
-```
-
-### Python
-
-```{python}
-#| echo: true
-#| collapse: true
-#| code-fold: true
-
-import numpy as np
-import pandas as pd
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-from statsmodels.stats.diagnostic import acorr_breusch_godfrey
-
-# Step 1: Simulate Data with Serially Correlated Errors
-
-# For reproducibility of the random numbers
-np.random.seed(42)
-
-# Define simulation parameters
-n = 200                 # Sample size
-alpha = 5               # True intercept
-beta = 2                # True slope for X
-
-# *** Key step: Define the autocorrelation structure for the errors ***
-# We will create an error term u_t = rho * u_{t-1} + e_t
-# where e_t is white noise.
-rho = 0.8               # High positive autocorrelation coefficient
-sigma_e = 1.5           # Standard deviation of the white noise component
-
-# Generate the independent variable X
-# In numpy, mean is 'loc' and standard deviation is 'scale'
-X = np.random.normal(loc=20, scale=10, size=n)
-
-# Generate the serially correlated error term 'u'
-# Initialize arrays for the white noise and the final error term
-e = np.random.normal(loc=0, scale=sigma_e, size=n)
-u = np.zeros(n)
-
-# The first error term has no preceding term (Python uses 0-based indexing)
-u[0] = e[0]
-
-# Generate the rest of the errors using the AR(1) formula
-for t in range(1, n):
-  u[t] = rho * u[t-1] + e[t]
-
-# Generate the dependent variable Y using the regression equation
-# Y_t = alpha + beta*X_t + u_t
-Y = alpha + beta * X + u
-
-# Combine into a data frame for easy use
-sim_data = pd.DataFrame({'Y': Y, 'X': X})
-
-# Step 2: Estimate the OLS Regression Model
-
-# We estimate the model Y ~ X, pretending we don't know about the
-# autocorrelation in the errors.
-# The formula syntax in statsmodels is identical to R's.
-# We must call .fit() to perform the estimation.
-ols_model = smf.ols('Y ~ X', data=sim_data).fit()
-
-# Print the summary. The coefficients will likely be close to the true
-# values, but the standard errors and p-values are unreliable.
-print(ols_model.summary())
-
-# Step 3: Conduct the Breusch-Godfrey Test
-
-# The acorr_breusch_godfrey() function performs the test.
-# It takes the fitted model results and the order of autocorrelation (nlags).
-# It returns (lm_statistic, lm_pvalue, f_statistic, f_pvalue)
-
-# Test for order 1, as we created an AR(1) process.
-bg_test_order1 = acorr_breusch_godfrey(ols_model, nlags=1)
-
-print("\n" + "="*50)
-print("Breusch-Godfrey Test (Order 1)")
-print(f"  LM Statistic: {bg_test_order1[0]:.4f}")
-print(f"  p-value (LM): {bg_test_order1[1]:.4f}")
-# A very low p-value indicates rejection of the null hypothesis (no serial correlation).
-
-# You can also test for higher orders. For example, testing up to order 3.
-# This tests the joint null hypothesis that the coefficients on the first
-# three lags of the residuals are all zero in the auxiliary regression.
-bg_test_order3 = acorr_breusch_godfrey(ols_model, nlags=3)
-
-print("\n" + "="*50)
-print("Breusch-Godfrey Test (Order 3)")
-print(f"  LM Statistic: {bg_test_order3[0]:.4f}")
-print(f"  p-value (LM): {bg_test_order3[1]:.4f}")
-print("="*50)
-```
-
-### Stata
-
-```{stata}
-#| eval: false
-#| echo: true
-#| code-fold: true
-#| collapse: true
-* Housekeeping: Clear memory and stop the output from pausing
-clear all
-set more off
-
-* Step 1: Simulate Data with Serially Correlated Errors
-set seed 42
-
-* Define simulation parameters using local macros
-local n = 200                 // Sample size
-local alpha = 5               // True intercept
-local beta = 2                // True slope for X
-local rho = 0.8               // High positive autocorrelation coefficient
-local sigma_e = 1.5           // Standard deviation of the white noise component
-
-* Set the number of observations for the dataset
-set obs `n'
-
-* Generate an index variable 't' to declare this as time-series data
-gen t = _n
-tsset t
-
-* Generate the independent variable X
-gen X = rnormal(20, 10)
-
-* Generate the serially correlated error term 'u'
-* First, create the white noise component 'e'
-gen e = rnormal(0, `sigma_e')
-
-* Now, generate 'u' using the recursive AR(1) formula
-* u_t = rho * u_{t-1} + e_t
-* We initialize u as missing, set the first value, then generate the rest
-gen u = .
-replace u = e in 1
-replace u = `rho' * L.u + e in 2/l // L. is the lag operator, 2/l means "from obs 2 to the last"
-
-* Generate the dependent variable Y using the regression equation
-* Y_t = alpha + beta*X_t + u_t
-gen Y = `alpha' + `beta'*X + u
-
-
-* Step 2: Estimate the OLS Regression Model
-
-* We estimate the model Y ~ X, pretending we don't know about the
-* autocorrelation in the errors. The output is printed automatically.
-regress Y X
-
-* Step 3: Conduct the Breusch-Godfrey Test
-
-* The `estat bgodfrey` command is a post-estimation command that must be
-* run immediately after the regression.
-
-* Test for order 1, as we created an AR(1) process.
-estat bgodfrey, lags(1)
-
-* You can also test for higher orders. For example, testing up to order 3.
-* This tests the joint null hypothesis that the coefficients on the first
-* three lags of the residuals are all zero in the auxiliary regression.
-estat bgodfrey, lags(3)
-```
-
-:::
-
-## Avoiding Spurious Regression
-
-- If the static model $Y_t = \alpha + \beta X_t + \epsilon_t$ is so dangerous, what is the alternative?
-
-- **Differencing the Data:** If two variables are non-stationary, their first differences ($\Delta Y_t$ and $\Delta X_t$) may be stationary.
-- **Dynamic models**: We need models that explicitly account for dynamics—the idea that a change in X can affect Y both today and in the future. 
-  - This makes it more likely that the error term is white noise. 
-
-## Distributed Lag (DL) Models
-
-- Distributed lag models are used when we want to model how a change in an explanatory variable (X) affects the dependent variable (Y) over time, and we want to focus on potential **delayed effects**. 
-  - **Example:** How does a change in government spending (X) affect GDP (Y) in the current quarter and in future quarters?
-
-:::{.callout-note title="Definition: Distributed Lag Model"}
-A finite distributed lag model of order $q$ is:
-
-$$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
-where:
-
-$\beta_0$: The **impact multiplier** - the immediate effect of a one-unit change in $X_t$ on $Y_t$.
-
-$\beta_s (s > 0)$: The **dynamic multipliers** - the effect of a one-unit change in $X_{t-s}$ on $Y_t$.
-
-:::
-
-## Interpreting the DL Coefficients
-
-$$Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t$$
-
-- **Short-Run Multiplier:** The total effect after a certain number of periods (e.g., $\beta_0 + \beta_1$).
-- **Long-Run (or Total) Multiplier:** The total effect of a sustained one-unit change in X on Y. It is the sum of all the $\beta$ coefficients: $\sum \beta_S$.
-
-## The Autoregressive Distributed Lag (ARDL) Model
-
-- ARDL models are a class of models that include lags of both the dependent variable and the explanatory variable(s).
-
-:::{.callout-note title="Definition: ARDL Model"}
-
-An ARDL(p,q) model is defined as follows:
-
-$$Y_t = \alpha + \sum(ρ_j \cdot Y_{t-j}) \text{ [from j=1 to p]} + \sum(\beta_j \cdot X_{t-m}) \text{ [from m=0 to q]} + u_t$$
-:::
-
-- It includes both autoregressive (lags of the DV) and distributed lag (lags of the IV) terms. 
-- ARDL models are very flexible and can be used to estimate both short-run and long-run effects.
-
-## Interpretation ARDL Coefficients
-
-- The individual coefficients represent direct, short-term impacts before feedback effects occur.
-
-- **Impact Multiplier ($\beta_0$)**: The immediate effect of a change in $X_t$ on $Y_t$.
-  - **Derivation**: $\frac{\partial Y_t}{\partial X_t} = \beta_0$
-
-- **Delay Multipliers ($\beta_j$)**: The effect of past changes in $X$ on current $Y$.
-  - **Interpretation**: A one-unit increase in $X_{t-j}$ is associated with a change of **$\beta_j$** units in today's $Y_t$.
-
-- **Autoregressive Coefficients ($\phi_i$)**: Measure the persistence or inertia in the process.
-  - **Interpretation**: **$\phi_i$** captures the proportion of $Y_{t-i}$ that is carried over to $Y_t$. It describes how quickly the variable returns to its equilibrium after a shock.
-
-
-## Long-Run Multiplier (LRM) Derivation & Interpretation
-
-- The LRM shows the total effect on Y after a permanent change in X has fully worked through the system.
-
-- **Derivation (via Equilibrium Condition)**:
-  - In a long-run steady state, we assume variables are constant:
-    - $Y_t = Y_{t-1} = \dots = Y_{eq}$
-    - $X_t = X_{t-1} = \dots = X_{eq}$
-
-  - Substitute this into the ARDL equation (assuming $E[u_t]=0$):
-    - $Y_{eq} = c + \sum \phi_i Y_{eq} + \sum \beta_j X_{eq}$
-
-  - Solve for $Y_{eq}$:
-    - $Y_{eq} (1 - \sum \phi_i) = c + (\sum \beta_j) X_{eq}$
-    - $Y_{eq} = \frac{c}{1 - \sum \phi_i} + \left( \frac{\sum \beta_j}{1 - \sum \phi_i} \right) X_{eq}$
-    
-## Long-Run Multiplier (LRM) Derivation & Interpretation (Cont.)
-
-- **The Long-Run Multiplier ($\theta$)**:
-  - The coefficient on $X_{eq}$ in the long-run equation is the LRM:
-    $$ \theta = \text{LRM} = \frac{\text{Total effect of X}}{\text{Persistence of Y}} = \frac{\sum_{j=0}^{q} \beta_j}{1 - \sum_{i=1}^{p} \phi_i} $$
-
-- **Interpretation**: A **permanent** one-unit increase in $X$ is associated with a total **long-run change of $\theta$ units** in $Y$, after all dynamic adjustments are complete.
-
-- The ARDL model powerfully separates the **immediate impacts** ($\beta_j$) from the **total equilibrium effect** ($\theta$), which accounts for the feedback from Y's own past values.
-
-## Estimating ARDL Models
-
-- In R, the `ARDL` package is the standard for estimating these models. 
-- Stata has a powerful built-in `ardl` command (in newer versions) or a widely used user-written one (`ssc install ardl`). It automates lag selection and estimation.
-- In Python, the `statsmodels` library has incorporated a dedicated `ARDL` class, which makes estimation much more straightforward than the previous manual method of creating lagged variables.
-
-:::{.panel-tabset .hey}
-
-### R
-
-```{r}
-#| echo: true
-#| collapse: true
-#| code-fold: true
-
-library(ARDL)
-library(urca) # Contains the example 'denmark' dataset
-
-# Load the data
-data(denmark)
-# The variables are LRM, LRY, IBO, IDE (inflation)
-
-# Find the optimal lag order automatically
-# We model LRM as a function of LRY and IBO, with a max lag of 4 for each
-auto_model <- auto_ardl(LRM ~ LRY + IBO, data = denmark, max_order = 4)
-
-# Print the selected orders
-print(auto_model$best_order)
-
-# Estimate the selected ARDL model
-# Let's say auto_ardl selected ARDL(3, 1, 4)
-ardl_model <- ardl(LRM ~ LRY + IBO, data = denmark, order = c(3, 1, 4))
-
-# Get a detailed summary of the model
-# This output neatly separates short-run and long-run coefficients
-print(summary(ardl_model))
-```
-
-### Python
-
-```{python}
-#| collapse: true
-#| echo: true
-#| code-fold: true
-
-import pandas as pd
-import statsmodels.api as sm
-from statsmodels.tsa.api import ARDL, ardl_select_order
-
-# Load the same 'lutkepohl2' dataset from statsmodels datasets
-data = r.denmark
-data.index = pd.to_datetime(data['ENTRY'], format='%Y:%m').dt.to_period('Q')
-# Select the variables of interest
-data_subset = data[['LRM', 'LRY', 'IBO']]
-
-# Assign endogenous (Y) and exogenous (X) variables
-endog = data_subset['LRM']
-exog = data_subset[['LRY', 'IBO']]
-
-# Find the optimal lag order
-# maxlag is for the AR (dependent) part, maxorder is for the DL (independent) part
-# aic is the information criterion to use for selection
-sel_order = ardl_select_order(
-    endog, maxlag=4, exog=exog, maxorder=4, ic='aic', trend='c'
-)
-
-# Instantiate the ARDL model with the selected order
-# sel_order.ardl_order gives the optimal (p, q1, q2, ...)
-ardl_result = sel_order.model.fit()
-
-# Print the summary of the results
-# This shows the short-run coefficients
-print(ardl_result.summary())
-
-params = ardl_result.params
-denominator = 1 - params.filter(like='LRM.L').sum()
-
-# 3. Calculate the sum of coefficients for each independent variable and divide
-long_run_effects = pd.Series({
-    'LRY': params.filter(like='LRY.L').sum() / denominator,
-    'IBO': params.filter(like='IBO.L').sum() / denominator,
-    'const': params['const'] / denominator  # Optional: long-run intercept
-})
-
-print(long_run_effects)
-```
-
-
-### Stata
-
-```{stata}
-#| eval: false
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-* Load the data (same as the 'denmark' dataset in R)
-webuse lutkepohl2, clear
-
-* Declare the data as time series
-tsset qtr
-
-* Estimate the ARDL model, letting Stata select the best lags up to a max of 4.
-* The dependent variable is 'ln_rm' (log real money).
-* The independent variables are 'ln_inc' (log income) and 'ln_consump' (log consumption).
-* We'll use the variables from the Stata dataset.
-ardl ln_rm ln_inc, maxlags(4)
-
-* After estimation, Stata shows the optimal lags and the short-run results.
-
-* To see the long-run coefficients, use the post-estimation command `estat ec`.
-estat ec
-```
-
-:::
-
-# Prediction
-
-## What is Forecasting?
-
-:::{.callout-note title="Definition: Forecasting"}
-To predict future values of a time series based on its own past and potentially other related variables.
-:::
-
-- We use the information available up to time $t$ to form the best possible guess about the value of the series at a future time $t+h$.
-  -  **Information Set ($I_t$):** All known values of the series (and other relevant variables) up to and including time $t$.
-    $I_t = \{Y_t, Y_{t-1}, ...\}$
-  - **Forecast Horizon ($h$):** How many steps into the future we are predicting.
-    - $h=1$: One-step-ahead forecast.
-    - $h>1$: Multi-step-ahead forecast.
-
-- We want to find the *conditional expectation* of the future value, given our current information.
-
-  $$
-    \text{Forecast} = E[Y_{t+h} | I_t]
-  $$
-
-
-
-## Evaluating Forecasts
-
-- Before we make forecasts, we need to know how to measure their accuracy.
-- We do this by comparing the actual, observed values ($Y_t$) with our forecasted values ($\hat{Y}_t$).
-
-:::{.callout-note title="Definition: Forecast Error"}
-
-The forecast error is the difference between an actual observation and a forecast. 
-
-  $$
-    e_t = Y_t - \hat{Y}_t
-  $$
-:::
-
-## Common Evaluation Metrics:
-
-- **Mean Absolute Error (MAE):** $\text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |Y_t - \hat{Y}_t|$
-  - **Interpretation:** The average absolute size of the errors. Easy to understand and robust to outliers.
-
-- **Mean Squared Error (MSE):** $\text{MSE} = \frac{1}{n} \sum_{t=1}^{n} (Y_t - \hat{Y}_t)^2$
-  - **Interpretation:** Penalizes large errors much more heavily than small ones due to the squaring. Widely used in statistics.
-
-- **Root Mean Squared Error (RMSE):** $\text{RMSE} = \sqrt{\text{MSE}}$
-  - **Interpretation:** Same units as the original data, making it more interpretable than MSE.
-
-
-## Relative and Percentage Errors
-
-- Sometimes the scale of the data matters. An error of 10 is huge for a series with an average of 5, but tiny for a series with an average of 5,000.
-
-- **Scale-Free Metric:**
-  - **Mean Absolute Percentage Error (MAPE):** $\text{MAPE} = \left( \frac{1}{n} \sum_{t=1}^{n} \left| \frac{Y_t - \hat{Y}_t}{Y_t} \right| \right) \times 100\%$
-    - **Interpretation:** The average percentage error. Very intuitive ("we were off by about 5% on average").
-    - Can be problematic if actual values ($Y_t$) are close to or equal to zero.
-
-- **In-Sample vs. Out-of-Sample Evaluation:**
-  -  **In-Sample:** Evaluating the model on the same data used for training. Tells you about model *fit*.
-  -  **Out-of-Sample:** Splitting your data (e.g., 80% train, 20% test). You train the model on the first part and evaluate its forecasting performance on the part it has never seen. 
-    - **This is the true test of a forecast model!**
-
-
-## Forecasting with AR Models
-
-- Let's start predicting with a simple AR(p) model.
-
-  $$
-    Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \dots + \phi_p Y_{t-p} + \varepsilon_t
-  $$
-
-- Produce forecasts by **iterative substitution**: 
-
-  1.  **One-Step-Ahead Forecast ($h=1$):**
-      *   We want $E[Y_{t+1} | I_t]$. The future error term has an expectation of zero, $E[\varepsilon_{t+1}|I_t] = 0$.
-      *   We simply plug in all the *known* values of Y up to time $t$:
-      $$
-      \hat{Y}_{t+1|t} = c + \phi_1 Y_t + \phi_2 Y_{t-1} + \dots + \phi_p Y_{t-p+1}
-      $$
-
-  2.  **Two-Step-Ahead Forecast ($h=2$):**
-      *   We want $E[Y_{t+2} | I_t]$. The formula is $Y_{t+2} = c + \phi_1 Y_{t+1} + \dots$
-      *   The problem: We don't know $Y_{t+1}$!
-      *   **Solution:** We substitute our forecast for it, $\hat{Y}_{t+1|t}$.
-      $$
-      \hat{Y}_{t+2|t} = c + \phi_1 \mathbf{\hat{Y}_{t+1|t}} + \phi_2 Y_t + \dots + \phi_p Y_{t-p+2}
-      $$
-
-- For stationary AR processes, the long-run forecast (as $h \to \infty$) will converge to the unconditional mean of the process: $E[Y] = \frac{c}{1 - \sum \phi_i}$.
-
-## Forecasting with MA Models
-
-- Now for an MA(q) model. The "memory" of these models is very different.
-
-  $$
-    Y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \dots + \theta_q \varepsilon_{t-q}
-  $$
-
-  1.  **One-Step-Ahead Forecast ($h=1$):**
-      *   We want $E[Y_{t+1} | I_t]$. The equation is $Y_{t+1} = \mu + \varepsilon_{t+1} + \theta_1 \varepsilon_t + \dots$
-      *   The only future term is $\varepsilon_{t+1}$, whose expectation is 0. We can estimate the past error terms from the data (using residuals).
-      $$
-      \hat{Y}_{t+1|t} = \mu + \theta_1 \varepsilon_t + \dots + \theta_q \varepsilon_{t-q+1}
-      $$
-
-  2.  **Two-Step-Ahead Forecast ($h=2$):**
-      *   $Y_{t+2} = \mu + \varepsilon_{t+2} + \theta_1 \varepsilon_{t+1} + \dots$
-      *   Both $\varepsilon_{t+2}$ and $\varepsilon_{t+1}$ are unknown future shocks. Their conditional expectation is 0.
-      $$
-      \hat{Y}_{t+2|t} = \mu + \theta_2 \varepsilon_t + \dots + \theta_q \varepsilon_{t-q+2}
-      $$
-
-- For any forecast horizon $h$ greater than the order $q$ ($h > q$), all the error terms in the equation will be in the future.
-  - $\mathbf{\hat{Y}_{t+h|t} = \mu}$ for all $h > q$.
-  - The forecast quickly reverts to the process mean. MA models have a "short memory."
-
-## Forecasting with ARMA(p,q) Models
-
-- An ARMA model combines the features of both AR and MA processes.
-
-  $$
-    Y_t = c + \phi_1 Y_{t-1} + \dots + \phi_p Y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \dots + \theta_q \varepsilon_{t-q}
-  $$
-
-- **Forecasting combines the two previous methods:**
-  - For the AR part, we use an iterative process, plugging in past *forecasts* for unknown future values of $Y$.
-  - For the MA part, the influence of past shocks ($\varepsilon_t$) fades and disappears after $q$ periods.
-
-:::{.callout-tip title="Example: ARMA(1,1) Forecast"}
-- $Y_{t+1} = c + \phi_1 Y_t + \varepsilon_{t+1} + \theta_1 \varepsilon_t$
-  - Forecast $\hat{Y}_{t+1|t} = c + \phi_1 Y_t + \theta_1 \varepsilon_t$
-
-- $Y_{t+2} = c + \phi_1 Y_{t+1} + \varepsilon_{t+2} + \theta_1 \varepsilon_{t+1}$
-  - Forecast: $\hat{Y}_{t+2|t} = c + \phi_1 \mathbf{\hat{Y}_{t+1|t}} \quad (\text{The MA term vanishes as } E[\varepsilon_{t+1}|I_t]=0)$
-  
-The AR component gives the forecast a persistent, decaying memory, while the MA component captures the effect of short-term, finite shocks.
-
-:::
-
-## Forecasting with ARDL(p,q) Models
-
-- Why limit ourselves to just the past of Y? Other variables might help predict it.
-
-  $$
-    Y_t = c + \sum_{i=1}^{p} \phi_i Y_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + \varepsilon_t
-  $$
-
-- The process is similar to a standard AR forecast, but with an added component.
-  - **One-Step-Ahead Forecast ($h=1$):**
-    $$
-      \hat{Y}_{t+1|t} = c + \sum_{i=1}^{p} \phi_i Y_{t-i+1} + \sum_{j=0}^{q} \beta_j X_{t-j+1}
-    $$
-  - Simply plug in all known values for past $Y$ and past $X$.
-
-## Challenge of Multivariate Forecasting
-
-- To forecast $Y_{t+1}$, the model requires the value of $X_{t+1}$ if $\beta_0 \neq 0$!
-- To forecast $Y_{t+h}$, you need values for $X_{t+h}, X_{t+h-1}, \dots, X_{t+1}$.
-
-- **Solutions:**
-  1.  **Build a separate forecast model for X.** (e.g., use an ARIMA model to forecast future temperatures).
-  2.  **Create scenarios for X.** (e.g., "What will sales be if we assume a 10% increase in our advertising budget ($X$)?").
-  3.  **Only use lagged X's.** If $\beta_0 = 0$, then you only need $X$ values up to time $t$ to predict $Y_{t+1}$, which are known.
-
-## Takeaways
-
-- **The Foundation is Conditional Expectation:** all standard forecasting methods are an attempt to calculate $E[Y_{t+h} | I_t]$.
-
-- Test your forecasts on out-of-sample data using metrics like MAE, RMSE, or MAPE to understand their real-world performance.
-
-- **Model Structure dictates forecast behavior:**
-  - **AR(p):** Forecasts are iterative and have long memory. They converge slowly to the mean.
-  - **MA(q):** Forecasts have short memory. They revert to the mean after $q$ periods.
-  - **ARMA(p,q):** A hybrid approach capturing both long-term persistence and short-term shocks.
-  - **ARDL(p,q):** Incorporates external information but introduces the challenge of needing to forecast your predictors ($X$ variables).
-
-## Other Topics in Time Series Econometrics
-
-- This lecture has been an introduction. More advanced topics include:
-
-  - **Testing for Stationarity:** Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.
-  - **Cointegration:** A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).
-  - **Volatility Modeling (ARCH/GARCH):** Modeling the changing variance of a time series, which is crucial in finance.
-
+## Hypothesis Testing
+
+- Standard $t$-statistics from regression estimates can be used to test hypotheses on AAR's on particular days. 
+- We might also be interested in hypothesis testing of CAR's.
+  - Is the observed CAR just random noise, or is there a real effect?
+  - The null hypothesis is typically $H_0: CAR(t_1, t_2) = 0$.
+  - Standard errors are calculated based on the variance of the returns in the estimation window.
+  - If the t-statistic is large enough (and p-value is small), we conclude the event had a statistically significant impact.
+
+## Assumptions and Caveats in Event Studies
+
+- Event studies without a control group have various caveats and assumptions:
+
+  - **Efficient Markets (for stock studies):** The model assumes prices react quickly and rationally to new information.
+  - **No Confounding Events:** The event window must be "clean" of other major, contemporaneous events that could also affect the outcome.
+  - **Correct Event Date:** The analysis is sensitive to using the right date of the information release.
+  - **Model Specification:** The results can depend on the model chosen for normal returns (e.g., Market Model vs. Fama-French 3-Factor Model).
+  - **Stable Estimation Window:** The relationship between the firm and the market (the $\beta$) must be stable between the estimation and event windows.
 
 # Summary
 
 ## What did we do?
 
-- **Univariate Time Series**: We looked at ways to analyze a univariate time series, in particular, at:
-  - **Autoregressive models**: Explain a variable using its own past values.
-  -  **Moving Average models**: Explain a variable using past random shocks.
+- **Introduced panel data**:
+  - Panel data tracks the same individuals (e.g., firms, people) over time. It highlighted its main advantage: the ability to control for unobserved, time-invariant factors (like firm culture or individual ability) that could otherwise cause omitted variable bias.
 
-- **The Linear Model**: We focused on the possibility of using OLS on bivariate time series data. 
-  - We saw some cases (where $X_t$ is stationary) in which it is allowed to estimate $Y_t = \alpha + \beta X_t + u_t$
-  - If we have **stationary** errors, this might be a sensible reason that this assumption is justified. 
-  - However, if not, we run into the problem of **spurious regression:** a misleading relationship between two non-stationary time series.
+- **Explained the two main panel data models**:
+  - Fixed Effects (FE) and Random Effects (RE). The lecture described how the FE model controls for unobserved factors by using only "within-individual" variation, while the RE model assumes these factors are random and uncorrelated with the explanatory variables.
 
+- **Introduced a method for choosing**: 
+  - The Hausman test helps determine whether the unobserved individual effects are correlated with the regressors. A significant result suggests using the FE model to avoid bias, while a non-significant result allows for the more efficient RE model.
 
 ## What did we do? (Cont.)
 
-- **Distributed Lag (DL) Models:**
-  - To model a more realistic dynamic structure, we focused on models that investigate the dynamic impact of an explanatory variable over time, allowing us to distinguish between short-run and long-run effects. These models make it more likely that the error term is white noise. 
+- **Introduced an alternative method**: 
+  - The First Difference (FD) estimator. The lecture explained that by differencing data over time, the FD model also removes fixed effects and is particularly useful and more efficient than FE when errors are highly serially correlated (e.g., follow a random walk).
 
-- **Autoregressive Distributed Lag Models**:
-  - A generalization of distributed lag models, also integrating autoregressive components. A model like this has the ability to separate feedback effects from long-run impacts of $X$. 
-  
-- **Forecasting**: 
-  - We saw all of these models in a forecasting setting. We discussed conditional expectation as the main vehicle for forecasting, talked about particular processes and discussed some of the evaluation metrics. 
-  
+- **Introduced event studies**: 
+  - We detailed the "event study" methodology as a powerful application of panel data. It explained how event studies measure the impact of a specific event (like a policy change or merger) on an outcome by analyzing the periods before and after the event.
+
+- **Contrasted two types of event studies**:
+  - We first showed the modern panel event study which requires a control group and uses firm and time fixed effects to isolate the event's causal impact. 
+  - We then explained the classic finance approach used without a control group, which relies on calculating "abnormal returns" against a predicted "normal" outcome.
+
 # The End
+

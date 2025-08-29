@@ -7,7 +7,7 @@ The lecture slides can be found below.
 - [Week 0: Prerequisite Knowledge](lectures/prerequisite/prerequisite.qmd)
 - [Week 1: The Linear Model I](lectures/lecture1/lecture1.qmd)
 - [Week 2: The Linear Model II](lectures/lecture2/lecture2.qmd)
-- [Week 3: Time Series](lectures/lecture3/lecture3.qmd)
+- [Week 3: Time Series and Prediction](lectures/lecture3/lecture3.qmd)
 - [Week 4: Panel Data I](lectures/lecture4/lecture4.qmd)
 - [Week 5: Panel Data II](lectures/lecture5/lecture5.qmd)
 - [Week 6: Binary Outcomes](lectures/lecture6/lecture6.qmd)

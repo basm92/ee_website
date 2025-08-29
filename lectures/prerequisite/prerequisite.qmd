@@ -59,58 +59,18 @@ plot_test <- function(norm_data, crit_vals, title) {
 
 ```
 
-# Course Set-Up
-
-## Introduction
-
-- Empirical Economics
-
-- Two central aspects:
-  - Econometrics and Econometric Theory
-  - Empirical Practice in the form of programming
-
-- Central course objective: to make you understand enough econometric theory, and have you obtain enough experience to :
-  - Write a succesful thesis (in particular)
-  - Conduct an empirical economics research project (in general)
-  
-## Course Layout and Schedule
-
-- Simple course organization: 8 Lectures and 8 Tutorials
-  - Always: 1 lecture (focused on theory) followed by 1 tutorial (recap and practice)
-  - Tutorials: Wednesday and Thursday, 13:15-15:15-17:15 (see [mytimetable](http://mytimetable.uu.nl))
-  
-- One **mid-term** (7 Oct) and one **end-term exam** (7 Nov)
-- Organized on _Canvas_ 
-- Featuring both multiple choice and open questions akin to the tutorials
-
-## Lecture Schedule
-
-- Everything is in your timetable, but..
-- Lectures: On Friday
-  - **One Exception**: No Lecture on Friday 17 October
-  - **Instead**: Tuesday 11 October 11:00
-- Lectures start at:
-  - 13:15 (12 Sept, 19 Sept, 3 Oct, 24 October)
-  - 15:15 (5 Sept, 26 Sept, 10 October)
-  
-- **Two Q&A Sessions Before Mid-term and End-term Exams**: 
-  - Friday 3 October 15:00 (following lecture)
-  - Friday 24 October 15:00 (following lecture)
-
 ## Course Overview
 
-- Statistics and Probability - Basic Concepts
-- Statistics and Probability - Hypothesis Testing
-- The Linear Regression Model
-- Time Series Data
-- Panel Data (FE) and Control Variables
+- Linear Model I
+- Linear Model II
+- Time Series and Prediction
+- Panel Data I
+- Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
 - Hands-on Econometrics in Practice
 
 ## What do we need to learn?
-
-- First two/three lectures devoted to Probability & Statistics
 
 - How do we model the processes that might have generated our data?
   - Probability
@@ -119,7 +79,7 @@ plot_test <- function(norm_data, crit_vals, title) {
   - Statistics
   
 - How do we uncover patterns between variables?
-  - Econometrics
+  - The linear model and further econometrics
   
 ## Correlation vs. Causation
 

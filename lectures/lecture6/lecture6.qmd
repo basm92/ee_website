@@ -12,8 +12,6 @@ format:
     logo: logo.svg
     css: styles.css
     footer: 'Empirical Economics: Lecture 6 - Binary Outcome Data'
-resources:
-  - demo.pdf
 ---
 
 
@@ -32,11 +30,11 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Course Overview
 
-- Statistics and Probability - Basic Concepts
-- Statistics and Probability - Hypothesis Testing
-- The Linear Regression Model
-- Time Series Data
-- Panel Data (FE) and Control Variables
+- Linear Model I
+- Linear Model II
+- Time Series and Prediction
+- Panel Data I
+- Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
 - Hands-on Econometrics in Practice
