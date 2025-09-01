@@ -901,11 +901,11 @@ $$
   - It means that the explanatory variable ($x$) must not be correlated with any of the unobserved factors ($u$) that affect the dependent variable ($y$).
 
 :::{.callout-tip title="Example: Zero Conditional Mean Assumption"}
-Let $y = wage$, $x = educ$, $u$ = unobserved factors like innate ability, family background, motivation. 
+Let $y = Wage$, $x = Educ$, $u$ = unobserved factors like innate ability, family background, motivation. 
 
-Is it likely that $E(u|educ)=0$? Probably not. Innate ability ($u$) is likely correlated with education ($x$). People with higher ability may find it easier to get more education.
+Is it likely that $E(u|Educ)=0$? Probably not. Innate ability ($u$) is likely correlated with education ($x$). People with higher ability may find it easier to get more education.
 
-If $Cov(educ, ability) > 0$, then our OLS estimate $\hat{\beta}_1$ will be biased upwards. It will capture the effect of education *and* the effect of ability. This is **Omitted Variable Bias**.
+If $Cov(Educ, Ability) > 0$, then our OLS estimate $\hat{\beta}_1$ will be biased upwards. It will capture the effect of education *and* the effect of ability. This is **Omitted Variable Bias**.
 :::
 
 ## Unbiasedness of OLS
