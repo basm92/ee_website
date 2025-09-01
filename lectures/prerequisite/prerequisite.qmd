@@ -1692,7 +1692,7 @@ An estimator is consistent if, as the sample size $n$ approaches infinity, the v
 
 - How do we know if an estimator is "good"? We look for three properties (conceptually):
 
-:::{.callout-note title="Definition: Consistency"}
+:::{.callout-note title="Definition: Efficiency"}
 Among all unbiased estimators, the most efficient one is the one with the smallest variance.
 
 *Analogy:* The shots are tightly clustered around the center. It's a precise estimator.

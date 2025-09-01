@@ -102,6 +102,16 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
 - Organized on _Canvas_ 
 - Featuring both multiple choice and open questions akin to the tutorials
 
+## Info for students with a disability
+
+- You can submit a request for examination accommodations such as exam time extension via OSIRIS Student tab Cases.
+
+- Do this by Friday September 12 at the latest. We can then arrange everything before your first exams.
+
+- Do you already have provisions from the UU? Then you do not need to submit a request via OSIRIS. 
+  - More information can be found at [www.uu.nl/disability](www.uu.nl/disability)
+  - Questions: students.uu.nl/studyadvisoruse 
+
 ## Lecture Schedule
 
 - Everything is in your timetable, but..
@@ -115,7 +125,7 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
 - **Two Q&A Sessions Before Mid-term and End-term Exams**: 
   - Friday 3 October 15:00 (following lecture)
   - Friday 24 October 15:00 (following lecture)
-
+  
 
 # Outline
 
@@ -128,7 +138,7 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
 - Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
-- Hands-on Econometrics in Practice
+- Instrumental Variables
 
 
 ## What do we do today?
@@ -407,10 +417,13 @@ ggplot(dat, aes(x=educ, y=wage)) +
 
 We define the **residual**, $\hat{u}_i$, as the difference between the actual value $y_i$ and the fitted value $\hat{y}_i$:
 $$
-u_i = y_i - \hat{y}_i = y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)
+\hat{u}_i = y_i - \hat{y}_i = y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)
 $$
 
 :::
+
+- Note that the *residual* is *different from the error term $u_i$*. 
+  - A residual is the observable difference between the actual data point and the value predicted by your regression model, whereas the unobserved error term $u_i$ is the theoretical difference between the actual data point and the true, unknown population value.
 
 ## OLS Method
 
@@ -582,12 +595,12 @@ reg wage educ
 
 :::
 
-- So our estimated SRF is: $\widehat{wage} = `r round(coef(slr_model)[1], 2)` + `r round(coef(slr_model)[2], 2)` \times educ$
+- So our estimated SRF is: $\widehat{Wage} = `r round(coef(slr_model)[1], 2)` + `r round(coef(slr_model)[2], 2)` \times Educ$
 
 ## Interpretation
 
-- Slope ($\hat{\beta}_1 \approx `r round(coef(slr_model)[2], 2)`$): "For each additional year of education, we estimate the hourly wage to increase by **$1.15**, on average." This is the key policy parameter.
-- Intercept ($\hat{\beta}_0 \approx `r round(coef(slr_model)[1], 2)`$): "For an individual with zero years of education, we predict an hourly wage of **$1.79**."
+- Slope ($\hat{\beta}_1 \approx `r round(coef(slr_model)[2], 2)`$): "For each additional year of education, we estimate the hourly wage to increase by **€1.15**, on average." This is the key policy parameter.
+- Intercept ($\hat{\beta}_0 \approx `r round(coef(slr_model)[1], 2)`$): "For an individual with zero years of education, we predict an hourly wage of **€1.79**."
 
 ## Units and Functional Form
 
@@ -913,6 +926,80 @@ $$
     - This property relies critically on the Zero Conditional Mean assumption (SLR.4). If SLR.4 fails, OLS is biased.
     
     
+## Visualization Unbiasedness
+
+- The true values for the intercept are $\beta_0=2$ and the slope $\beta_1=5$ of our hypothetical linear model. 
+- We then perform an OLS regression 1,000 times. 
+  - In each iteration, it generates a random sample of 100 observations for the variables $x$ and $y$ based on the true model, including a random error term.
+  - For each of these samples, we run a linear regression function and store and plot the estimated coefficient for $x$:
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 7
+# Set a seed for reproducibility of the random numbers
+set.seed(123)
+
+# Define the true parameters of our linear model
+# We assume the true relationship between y and x is: y = beta_0 + beta_1*x + u
+true_beta_0 <- 2
+true_beta_1 <- 5
+
+# Set the number of simulations (i.e., the number of samples to draw)
+n_simulations <- 1000
+
+# Set the sample size for each simulation
+sample_size <- 100
+
+# Create an empty vector to store the estimated coefficients for beta_1 from each simulation
+estimated_beta_1 <- numeric(n_simulations)
+
+# Loop through the number of simulations
+for (i in 1:n_simulations) {
+  # Generate the independent variable x from a uniform distribution
+  x <- runif(sample_size, min = 1, max = 10)
+
+  # Generate the error term u from a normal distribution with mean 0
+  u <- rnorm(sample_size, mean = 0, sd = 2)
+
+  # Generate the dependent variable y based on the true model
+  y <- true_beta_0 + true_beta_1 * x + u
+
+  # Fit a linear model to the generated sample data
+  model <- lm(y ~ x)
+
+  # Extract and store the estimated coefficient for x (beta_1)
+  estimated_beta_1[i] <- coef(model)[2]
+}
+
+# Now, let's visualize the results
+# Create a histogram of the estimated beta_1 coefficients
+hist(estimated_beta_1,
+     main = "Distribution of OLS Estimates for Beta_1",
+     xlab = "Estimated Beta_1",
+     col = "lightblue",
+     freq = FALSE, # Plot density instead of frequency
+     breaks = 30)
+
+# Add a vertical line for the true value of beta_1
+abline(v = true_beta_1, col = "red", lwd = 2)
+
+# Add a vertical line for the mean of the estimated beta_1 coefficients
+abline(v = mean(estimated_beta_1), col = "blue", lwd = 2, lty = 2)
+
+# Add a legend to the graph
+legend("topright",
+       legend = c("True Beta_1", "Mean of Estimates"),
+       col = c("red", "blue"),
+       lwd = 2,
+       lty = c(1, 2))
+
+# Print the mean of the estimated coefficients to show it's close to the true value
+# print(paste("True Beta_1:", true_beta_1))
+# print(paste("Mean of Estimated Beta_1:", round(mean(estimated_beta_1), 4)))
+```
+    
+    
 ## Variance of OLS Estimators
 
 - We also want our estimators to be precise, meaning they don't vary too much from sample to sample. This is measured by their sampling variance.
@@ -945,8 +1032,139 @@ Consult the appendix for a derivation.
 
 - What determines the precision of our estimate?
   - **The error variance, $\sigma^2$**: More "noise" in the relationship (larger $\sigma^2$) leads to a larger variance for $\hat{\beta}_1$.
-  - **The total sample variation in x, $SST_x$**: More variation in our explanatory variable ($x$) leads to a *smaller* variance for $\hat{\beta}_1$. We learn more about the slope when our $x$ values are more spread out.
-  - **The sample size, n**: A larger sample size generally increases $SST_x$, which *decreases* the variance of $\hat{\beta}_1$.
+  - **The total sample variation in $X$, $SST_x$**: More variation in our explanatory variable ($x$) leads to a *smaller* variance for $\hat{\beta}_1$. We learn more about the slope when our $x$ values are more spread out.
+  - **The sample size, $n$**: A larger sample size generally increases $SST_x$, which *decreases* the variance of $\hat{\beta}_1$.
+
+## Variance Illustration
+
+- We plot the distribution of the 1,000 estimated coefficients is centered around the true value of 5 (the solid red line).
+  - In the left panel below, we have a *high-variance estimator* (n=30)
+    - The histogram on the left is visibly wider and flatter. This indicates a larger spread in the estimated coefficients. Any single estimate from a sample of this size could be quite far from the true value. 
+  - In the right panel below, we have a *low-variance estimator* (n=500)
+    - The histogram on the right is much narrower and more peaked. The estimates are tightly clustered around the true value. 
+
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 15
+
+# Set a seed for reproducibility
+set.seed(456)
+
+# --- Parameters for Simulation ---
+
+# Define the true parameters of our linear model: y = beta_0 + beta_1*x + u
+true_beta_0 <- 2
+true_beta_1 <- 5
+
+# Set the number of simulations
+n_simulations <- 1000
+
+# Set sample sizes for the two scenarios
+small_sample_size <- 30   # For the high-variance estimator
+large_sample_size <- 500  # For the low-variance estimator
+
+# --- Simulation Function ---
+
+# Create a function to run the simulation for a given sample size
+run_simulation <- function(sample_size, n_sims, beta_0, beta_1) {
+  
+  # Create an empty vector to store the estimated coefficients for beta_1
+  estimated_beta_1 <- numeric(n_sims)
+
+  # Loop through the number of simulations
+  for (i in 1:n_sims) {
+    # Generate the independent variable x
+    x <- runif(sample_size, min = 1, max = 10)
+
+    # Generate the error term u
+    u <- rnorm(sample_size, mean = 0, sd = 2)
+
+    # Generate the dependent variable y based on the true model
+    y <- beta_0 + beta_1 * x + u
+
+    # Fit a linear model to the generated sample data
+    model <- lm(y ~ x)
+
+    # Store the estimated coefficient for beta_1
+    estimated_beta_1[i] <- coef(model)[2]
+  }
+  
+  return(estimated_beta_1)
+}
+
+# --- Run Both Simulations ---
+
+# Run simulation for the high-variance case (small sample size)
+high_variance_estimates <- run_simulation(small_sample_size, n_simulations, true_beta_0, true_beta_1)
+
+# Run simulation for the low-variance case (large sample size)
+low_variance_estimates <- run_simulation(large_sample_size, n_simulations, true_beta_0, true_beta_1)
+
+# --- Plotting the Results ---
+
+# Set up the plotting area to have two subplots side-by-side. [2, 4]
+par(mfrow = c(1, 2))
+
+# --- Subplot 1: High-Variance Estimator ---
+hist(high_variance_estimates,
+     main = "High-Variance Estimator (n=30)",
+     xlab = "Estimated Beta_1",
+     col = "lightcoral",
+     freq = FALSE,
+     breaks = 30,
+     xlim = c(4, 6)) # Set common x-axis limits for comparison
+
+# Add a vertical line for the true value of beta_1
+abline(v = true_beta_1, col = "red", lwd = 2)
+
+# Add a vertical line for the mean of the estimated beta_1 coefficients
+abline(v = mean(high_variance_estimates), col = "blue", lwd = 2, lty = 2)
+
+# Add a legend
+legend("topright",
+       legend = c("True Beta_1", "Mean of Estimates"),
+       col = c("red", "blue"),
+       lwd = 2,
+       lty = c(1, 2),
+       cex = 0.7)
+
+# --- Subplot 2: Low-Variance Estimator ---
+hist(low_variance_estimates,
+     main = "Low-Variance Estimator (n=500)",
+     xlab = "Estimated Beta_1",
+     col = "lightblue",
+     freq = FALSE,
+     breaks = 30,
+     xlim = c(4, 6)) # Set common x-axis limits for comparison
+
+# Add a vertical line for the true value of beta_1
+abline(v = true_beta_1, col = "red", lwd = 2)
+
+# Add a vertical line for the mean of the estimated beta_1 coefficients
+abline(v = mean(low_variance_estimates), col = "blue", lwd = 2, lty = 2)
+
+# Add a legend
+legend("topright",
+       legend = c("True Beta_1", "Mean of Estimates"),
+       col = c("red", "blue"),
+       lwd = 2,
+       lty = c(1, 2),
+       cex = 0.7)
+
+# Reset the plotting layout to the default (1 plot)
+par(mfrow = c(1, 1))
+```
+
+## Variance Illustration
+
+  
+- This demonstrates that with a larger sample size, the OLS estimator is more efficient
+- We can be more confident that any single estimate is close to the true population parameter
+- The mean of the estimates in both scenarios (the dashed blue line) is very close to the true value, confirming that both estimators are unbiased.
+
+
 
 ## Determining the Variance in Practice
 
@@ -973,7 +1191,7 @@ $$
 
 - Now we have all the pieces:
   - Start with the true (but unusable) variance formula $Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$
-  - Plug in our estimate $\hat{sigma}^2$ for the unknown $\sigma^2$
+  - Plug in our estimate $\hat{\sigma}^2$ for the unknown $\sigma^2$
   - This gives us the estimated variance: $\hat{\sigma}^2 / \sum (X_i - \bar{X})^2$
   - Take the square root to get it back to the original units of β₁:
   - This is the Standard Error of the Coefficient.
@@ -1102,6 +1320,7 @@ We can therefore manually calculate the $t$-statistic testing $H_0: \beta=0$ as:
 #| collapse: true
 
 t_stat <- (slr_model$coefficients['educ'] - 0) / se_beta_educ
+t_stat
 ```
 
 Finally we can even calculate the two-sided $p$-value of observing a test statistic this extreme under the null hypothesis:

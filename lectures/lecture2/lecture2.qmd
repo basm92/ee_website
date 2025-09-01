@@ -59,7 +59,7 @@ slr_model <- lm(wage ~ educ, data = dat)
 - Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
-- Hands-on Econometrics in Practice
+- Instrumental Variables
 
 ## What do we do today?
 
@@ -104,7 +104,7 @@ Now we have $k$ explanatory variables.
 
   - `lm(y ~ x1 + x2, data=df)` in R
   - `reg y x1 x2` in Stata
-  - `pf.feols(y ~ x1 + x2, data=df)` after `import pyfixest as pf` in Python.^[Some previous examples use the `statsmodels` package in Python, which is the standard way. However, the `pyfixest` package is easier and more straightforward.] 
+  - `pf.feols(y ~ x1 + x2, data=df)` after `import pyfixest as pf` in Python.^[Some examples use the `statsmodels` package in Python, which is the standard way. However, the `pyfixest` package is easier and more straightforward.] 
 
 ## Variance of OLS Estimators in MLR
 
@@ -193,25 +193,76 @@ $$
 
 ## F Distribution: Visualization
 
-- The $F$ distribution comes with two parameters, $df_1$ and $df_2$, as defined in the previous slide. 
+- The $F$ distribution comes with three parameters, $n$, $k$ and $q$ as defined in the previous slide. 
 
 :::{.callout-tip title="Example: F Distribution"}
 
 ```{r}
 #| fig-align: 'center'
-#| fig-width: 7
-#| fig-height: 3
-# Create a sequence of values for the F distribution
-x <- seq(0, 5, length.out = 100)
+#| fig-width: 14
+#| fig-height: 4.5
+# Define a sequence of x-values (potential F-statistics) for the plot
+x_values <- seq(0, 6, by = 0.01)
 
-# Plot different F distributions with varying degrees of freedom
-plot(x, df(x, df1 = 1, df2 = 10), type = "l", col = "red", 
-     ylab = "Density", xlab = "F value", main = "F Distributions")
-lines(x, df(x, df1 = 5, df2 = 10), col = "blue")
-lines(x, df(x, df1 = 10, df2 = 10), col = "green")
-lines(x, df(x, df1 = 20, df2 = 50), col = "purple")
-legend("topright", legend = c("F(1,10)", "F(5,10)", "F(10,10)", "F(20,50)"), 
-       col = c("red", "blue", "green", "purple"), lty = 1)
+# --- Define Parameters for Four Different Scenarios ---
+
+# Scenario 1: Base case (large sample, few restrictions)
+q1 <- 2
+n1 <- 100
+k1 <- 5
+# Denominator df = 100 - 5 - 1 = 94
+density1 <- df(x_values, df1 = q1, df2 = n1 - k1 - 1)
+
+# Scenario 2: More restrictions (q is larger)
+q2 <- 10
+n2 <- 100
+k2 <- 5
+# Denominator df = 100 - 5 - 1 = 94
+density2 <- df(x_values, df1 = q2, df2 = n2 - k2 - 1)
+
+# Scenario 3: Smaller sample size (n is smaller)
+q3 <- 2
+n3 <- 30
+k3 <- 5
+# Denominator df = 30 - 5 - 1 = 24
+density3 <- df(x_values, df1 = q3, df2 = n3 - k3 - 1)
+
+# Scenario 4: Fewer degrees of freedom (n is small relative to k)
+q4 <- 2
+n4 <- 15
+k4 <- 10
+# Denominator df = 15 - 10 - 1 = 4
+density4 <- df(x_values, df1 = q4, df2 = n4 - k4 - 1)
+
+# --- Create the Plot ---
+
+# Set up the initial plot using the first distribution's data
+plot(x_values, density1,
+     type = "l",          # 'l' for line plot
+     col = "blue",
+     lwd = 2,             # Line width
+     main = "F-Distributions for Different q, n, and k",
+     xlab = "F-Statistic Value",
+     ylab = "Probability Density",
+     ylim = c(0, 1.0))    # Ensure all curves are visible
+
+# Add the other distributions to the same plot
+lines(x_values, density2, col = "red", lwd = 2, lty = 2)
+lines(x_values, density3, col = "darkgreen", lwd = 2, lty = 3)
+lines(x_values, density4, col = "purple", lwd = 2, lty = 4)
+
+# Add a legend to explain which line is which
+legend("topright",
+       legend = c(
+         paste0("q=", q1, ", n=", n1, ", k=", k1, "  (df=2, 94)"),
+         paste0("q=", q2, ", n=", n2, ", k=", k2, "  (df=10, 94)"),
+         paste0("q=", q3, ", n=", n3, ", k=", k3, "  (df=2, 24)"),
+         paste0("q=", q4, ", n=", n4, ", k=", k4, "  (df=2, 4)")
+       ),
+       col = c("blue", "red", "darkgreen", "purple"),
+       lwd = 2,
+       lty = c(1, 2, 3, 4), # Line types
+       title = "Parameters (q, n, k)")
 ```
 
 :::
@@ -355,7 +406,7 @@ $Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot 
 #| fig-align: 'center'
 #| fig-width: 8
 # Define a coefficient for the interaction effect
-beta3_interaction <- -0.5 # Return to education is $0.50 lower for women
+beta3_interaction <- -1.5 # Return to education is $0.50 lower for women
 
 # Add a new wage variable to our data frame
 wage_data <- wage_data %>%
@@ -392,8 +443,7 @@ ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
     $\frac{\partial E[wage_i | Female_i=1, Educ_i]}{\partial Educ_i} = \beta_2 + \beta_3$
 
 - **The wage differential between Females and Males is:**
-    $E[wage|F=1] - E[wage|F=0] = ((\beta_0 + \beta_1) + (\beta_2 + \beta_3)Educ_i) - (\beta_0 + \beta_2 Educ_i) = \beta_1 + \beta_3 Educ_i$
-    The wage gap is no longer constant; it depends on the level of education.
+    $E[wage|F=1] - E[wage|F=0] = ((\beta_0 + \beta_1) + (\beta_2 + \beta_3)Educ_i) - (\beta_0 + \beta_2 Educ_i) = \beta_1 + \beta_3 Educ_i$. The wage gap is no longer constant; it depends on the level of education.
     
 :::
 

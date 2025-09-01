@@ -37,7 +37,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
-- Hands-on Econometrics in Practice
+- Instrumental Variables
 
 ## What do we do today?
 
@@ -635,7 +635,6 @@ E[Y_{i1}(0) | D_i=1] = &\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-tre
 
 - This equation shows how we construct the counterfactual: we take the treated group's initial level and add the change experienced by the control group.
 
----
 
 ## Derivation of the DiD Estimator
 
@@ -695,8 +694,6 @@ $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Po
   - $E[Y | Treat=1, Post=0] = \beta_0 + \beta_1$
   - So, $\beta_1 = E[Y | Treat=1, Post=0] - E[Y | Treat=0, Post=0]$
 
----
-
 ## Interpretation of Coefficients (2/2)
 
   $$
@@ -750,7 +747,6 @@ Hey
 :::
 
 :::
-
 
 ## Advantages of the Regression Framework
 
@@ -863,172 +859,384 @@ $$
 
 :::
 
-## Extension: Multiple Periods & Staggered Adoption
 
-- The real world is often messier than 2x2.
+# Event Studies
 
-- Often times, treatments have **staggered adoption:** 
-  - Different units receive the treatment at different times.
-  - For example, State A adopts a policy in 2010, State B in 2012, State C never does.
-- The simple 2x2 Treat $\times$ Post model is no longer sufficient and can be biased.
-- Modern methods (e.g., Callaway & Sant'Anna, Sun & Abraham) address these issues by using better defined control groups for each treated unit.
+## What is an Event Study?
 
-## Staggered Adoption
+- A more general case of the difference-in-difference model is an _event study_
 
-- Many modern DiD settings involve \textbf{staggered treatment adoption}, where different units get treated at different times.
-    
-- The standard tool for this has been the two-way fixed effects (TWFE) regression:
+- To measure the economic impact of a specific, identifiable **event** on an outcome of interest.
 
-  \begin{equation*}
-      Y_{it} = \alpha_i + \lambda_t + \beta^{TWFE} \cdot D_{it} + \epsilon_{it}
-  \end{equation*}
-  where $D_{it}=1$ if unit $i$ is treated at time $t$.
-    
-- Recent research (Goodman-Bacon, 2021; de Chaisemartin \& D'Haultfœuille, 2020; 2022) shows that $\hat{\beta}^{TWFE}$ is a weighted average of all possible 2x2 DiD estimators.
-        
-- Some of these comparisons are "bad": they use already-treated units as controls for later-treated units.
+:::{.callout-tip title="Example: Event Studies"}
 
-## Why Are Bad Comparisons A Problem?
+- **The "Event" could be:**
+  - A company-specific event: Merger announcement, CEO change, earnings surprise.
+  - A policy change: A new tax law, a change in minimum wage.
+  - A natural event: A major hurricane, a pandemic.
 
-:::{.callout-tip title="Example: Bad Comparison"}
-
-Imagine Cohort 2010 gets treated in 2010 and Cohort 2012 gets treated in 2012.
-To estimate the effect on Cohort 2012 in the year 2012, TWFE implicitly uses the observations from Cohort 2010 as part of the "control" group. But Cohort 2010 has already been treated for two years!
-:::
-
-- This is only valid if treatment effects are constant across cohorts and time. If effects are heterogeneous or dynamic (e.g., they grow over time), this comparison is contaminated.
-
-- The resulting $\hat{\beta}^{TWFE}$ can be a meaningless average, sometimes with negative weights, and may not represent any true ATT.
-
-## Sun and Abraham (2021) Solution
-
-- The core idea is to avoid aggregation and bad comparisons.
-
-:::{.callout-note title="Sun and Abraham (2021) Procedure"}
-
-Step 1: Define cohorts
-
-A cohort, $G=g$, is the group of all units that are first treated at the same time period $g$.
-
-Let $G=\infty$ (or $G=C$) be the \textbf{never-treated} group.
-
-Step 2: Estimate Cohort-Specific ATTs
-
-Instead of one $\beta$, estimate a separate effect for _each cohort_ $g$ at _each time period_ $\ell$.
-
-Use only clean controls: units that are not yet treated. The never-treated group ($G=C$) is the cleanest control.
+- **The "Outcome" is often:**
+  - A firm's stock price (most common in finance).
+  - A firm's accounting performance (sales, profits).
+  - A macroeconomic variable (unemployment, inflation).
 
 :::
 
+- The central challenge is to determine what the outcome *would have been* if the event had not occurred.
 
-## Identification of Cohort-Specific ATT
+## Panel Event Study Model With Controls
 
-- The estimand of interest is the ATT for cohort $g$ at calendar time $\ell$ (where $\ell \ge g$). We denote this $\text{ATT}(g, \ell)$.
+- The canonical event study model uses firm and time fixed effects and replaces the single interaction term with a series of dummies for time *relative to the event*.
 
-- For each pair $(g, \ell)$, $\text{ATT}(g, \ell)$ is identified by a simple 2x2 DiD comparing cohort $g$ to the clean control group ($C$) between the pre-treatment period ($g-1$) and period $\ell$:
+:::{.callout-note title="Definition: Panel Event Study Model (with Control Subjects)"}
+$$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it} $$
 
-\begin{align*}
-    \widehat{\text{ATT}}(g, \ell) = \Big( &E[Y_\ell | G=g] - E[Y_{g-1} | G=g] \Big) \\
-    - \Big( &E[Y_\ell | G=C] - E[Y_{g-1} | G=C] \Big)
-\end{align*}
-
-- Identification assumption in this case is a cohort-specific parallel trends assumption. 
-  - In the absence of treatment, the outcome for cohort $g$ would have evolved in parallel to the outcome for the never-treated (or not-yet-treated) group.
-
-
-## Bias-variance Trade-off
-
-- The Sun and Abraham (2021) framework is flexible. You can choose your control group to manage the bias-variance trade-off:
-
-- Option A: Never-Treated Controls:
-  - This is the cleanest option, requiring the weakest parallel trends assumption (only vs. never-treated). It is preferred if the group is large enough.
-    
-- Option B: Not-Yet-Treated Controls.
-  - The estimator can use all currently untreated units as a time-varying control group.
-  - This substantially increases statistical power and reduces variance. The cost is a slightly stronger (but still plausible) parallel trends assumption against these not-yet-treated units.
-
-
-## Visualizing Staggered DiD: Event Study Plots
-
-- We have seen this already in Lecture 4
-  - These plots are standard for visualizing results from models with multiple periods.
-
--   **X-axis:** Time relative to the treatment event (e.g., -3, -2, -1, 0, +1, +2 years).
--   **Y-axis:** The estimated DiD coefficient for that relative time period.
--   **Interpretation:**
-    -   Coefficients for **pre-periods** ($t < 0$) should be near zero (validates parallel trends).
-    -   Coefficients for **post-periods** ($t \geq 0$) show the dynamic causal effect of the policy over time.
-
-## Visualization of Sun and Abraham (2021) approach
-
-- This is the dataset used in the study by Sun and Abraham (2021)
-
-:::{.panel-tabset .hey}
-
-### R
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| eval: false
-library(fixest)
-data(base_stagg)
-# Note that in this dataset, year_treated == 10000 for never treated firms 
-# and time_to_treatment == -1000
-model <- feols(y ~ sunab(year_treated, year) | id + year, data = base_stagg)
-#summary(model)
-iplot(model)
-```
-
-### Python
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| eval: false
-import pyfixest as pf
-base_stagg = r.base_stagg
-
-fit_twfe_saturated = pf.event_study(
-    base_stagg,
-    yname="y",
-    idname="id",
-    tname="year",
-    gname="year_treated",
-    estimator="saturated",
-)
-
-fit_twfe_saturated.aggregate()
-fit_twfe_saturated.iplot_aggregate()
-```
-
-### Stata
-
-```{stata}
-#| eval: false
-#| code-fold: true
-#| echo: true
-
-* Estimate the Sun and Abraham (2021) estimator in our example:
-eventstudyinteract y id year year_treated, fe(id year) cohort(year_treated) control_cohort(10000) event_time(time_to_treatment)
-```
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all time-invariant differences between firms.
+-   $\lambda_t$: **Time Fixed Effects**. These absorb all shocks or trends common to all firms in a given year `t`. 
+-   $D_{it}^k$: A dummy variable equal to 1 if firm `i` in year `t` is `k` periods away from its event date. `k` is the **relative time** or **event time**.
+-   **$\delta_k$ are the key coefficients.** They measure the average change in the outcome for treated firms `k` periods away from the event, relative to the control group.
 
 :::
+
+## Example Dataset
+
+- A dataset for an event study would look as follows: 
+  - *Note: For simplicity, only dummy columns for $k = -2, -1, 0, 1$ are included - a full model would include dummies for all relevant pre/post periods (e.g., $k \leq 3$ and $k \geq 2$).*
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------: | :---------: | :---------: |
+| 1 (Control)   |    2021    |         NA         |              NA               |       2.0        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2022    |         NA         |              NA               |       2.1        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2023    |         NA         |              NA               |       2.2        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2024    |         NA         |              NA               |       2.3        |      0       |      0       |      0      |      0      |
+| 1 (Control)   |    2025    |         NA         |              NA               |       2.4        |      0       |      0       |      0      |      0      |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      **1**   |      0       |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |      **1**   |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |      0       |     **1**   |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |      0       |      0      |     **1**   |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |      0       |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      **1**   |      0       |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |      **1**   |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |      0       |     **1**   |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |      0       |      0      |     **1**   |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |      0       |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      **1**   |      0       |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |      **1**   |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |      0       |     **1**   |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |      0       |      0      |     **1**   |
+
+## Interpretation of the Results
+
+- After running the regression, you will get a set of coefficients $\delta_k$ which are typically plotted on a graph:
+- **Testing Pre-Trends (`k < 0`):** The coefficients $\delta_{-K}, \dots, \delta_{-2}$ test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.^[The parameter $\delta_{-1}$ serves as the reference category, the "normalized difference".]
+- **The Effect at Impact (`k = 0`):** $\delta_0$ shows the immediate effect of the treatment in the event period itself.
+- **Dynamic Post-Treatment Effects (`k > 0`):** $\delta_1, \delta_2, \dots, \delta_L$ show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+
+## Event Study Visualization
 
 ```{r}
 #| echo: false
 #| fig-align: 'center'
-#| fig-width: 7
-#| fig-height: 3.5
+#| fig-width: 8
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
 
-library(fixest)
-data(base_stagg)
-# Note that in this dataset, year_treated == 10000 for never treated firms 
-# and time_to_treatment == -1000
-model <- feols(y ~ sunab(year_treated, year) | id + year, data = base_stagg)
-#summary(model)
-iplot(model)
+# --- 1. Create a Sample Results Data Frame ---
+# In a real analysis, this data frame would be the output of your regression model
+# (e.g., from a model run with the 'fixest' or 'lfe' package).
+# The coefficients represent the difference-in-differences estimates (Treated - Control).
+
+results_df <- data.frame(
+  event_time = -5:5,
+  # We manually create plausible estimates for demonstration purposes
+  estimate = c(
+    0.05, -0.02, 0.08, 0.01, # Pre-event coeffs, should be near zero (parallel trends)
+    0.00,                     # The reference period (k=-1), coefficient is 0
+    1.20,                     # Sharp impact on event day
+    1.55,                     # Effect increases
+    1.30,                     # Effect begins to decay
+    0.90,
+    0.65,
+    0.40
+  ),
+  # Standard errors are typically estimated by the regression model
+  std_error = c(
+    0.18, 0.15, 0.16, 0.14,
+    0.00,
+    0.20,
+    0.22,
+    0.21,
+    0.23,
+    0.25,
+    0.28
+  )
+)
+
+# Calculate 95% confidence intervals
+# 1.96 is the z-score for a 95% CI
+z_score <- 1.96
+results_df <- results_df %>%
+  mutate(
+    conf_low = estimate - z_score * std_error,
+    conf_high = estimate + z_score * std_error
+  )
+
+# Set the reference period (k=-1) confidence interval to zero as well
+results_df[results_df$event_time == -1, c("conf_low", "conf_high")] <- 0
+
+# Print the final data frame to be plotted
+#print("Data frame with estimated coefficients and confidence intervals:")
+#print(results_df)
+
+
+# --- 2. Plot the Results using ggplot2 ---
+
+event_study_plot <- ggplot(
+  data = results_df, 
+  aes(x = event_time, y = estimate)
+) +
+  # Add a horizontal line at y=0 to represent no effect
+  geom_hline(
+    yintercept = 0, 
+    linetype = "dashed", 
+    color = "red",
+    linewidth = 0.8
+  ) +
+  # Add a vertical line to separate pre- and post-treatment periods
+  geom_vline(
+    xintercept = -0.5, 
+    linetype = "dashed", 
+    color = "gray40"
+  ) +
+  # Add the confidence interval as a shaded ribbon
+  geom_ribbon(
+    aes(ymin = conf_low, ymax = conf_high),
+    alpha = 0.2, # Transparency of the ribbon
+    fill = "steelblue"
+  ) +
+  # Add a line connecting the point estimates
+  geom_line(
+    color = "steelblue",
+    linewidth = 1
+  ) +
+  # Add points for the estimates
+  geom_point(
+    color = "steelblue",
+    size = 3
+  ) +
+  # --- Customize labels and scales ---
+  labs(
+    title = "Event Study: Effect of Treatment with a Control Group",
+    subtitle = "The coefficient represents the difference-in-differences estimate (Treated vs. Control)",
+    x = "Event Time (k, relative to treatment)",
+    y = "Estimated Coefficient (δ_k)"
+  ) +
+  # Ensure all event time periods are shown on the x-axis
+  scale_x_continuous(breaks = seq(min(results_df$event_time), max(results_df$event_time), by = 1)) +
+  # Use a clean, publication-ready theme
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12),
+    axis.title = element_text(size = 12),
+    panel.grid.minor = element_blank()
+  )
+
+# Display the plot
+event_study_plot
 ```
+
+## What Happens Without a Control Group?
+
+- Imagine you removed the control firm (Firm 1) from the dataset. 
+  - Now, in the year 2023, the only firms you have are Firm 2 (which just got treated, k=0) and Firms 3 & 4 (which are pre-treatment, k=-1).
+
+- The regression would see that Firm 2's outcome went up in 2023. But it has no way to know:
+  - Was it because of the treatment ($\delta_0$)?
+  - Or was 2023 just a great year for everyone ($\lambda_{2023}$)?
+
+- Without the control group, the effect of being in the year 2023 ($\lambda_{2023}$) is perfectly collinear with the effect of being treated in 2023 ($\delta_0$).
+- The model cannot distinguish between them, and the regression will fail or produce meaningless results.
+
+
+# Event Studies Without Control Subjects
+
+## Event Study Without Control Subjects
+
+- There are, however, also event studies that do not need control firms. 
+
+- These tend to make use of an **estimation window:** a "clean" period **before** the event.
+
+- This is used to establish a baseline or "normal" behavior for the outcome variable. Typically, ~120 to ~250 days before the event window.
+
+- The period immediately surrounding (or after) the event date where we expect to see an impact. For example, from 5 days before to 5 days after the announcement ([-5, +5]).
+
+## Specification 
+
+:::{.callout-note title="Definition: Event Study (Without Control Group)"}
+
+- The model you can estimate with only treated units is:
+
+  $$
+    y_{it} = \alpha_i + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it}
+  $$
+
+-   $y_{it}$: The outcome for firm `i` at time `t`.
+-   $\alpha_i$: **Firm Fixed Effects**. These absorb all stable, time-invariant differences between the treated firms.
+-   $D_{it}^k$: A dummy variable = 1 if firm `i` in year `t` is `k` periods away from its event date.
+-   **$\delta_k$ are the key coefficients.** They measure the average outcome for a firm `k` periods from its event, *relative to the outcome in the omitted baseline period* (usually `k=-1`).
+
+- There are no $\lambda_t$ (time fixed effects). You cannot include them. 
+  - If you did, the model could not be estimated because your event-time dummies ($D^k$) would be perfectly predicted by the combination of firm and time fixed effects.
+
+:::
+
+
+## Example Required Dataset (No Control Group)
+
+- Let's use the same staggered adoption scenario as before, but we'll **remove the control firm (Firm 1)**.
+
+| Firm ID (`i`) | Year (`t`) | Event Year (`E_i`) | Relative Time (`k = t - E_i`) | Outcome (`y_it`) | Dummy `k=-2` | Dummy `k=-1` (Baseline) | Dummy `k=0` | Dummy `k=1` |
+| :------------ | :--------: | :----------------: | :---------------------------: | :--------------: | :----------: | :----------------------: | :---------: | :---------: |
+| **2 (Treated)** |    2021    |      **2023**      |              -2               |       2.5        |      1       |            0             |      0      |      0      |
+| **2 (Treated)** |    2022    |      **2023**      |              -1               |       2.6        |      0       |            1             |      0      |      0      |
+| **2 (Treated)** |    2023    |      **2023**      |               0               |       5.5        |      0       |            0             |      1      |      0      |
+| **2 (Treated)** |    2024    |      **2023**      |               1               |       5.8        |      0       |            0             |      0      |      1      |
+| **2 (Treated)** |    2025    |      **2023**      |               2               |       6.0        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2021    |      **2024**      |              -3               |       3.1        |      0       |            0             |      0      |      0      |
+| **3 (Treated)** |    2022    |      **2024**      |              -2               |       3.3        |      1       |            0             |      0      |      0      |
+| **3 (Treated)** |    2023    |      **2024**      |              -1               |       3.4        |      0       |            1             |      0      |      0      |
+| **3 (Treated)** |    2024    |      **2024**      |               0               |       7.1        |      0       |            0             |      1      |      0      |
+| **3 (Treated)** |    2025    |      **2024**      |               1               |       7.5        |      0       |            0             |      0      |      1      |
+| **4 (Treated)** |    2021    |      **2024**      |              -3               |       2.9        |      0       |            0             |      0      |      0      |
+| **4 (Treated)** |    2022    |      **2024**      |              -2               |       3.0        |      1       |            0             |      0      |      0      |
+| **4 (Treated)** |    2023    |      **2024**      |              -1               |       3.2        |      0       |            1             |      0      |      0      |
+| **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |            0             |      1      |      0      |
+| **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |            0             |      0      |      1      |
+
+## Crucial Caveat: The Problem with This Approach
+
+- Estimating this model means your results for $\delta_k$ are highly susceptible to bias from confounding factors.
+
+- **The coefficient $\delta_k$ now measures the sum of two things:**
+  - The true causal effect of the treatment at relative time `k`.
+  - **Any and all other unobserved shocks or trends that happened to occur at relative time `k`**.
+
+:::{.callout-tip title="Example: Confounding Factor"}
+Let's say a major economic boom started in 2023.
+
+- For Firm 2, its outcome `y` jumps in 2023. The model will attribute this entire jump to the treatment ($\delta_0$) because it has no control group to learn that *all* firms (even untreated ones) would have seen a jump in 2023.
+- Your estimate of the treatment effect will be severely biased upwards.
+:::
+
+## The Core Idea: Abnormal Returns
+
+- An event study with control firms works by isolating the "abnormal" part of an outcome's movement.
+
+:::{.callout-note title="Definition: Abnormal Return"}
+
+$$ \text{Abnormal Return}_{it} = \text{Actual Return}_{it} - \text{Normal Return}_{it} $$
+
+- **Actual Return ($R_{it}$):** The observed outcome for firm $i$ on day $t$. This is the raw data.
+- **Normal Return ($E[R_{it}]$):** The expected return for firm $i$ on day $t$, **conditional on the event not happening**. This is our counterfactual.
+:::
+
+- We need a model to estimate the Normal Return.
+
+## Estimating "Normal" Returns
+
+- The Normal Return is estimated using data from the **estimation window**.
+
+:::{.callout-tip title="Examples of Normal Return Models"}
+**Constant Mean Return Model:**  Assumes the normal return is just the firm's average return during the estimation period: $E[R_{it}] = \bar{R}_i$
+
+**Market Model:** Assumes the firm's return is related to the overall market return (e.g., S&P 500).
+
+- We run an OLS regression (one for each firm) using data **only from the estimation window**: $R_{it} = \alpha_i + \beta_i R_{mt} + e_{it}$
+- Here, $R_{mt}$ is the return on the market index. We get estimates for $\hat{\alpha}_i$ and $\hat{\beta}_i$.
+- The Normal Return for any day $t$ in the **event window** is then predicted as: $\widehat{E[R_{it}]} = \hat{\alpha}_i + \hat{\beta}_i R_{mt}$. 
+
+:::
+
+## Calculating Abnormal Returns (AR)
+
+- Once we have our estimate of the Normal Return, we can calculate the Abnormal Return (AR) for each firm $i$ on each day $t$ in the **event window**.
+
+$$ AR_{it} = R_{it} - (\hat{\alpha}_i + \hat{\beta}_i R_{mt}) $$
+
+- $AR_{it} > 0$ suggests positive news or impact.
+- $AR_{it} < 0$ suggests negative news or impact.
+- $AR_{it} \approx 0$ suggests no impact.
+
+## Aggregating Abnormal Returns (CAR)
+
+- We are usually interested in the overall effect, not just one firm on one day. We are interested in two things:
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**1. Average Abnormal Return (AAR):** Average the abnormal returns across all $N$ firms for a single day $t$ in the event window.
+    $$
+      AAR_t = \frac{1}{N} \sum_{i=1}^{N} AR_{it}
+    $$
+    
+  - This gives us the average effect on a specific day relative to the event (e.g., the effect on day t=+1).
+  
+:::
+
+## Aggregating Abnormal Returns (CAR) (Cont.)
+
+:::{.callout-note title="Aggregation of Abnormal Returns"}
+
+**2. Cumulative Average Abnormal Return (CAAR or CAR):** Sum the AARs over a period of time within the event window (from $t_1$ to $t_2$).
+  $$
+    CAR(t_1, t_2) = \sum_{t=t_1}^{t_2} AAR_t
+  $$
+    
+  - This tells us the total cumulative impact of the event over a specific window. For example, $CAR(-1, +1)$ measures the total effect from the day before to the day after the event.
+
+:::
+  
+## Visualizing Event Study Results
+
+- The standard way to present results is a plot of the Average Abnormal Return (AAR) over the event window.
+
+```{python}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+from event_study import *
+# 1. Simulate the data using the market model
+simulated_data = simulate_finance_event_data()
+
+# 2. Estimate the model using the standard AR/AAR finance methodology
+estimation_results = estimate_abnormal_returns(simulated_data)
+
+# 3. Plot the results
+plot_event_study(estimation_results)
+
+```
+
+## Hypothesis Testing
+
+- Standard $t$-statistics from regression estimates can be used to test hypotheses on AAR's on particular days. 
+- We might also be interested in hypothesis testing of CAR's.
+  - Is the observed CAR just random noise, or is there a real effect?
+  - The null hypothesis is typically $H_0: CAR(t_1, t_2) = 0$.
+  - Standard errors are calculated based on the variance of the returns in the estimation window.
+  - If the t-statistic is large enough (and p-value is small), we conclude the event had a statistically significant impact.
+
+## Assumptions and Caveats in Event Studies
+
+- Event studies without a control group have various caveats and assumptions:
+
+  - **Efficient Markets (for stock studies):** The model assumes prices react quickly and rationally to new information.
+  - **No Confounding Events:** The event window must be "clean" of other major, contemporaneous events that could also affect the outcome.
+  - **Correct Event Date:** The analysis is sensitive to using the right date of the information release.
+  - **Model Specification:** The results can depend on the model chosen for normal returns (e.g., Market Model vs. Fama-French 3-Factor Model).
+  - **Stable Estimation Window:** The relationship between the firm and the market (the $\beta$) must be stable between the estimation and event windows.
+
 
 # Potential Pitfalls
 
