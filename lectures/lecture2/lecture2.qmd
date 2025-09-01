@@ -104,14 +104,53 @@ Now we have $k$ explanatory variables.
 
   - `lm(y ~ x1 + x2, data=df)` in R
   - `reg y x1 x2` in Stata
-  - `pf.feols(y ~ x1 + x2, data=df)` after `import pyfixest as pf` in Python.^[Some examples use the `statsmodels` package in Python, which is the standard way. However, the `pyfixest` package is easier and more straightforward.] 
+  - `pf.feols("y ~ x1 + x2", data=df)` after `import pyfixest as pf` in Python.^[Some examples use the `statsmodels` package in Python, which is the standard way. However, the `pyfixest` package is easier and more straightforward.] 
+  
+## Interpretation of MLR
+
+- In multiple linear regression, our primary goal is often to estimate the causal effect of a specific variable of interest (say $X_1$) on an outcome ($Y$). The challenge is that in the real world, many factors are changing at once.
+
+- The purpose of control variables ($X_2, X_3, \dots$) is to statistically "hold constant" other relevant factors that could be confounding our results.
+
+- The validity of your estimated causal effect hinges on choosing the right controls. Including the wrong ones can be worse than including none at all.
+
+## Good vs. Bad Controls
+
+- A good control variable is a _confounder_. A confounder is a pre-treatment variable that is correlated with both your variable of interest ($X_1$) and your outcome ($Y$).
+- Failing to control for a confounder leads to omitted variable bias (OVB). The coefficient $\beta_1$ will incorrectly absorb the effect of the missing variable.
+
+:::{.callout-tip title="Example: Good Control Variable"}
+
+In estimating the effect of education ($X_1$) on wages ($Y$), innate ability is a classic confounder. Ability is likely correlated with how much education someone pursues and their potential earnings. Controlling for a proxy of ability (like an IQ test score, $X_2$) helps to prevent the estimated return to education from being biased upwards.
+
+:::
+
+## Bad Controls
+
+- Bad controls are variables that, when included in a regression, actually induce bias or obscure the true causal relationship. There are two kinds of them:
+  - An intermediate variable that lies on the causal pathway between your variable of interest and the outcome.
+    - Controlling for a mediator closes off one of the channels through which $X_1$ affects $Y$. You are essentially holding constant a part of the effect you want to measure.
+  - A collider variable that is causally influenced by both the variable of interest ($X_1$) and the outcome ($Y$).
+    - Controlling for a collider can induce a spurious statistical association between $X_1$ and $Y$, even if none exists.
+
+:::{style="font-size: 0.7em;"}
+
+:::{.callout-tip title="Example: Bad Control"}
+
+Suppose we study the relationship between having a MSc degree ($X_1$) and having a start-up idea ($Y$) among people who receive research grants ($Z$). Getting a grant ($Z$) may be caused by both having a MSc and having a good idea. 
+
+If we only look at people who received grants (i.e., control for $Z$), we might find a spurious negative correlation. Within the grant-recipient pool, someone with a MSc but a weak idea could get the grant, as could someone without a MSc but a brilliant idea. This creates an artificial trade-off in our selected sample.
+
+:::
+
+:::
 
 ## Variance of OLS Estimators in MLR
 
-:::{.callout-note title="Definition: Variance of the OLS Estimator (Multivariate)"}
+:::{.callout-note title="Definition: (Estimated) Variance of the OLS Estimator (Multivariate)"}
 
 $$
-Var(\hat{\beta}_j) = \frac{\sigma^2}{SST_j (1 - R_j^2)}
+\widehat{Var}(\hat{\beta}_j) = \frac{\hat{\sigma}^2}{SST_j (1 - R_j^2)}
 $$
 
 - $SST_j$ is the total variation in $x_j$: $\sum_{i=1}^N (x_{ij} - \bar{x}_j)^2$
@@ -458,12 +497,15 @@ ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
 - By now, we can understand virtually all of the standard statistical output from R/Python/Stata.
 - Let's look at the full output from R/Python/Stata for our simple regression.
 
-:::{.panel-tabset .hey}
+:::{.panel-tabset .scroll-container}
 
 ### R
 
 ```{r}
 #| echo: true
+#| collapse: true
+#| code-fold: true
+
 mlr_model <- lm(wage ~ educ + exper, data = dat_mlr)
 summary(mlr_model)
 ```
@@ -472,6 +514,9 @@ summary(mlr_model)
 
 ```{python}
 #| echo: true
+#| collapse: true
+#| code-fold: true
+
 import statsmodels.api as sm
 import pandas as pd
 # Create a DataFrame for X (automatically keeps variable names)
@@ -491,6 +536,9 @@ print(model.summary())
 ```{stata}
 #| eval: false
 #| echo: true
+#| collapse: true
+#| code-fold: true
+
 reg wage educ expr
 ```
 
@@ -512,8 +560,8 @@ reg wage educ expr
 
 ## Interpretation with Controls
 
-- educ: $\hat{\beta}_1 \approx 1.02$: Holding experience constant, one more year of education is associated with a $1.02/hr increase in wages, on average.
-- exper: $\hat{\beta}_2 \approx 0.16$: Holding education constant, one more year of experience is associated with a $0.16/hr increase in wages, on average.
+- educ: $\hat{\beta}_1 \approx 1.02$: Holding experience constant, one more year of education is associated with a €1.02/hr increase in wages, on average.
+- exper: $\hat{\beta}_2 \approx 0.16$: Holding education constant, one more year of experience is associated with a €0.16/hr increase in wages, on average.
 - The R-squared increased relative to the simple model, suggesting this model explains more variation in wages.
 - The t-statistics tell us whether these coefficients are statistically distinguishable from zero.
 
@@ -521,13 +569,13 @@ reg wage educ expr
 
 ## OLS Variance
 
-- Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Assuming the regressors $x_i$ are non-stochastic, we have:
+- Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Conditional on the regressors $x_i$, we have:^[Strictly speaking, we are evaluating the _conditional variance_ here, i.e. $Var(\beta_1 | X_i)$. But for brevity and by convention, we use $Var(\beta_1)$. We also focus on the case with 1 regressor in this exposition. The formulae become more complicated with $k$ regressors, but the insights generalize.]
 
   $$
     Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
   $$
 
-- To evaluate the variance of the sum, we must make assumptions about the error terms, $u_i$. The **Linear Model** imposes two key assumptions on the errors:
+- To evaluate the variance of the sum, we must make assumptions about the error terms, $u_i$. The standard output in R/Python/Stata imposes two key assumptions on the errors:
   1.  **No serial correlation:** The errors are uncorrelated across observations. Mathematically, $Cov(u_i, u_j) = 0$ for all $i \neq j$.
   2.  **Homoskedasticity:** The errors have a constant variance. Mathematically, $Var(u_i) = \sigma^2$ for all $i$.
 
@@ -554,7 +602,8 @@ reg wage educ expr
 
 ## The Problem of Heteroskedasticity
 
-- The assumption of homoskedasticity ("same scatter") is often violated in economic data. **Heteroskedasticity** occurs when the variance of the error term is *not* constant across observations.
+- The assumption of homoskedasticity ("same scatter") is often violated in economic data. 
+- **Heteroskedasticity** occurs when the variance of the error term is *not* constant across observations.
 
   -  **Formal Definition:** $Var(u_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
   - **Intuitive Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
@@ -593,11 +642,19 @@ reg wage educ expr
 
 - The square root of this value is the **heteroskedasticity-robust standard error** (or HC-robust SE).
 
+## HC Robust Standard Errors in Software
+
+- By default, you should estimate a regression and compute heteroskedastic standard errors. 
+- Because this is not the default behavior in statistical packages, you need to do that manually.
+  - In R: `feols(y ~ x1 + x2, data = df, vcov='hc1')`
+  - In Python: `pf.feols("y ~ x1 + x2", data = df).vcov("HC1")`
+  - In Stata: `reg y x1 x2, robust`
+
 ## Summary HC Robust SE
 
-- **What it Corrects For:** 
+- **What it corrects for:** 
   - HC-robust standard errors correct for heteroskedasticity. They do **not** correct for serial correlation (which requires clustered SEs) or omitted variable bias.
-- **When to Use:**
+- **When to use:**
   - In cross-sectional data analysis, heteroskedasticity is the rule rather than the exception. The modern consensus among econometricians is to use HC-robust standard errors **by default**.
   - The cost of using them when errors are truly homoskedastic is minimal in large samples, while the cost of failing to use them when heteroskedasticity is present is high (invalid inference).
 - **Efficiency:** 
@@ -605,9 +662,9 @@ reg wage educ expr
 
 # Clustered Standard Errors
 
-## OLS Variance
+## OLS Variance Expansion
 
-- We have previously seen that, to perform inference (t-tests, confidence intervals), we need the variance of the OLS estimator, $Var(\hat{\beta}_1)$.
+- We now express the variance of the OLS estimator, $Var(\hat{\beta}_1)$ in a more general form:
 
   $$
     Var(\hat{\beta}_1) = Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})u_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
@@ -621,18 +678,16 @@ reg wage educ expr
 
 ## Classical Assumptions
 
-- The **Classical Linear Model (CLM)** makes two critical assumptions here:
+- The classical linear model makes two critical assumptions here:
 
   1.  **Homoskedasticity:** $Var(u_i) = \sigma^2$ for all $i$.
   2.  **No serial correlation:** $Cov(u_i, u_j) = 0$ for all $i \neq j$.
 
-- Under these assumptions, the second term (the sum of covariances) vanishes entirely. The formula simplifies beautifully:
+- Under these assumptions, the second term (the sum of covariances) vanishes entirely. The formula simplifies:
 
   $$
     Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \frac{\sigma^2 \sum (x_i - \bar{x})^2}{\left(\sum (x_i - \bar{x})^2\right)^2} = \frac{\sigma^2}{\sum (x_i - \bar{x})^2}
   $$
-
-- This is the familiar, standard OLS variance formula. Our standard errors are the square root of an estimate of this quantity.
 
 ##  Intra-Cluster Correlation
 
@@ -663,8 +718,8 @@ reg wage educ expr
 - Let's re-derive the variance of $\hat{\beta}_1$ under the clustering assumption. We start again from:
 
   $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)
-  $$
+    Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \color{blue}{Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)}
+  $$  {#eq-numerator}
 
 - where $G$ is the number of clusters and $N_g$ is the size of cluster $g$.
 
@@ -674,13 +729,14 @@ reg wage educ expr
     Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right) \right)
   $$
   
+
+## Deriving Cluster-Robust Variance (Cont.)
+
 - Since errors are uncorrelated *across* clusters, the variance of this sum is the sum of the variances:
 
   $$
     = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)
   $$
-  
-## Deriving Cluster-Robust Variance (Cont.)
 
 - Now, let's expand the variance term for a *single* cluster $g$. This is where the non-zero covariances appear:
 
@@ -709,7 +765,7 @@ reg wage educ expr
 
 - A natural estimator for this quantity is simply the squared sum of the estimated scores for that cluster: $(u_g)^2 = \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2$.
 
-- By summing this quantity over all clusters, we get an estimate of the total variance of the numerator of $\hat{\beta}_1$:
+- By summing this quantity over all clusters, we get an estimate of the total variance of the numerator of $\hat{\beta}_1$^[The blue term in @eq-numerator.]:
 
   $$
     \widehat{Var}\left(\text{numerator}\right) = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2
@@ -720,7 +776,7 @@ reg wage educ expr
 - Plugging this back into our main variance formula for $\hat{\beta}_1$, we get the **cluster-robust variance estimator**:
 
   $$
-    V\hat{a}r_C(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \left[ \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2 \right]
+    \widehat{Var}_C(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \left[ \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2 \right]
   $$
   
 - A small-sample correction factor, $\frac{G}{G-1}\frac{N-k}{N-1}$, is typically applied, but the core formula above is the key insight.
@@ -730,7 +786,7 @@ reg wage educ expr
 - Let's compare this to the **heteroskedasticity-robust estimator**:
 
   $$
-    V\hat{a}r_W(\hat{\beta}_1) = \frac{1}{\left(\sum_i (x_i - \bar{x})^2\right)^2} \left[ \sum_{i=1}^N (x_i - \bar{x})^2 \hat{u}_i^2 \right]
+    \widehat{Var}_W(\hat{\beta}_1) = \frac{1}{\left(\sum_i (x_i - \bar{x})^2\right)^2} \left[ \sum_{i=1}^N (x_i - \bar{x})^2 \hat{u}_i^2 \right]
   $$
 
 - The HC estimator assumes observations are independent but allows their variances to differ. It estimates the variance contribution of each observation $i$ and sums them up.
@@ -746,6 +802,13 @@ reg wage educ expr
   - You should cluster at the level at which the unobserved components are shared. If you have students in classrooms within schools, and you suspect shocks at both the classroom and school level, you should cluster at the broader level (school), as this allows for correlation within classrooms *and* between classrooms within the same school.
 - **Consequences of Failure to Cluster:** 
   - If intra-cluster correlation exists and you use standard OLS standard errors, your standard errors will be biased downwards. This will make you overly confident in your results and lead to spurious findings of statistical significance.
+  
+## Clustering in Software
+
+- Similarly to HC-Robust standard errors, clustered standard errors need to be applied explicitly in statistical software. 
+  - In R: `feols(y ~ x1 + x2, data = df, vcov=~cluster_variable)`
+  - In Python: `pf.feols("y ~ x1 + x2", data = df).vcov({"CRV3": "cluster_variable"}).summary()`
+  - In Stata: `reg y x1 x2, vce(cluster cluster_variable)`
 
 # Summary
 

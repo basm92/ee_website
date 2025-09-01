@@ -99,7 +99,7 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
   - Tutorials: Wednesday and Thursday, 13:15-15:15-17:15 (see [mytimetable](http://mytimetable.uu.nl))
   
 - One **mid-term** (7 Oct) and one **end-term exam** (7 Nov)
-- Organized on _Canvas_ 
+- Organized on Remindo.
 - Featuring both multiple choice and open questions akin to the tutorials
 
 ## Info for students with a disability
@@ -511,7 +511,7 @@ grid.arrange(plot1, plot2, ncol = 2,
 
 ## OLS Solution
 
-- Solving this system of two equations for the two unknowns ($\hat{\beta}_0$, $\hat{\beta}_1$) gives the OLS estimator formulas:
+- Solving this system of two equations for the two unknowns ($\hat{\beta}_0$, $\hat{\beta}_1$) gives the OLS estimator formulas (provided the Sample Variance in $x \neq 0$):
 
 :::{.callout-note title="Theorem: OLS Estimates for $\beta_0$ and $\beta_1$"}
 $$
@@ -606,10 +606,10 @@ reg wage educ
 
 - The values of the coefficients depend on the units of measurement of $y$ and $x$. We've used a **level-level** model ($y$ and $x$ are in their natural units).
 
-- Suppose we measured wage in cents instead of dollars.
-  - The new dependent variable is $wage_{cents} = 100 \times wage$.
+- Suppose we measured wage in cents instead of euros.
+  - The new dependent variable is $Wage_{cents} = 100 \times Wage$.
   - The new regression would be:
-    $\widehat{wage_{cents}} = (100 \times \hat{\beta}_0) + (100 \times \hat{\beta}_1) \times educ$
+    $\widehat{Wage_{cents}} = (100 \times \hat{\beta}_0) + (100 \times \hat{\beta}_1) \times Educ$
   - Both the intercept and slope would be 100 times larger. The *interpretation* is the same, just the units change ("an extra year of education increases wage by 125 cents").
 
 ## Units and Functional Form (Cont.)
@@ -618,12 +618,12 @@ reg wage educ
   - The interpretation of $\hat{\beta}_1$ would become "the estimated change in wage for an additional *month* of education." The coefficient value would be $\frac{1}{12}$ of its original value:
 
 :::{.callout-tip title="Example: Education in Months"}
-From our definition, $educ_{years} = \frac{1}{12} educ_{months}$. Let's substitute this into the original estimated equation:
+From our definition, $Educ_{years} = \frac{1}{12} Educ_{months}$. Let's substitute this into the original estimated equation:
 
 \begin{align*}
-\widehat{wage} &= \hat{\beta}_0 + \hat{\beta}_1 educ_{years} \\
-&= \hat{\beta}_0 + \hat{\beta}_1 \left( \frac{1}{12} educ_{months} \right) \\
-&= \hat{\beta}_0 + \left( \frac{\hat{\beta}_1}{12} \right) educ_{months}
+\widehat{Wage} &= \hat{\beta}_0 + \hat{\beta}_1 Educ_{years} \\
+&= \hat{\beta}_0 + \hat{\beta}_1 \left( \frac{1}{12} Educ_{months} \right) \\
+&= \hat{\beta}_0 + \left( \frac{\hat{\beta}_1}{12} \right) Educ_{months}
 \end{align*}
 :::
 
@@ -632,7 +632,7 @@ From our definition, $educ_{years} = \frac{1}{12} educ_{months}$. Let's substitu
 - So far, we've assumed a linear relationship: a one-unit change in $x$ leads to the same change in $y$, regardless of the starting value of $x$.
   - But often, relationships are not linear. We use transformations (like logarithms) to:
   - **Model Non-Linear Relationships**: Capture effects that are proportional or diminishing.
-  - **Change the Interpretation**: Analyze percentage changes (elasticities) instead of unit changes.
+  - **Change the Interpretation**: Analyze percentage changes instead of unit changes.
   - **Improve Statistical Properties**: Stabilize the variance of the error term or make the distribution of a variable more symmetric.
 
 - The most common transformations involve the natural logarithm, $\log()$.
@@ -662,7 +662,7 @@ In a log-level model, $\beta_1$ is the *proportional* change in $y$.
 
 We multiply by 100 to get a percentage.
 
-If $\widehat{\log(wage)} = 1.5 + 0.08 \times educ$, an additional year of education is associated with an approximate $0.08 \times 100 = 8\%$ increase in wage.
+If $\widehat{\log(Wage)} = 1.5 + 0.08 \times Educ$, an additional year of education is associated with an approximate $0.08 \times 100 = 8\%$ increase in wage.
 
 :::
 
@@ -689,7 +689,7 @@ A change in $\log(x)$ is approximately the proportional change in $x$: $\Delta \
 
 :::{.callout-tip title="Example: Level-Log Model"}
 
-Suppose that $\text{price} = 200 + 75 \times \log(\text{sqft})$ is an estimated regression model for house prices.
+Suppose that $\text{Price} = 200 + 75 \times \log(\text{Sqft})$ is an estimated regression model for house prices.
 
 Then, A 1% increase in square footage is associated with a $75/100 = \$0.75$ increase in price.
 :::
@@ -714,7 +714,7 @@ Using the same approximations as before:
 
 :::{.callout-tip title="Example: Interpretation of $\beta_1$ in the Log-Log Model"}
 
-Suppose we have estimated $\log(\text{sales}) = 4.8 - 1.2 \times \log(\text{price})$ for a product. Then, a 1% increase in price is associated with a 1.2% decrease in sales. 
+Suppose we have estimated $\log(\text{Sales}) = 4.8 - 1.2 \times \log(\text{Price})$ for a product. Then, a 1% increase in price is associated with a 1.2% decrease in sales. 
 
 :::
 
@@ -737,7 +737,7 @@ A one-unit change in $x$ is associated with a change in $y$ of approximately $\b
 
 :::{.callout-tip title="Example: Polynomial Regression"}
 
-Suppose we have estimated $\widehat{wage} = 3.50 + 0.60 \times educ - 0.02 \times educ^2$.
+Suppose we have estimated $\widehat{Wage} = 3.50 + 0.60 \times Educ - 0.02 \times Educ^2$.
 
 The effect of the *first* year of education ($x=0 \to x=1$) is about $\$0.60$.
 
@@ -749,7 +749,7 @@ This captures the *diminishing returns* to education on wage.
 
 ## Dummy Variables
 
-- A dummy variable (or indicator variable), $D_i$, is a special variable: a binary variable that takes the value 1 if an observation `i` belongs to a specific category, and 0 otherwise. 
+- A dummy variable (or indicator variable), $D_i$, is a special variable: a binary variable that takes the value 1 if an observation $i$ belongs to a specific category, and 0 otherwise. 
   - This allows us to incorporate qualitative information (e.g., gender, policy status, geographic region) into a regression model.
 
 :::{.callout-tip title="Example: Wage Conditional on Gender Dummy"}
@@ -891,7 +891,7 @@ $$
 :::{.callout-note title="SLR Assumptions"}
 - Assumption 1: Linearity in Parameters. The population model is $y = \beta_0 + \beta_1 x + u$.
 - Assumption 2: Random Sampling. The data $(x_i, y_i)$ are a random sample from the population described by the model.
-- Assumption 3: Sample Variation in $x$. The values of $x_i$ in the sample are not all the same. This is the **no perfect collinearity** assumption. If all $x_i$ are the same, the denominator of $\hat{\beta}_1$ is zero!
+- Assumption 3: Sample Variation in $x$. The values of $x_i$ in the sample are not all the same. This is the **no perfect collinearity** assumption. 
 - Assumption 4: Zero Conditional Mean. $E(u|x) = 0$. The average value of the unobserved factors is unrelated to the value of $x$.
 :::
 
@@ -1006,13 +1006,11 @@ legend("topright",
 
 :::{.callout-note title="Theorem: Variance of the OLS Estimator"}
 
-Under assumptions **SLR.1 through SLR.5** (all four SLR assumptions plus _homoskedasticity_), the variance of the OLS slope estimator is:
+Under assumptions **SLR.1 through SLR.5** (all four SLR assumptions plus _homoskedasticity_), the estimated variance of the OLS slope estimator is:
 
 $$
-Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\sigma^2}{SST_x}
+\widehat{Var}(\hat{\beta}_1) = \frac{\hat{\sigma}^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\hat{\sigma}^2}{SST_x}
 $$
-
-Consult the appendix for a derivation.
 
 :::
 
@@ -1026,7 +1024,7 @@ Consult the appendix for a derivation.
   - $\sigma^2$ is the variance of the underlying population. It's the inherent "noisiness" or "spread" of the data points themselves.
   - $n$ is your sample size. It's how much data you have to "anchor" your estimate.
   
-- Looking at $Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\sigma^2}{SST_x}$ tells us the exact same.. 
+- Looking at $\widehat{Var}(\hat{\beta}_1) = \frac{\hat{\sigma}^2}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{\hat{\sigma}^2}{SST_x}$ tells us the exact same.. 
 
 ## Determinants of the Variance
 
@@ -1037,7 +1035,7 @@ Consult the appendix for a derivation.
 
 ## Variance Illustration
 
-- We plot the distribution of the 1,000 estimated coefficients is centered around the true value of 5 (the solid red line).
+- We plot the distribution of the 1,000 estimated coefficients, which is centered around the true value of 5 (the solid red line).
   - In the left panel below, we have a *high-variance estimator* (n=30)
     - The histogram on the left is visibly wider and flatter. This indicates a larger spread in the estimated coefficients. Any single estimate from a sample of this size could be quite far from the true value. 
   - In the right panel below, we have a *low-variance estimator* (n=500)
@@ -1168,14 +1166,16 @@ par(mfrow = c(1, 1))
 
 ## Determining the Variance in Practice
 
-- There's a catch. We need $\sigma^2$ (the true variance of the errors) for our formula.
+- In theory, to know the true variance of the OLS estimator, we need $\sigma^2$ (the true variance of the errors) for our formula.
   - But we can never know the true errors, because we don't know the true line!
   - All we have are the residuals ($e_i$) from our estimated line: $e_i = y_i - \hat{y}_i$
 
-- Solution: We use the residuals to estimate the error variance. We call this estimate $s^2$ or $\hat{\sigma^2}$, and its square root is called the **standard error** of a regression coefficient. 
+- Solution: We use the residuals to estimate the error variance. We call this estimate $s^2$ or $\hat{\sigma}^2$, and its square root is called the **standard error** of a regression coefficient. 
+- On the basis of this estimate, we _estimate_ the sample variance _for our estimate $\hat{\beta}$_. Hence our terminology of $\widehat{Var}(\hat{\beta})$. 
 
 ## The Standard Error
 
+- Our starting point is the computation of the _standard error of a regression_ (SER). 
 - The **SER** is an estimator of the standard deviation of the population error term, $\sigma$. It measures the typical size of a residual (the model's "average mistake").
 
 :::{.callout-note title="Definition: Standard Error of a Regression"}
@@ -1191,10 +1191,10 @@ $$
 
 - Now we have all the pieces:
   - Start with the true (but unusable) variance formula $Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$
-  - Plug in our estimate $\hat{\sigma}^2$ for the unknown $\sigma^2$
+  - Plug in our estimate $\hat{\sigma}$ for the unknown $\sigma$ (the SER). 
   - This gives us the estimated variance: $\hat{\sigma}^2 / \sum (X_i - \bar{X})^2$
-  - Take the square root to get it back to the original units of β₁:
-  - This is the Standard Error of the Coefficient.
+  - Take the square root to get it back to the original units of $\beta_1$:
+  - This is the Standard Error of the $\beta_1$ coefficient.
 
 :::{.callout-note title="Definition: Standard Error of a Coefficient"}
 $$
@@ -1209,11 +1209,10 @@ $$
     \text{Test Stat} = (\text{Our Estimate of } \hat{\beta} - \text{Hypothesized Value}) / \text{Standard Error}(\hat{\beta})
   $$
   
-- If we knew the true $\sigma$, this statistic would follow a perfect Normal distribution.
-
-- We don't know the population error variance, $\sigma^2$.
-- Solution: We replace $\sigma^2$ with its sample estimate, $\hat{\sigma}^2 = \frac{SSR}{n-k-1}$. 
-  - Because we had to *estimate* $\sigma^2$, we introduce extra sampling variability into our statistic.
+- If we knew the true population standard error $\sigma$, this statistic would follow a perfect Normal distribution.
+- We don't know the population standard error, $\sigma$.
+- Solution: We replace $\sigma$ with its sample estimate, $\hat{\sigma} = \sqrt{\frac{SSR}{n-k-1}}$. 
+  - Because we had to *estimate* $\sigma$, we introduce extra sampling variability into our statistic.
   - This means that our test statistic will be $t$-distributed instead of normally distributed. 
 
 ## Why a t-statistic?

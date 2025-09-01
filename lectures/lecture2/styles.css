@@ -38,6 +38,19 @@
   font-size: 0.8em !important;
 }
 
+.reveal .hey pre.sourceCode code {
+  max-height: 100px !important;
+}
+
+.reveal .hey pre code {
+  max-height: 200px !important;
+}
+
+.scroll-container {
+  overflow-y: scroll;
+  height: 400px; 
+}
+
 .slide-logo {
   max-height: 5.2rem !important;
 }
