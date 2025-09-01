@@ -706,22 +706,134 @@ Let $Z_i$ be a measure of growing conditions (e.g., rainfall in avocado-growing 
 
 # IV in Software
 
+
 ## IV in R/Python/Stata
+
+- All standard software packages support implementation of IV regression.
 
 :::{.panel-tabset}
 
 ### R
 
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: true
+
+# 1. Install and load necessary packages
+#install.packages(c("fixest", "AER"))
+library(fixest)
+library(AER)
+
+# 2. Estimate the IV model
+# The formula is read as: y regressed on controls,
+# with x being instrumented by z.
+iv_model_r <- feols(y ~ controls | x ~ z, data = df)
+
+# 3. Display the results
+summary(iv_model_r)
+```
+
 ### Python
 
+```{python}
+#| echo: true
+#| eval: false
+#| code-fold: true
+# 1. Install necessary packages
+# !pip install pyfixest pandas statsmodels
+
+# 2. Import libraries and load data
+import numpy as np
+import pandas as pd
+from pyfixest.estimation import feols
+import statsmodels.api as sm # Used to easily load the R dataset
+
+# 3. Estimate the IV model using the R-style formula
+# The formula is identical to the one used in R
+iv_model_py = feols('y ~ controls | x ~ z', data=df)
+
+# 4. Display the results
+iv_model_py.summary()
+```
+
 ### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+* 1. Load the data
+use "dataset.csv", clear
+
+* 2. Estimate the IV model
+* Syntax: ivregress 2sls depvar [exog_vars] (endog_var = instrument_vars)
+ivregress 2sls y controls (x = z)
+
+* To get robust standard errors, which is often the default in R/Python packages
+ivregress 2sls y controls (x = z), robust
+```
 
 :::
 
 
 ## Testing for Relevance
 
-Todo. 
+- The standard test for instrument relevance is the first-stage F-statistic. This test checks if the instruments are jointly significant predictors of the endogenous variable. A common rule of thumb is that an F-statistic greater than 10 suggests the instruments are sufficiently strong.
+
+:::{.panel-tabset}
+
+### R
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: true
+# 1. Estimate the IV model
+iv_model_r <- feols(y ~ controls | x ~ z, data = df)
+
+# 2. Use the fitstat() function to extract various versions of first stage F statistics:
+fitstat(iv_model_r, "cd") # For the Craig-Donald F Stat.
+fitstat(iv_model_r, "kp") # For the Kleibergen-Paap F Stat.
+fitstat(iv_model_r, "ivf") # For the standard F Stat.
+```
+
+
+### Python
+
+```{python}
+#| echo: true
+#| eval: false
+#| code-fold: true
+from pyfixest.estimation import feols
+import statsmodels.api as sm # Used to easily load the R dataset
+
+# 1. Estimate the IV model using the R-style formula
+iv_model_py = feols('y ~ controls | x ~ z', data=df)
+
+# 2. Look at F stat
+# You can access the F-Statistic of the first stage via the _f_stat_1st_stage attribute:
+iv_model_py._f_stat_1st_stage
+
+# 3. Via the IV_Diag method, you can compute additional IV Diagnostics, as the effective F-statistic following Olea & Pflueger (2013):
+iv_model_py.IV_Diag()
+iv_model_py._eff_F
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+* Run 2sls regression
+ivregress 2sls y controls (x = z), robust
+
+* Then, run the post-estimation command for first-stage statistics
+estat firststage
+```
+
+:::
 
 # Summary
 
