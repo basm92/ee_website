@@ -371,8 +371,6 @@ $$
   - $x_i$ is the education of individual $i$.
   - $u_i$ is the error term for individual $i$. It represents the deviation of individual $i$'s actual wage from the population average, $E(y|x_i)$.
 
-- By definition of the conditional expectation, $E(u_i|x) = 0$. The average of the unobserved factors does not depend on the level of education.
-
 ## From Population to Sample
 
 - We can't observe the entire population. We only have a sample of data.
@@ -432,11 +430,12 @@ $$
 :::{.callout-note title="Definition: OLS Optimzation Problem"}
 
 $$
-\min_{\hat{\beta}_0, \hat{\beta}_1} SSR = \sum_{i=1}^{n} e_i^2 = \sum_{i=1}^{n} (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2
+\min_{\hat{\beta}_0, \hat{\beta}_1} SSR = \sum_{i=1}^{n} \hat{u}_i^2 = \sum_{i=1}^{n} (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i)^2
 $$
 :::
 
 - We square the residuals so that positive and negative errors don't cancel out, and because it penalizes larger errors more heavily.
+- This loss function leads to a linear model and it has better statistical properties than other loss functions.
 
 ## Example: Residuals
 
@@ -511,7 +510,7 @@ grid.arrange(plot1, plot2, ncol = 2,
 
 ## OLS Solution
 
-- Solving this system of two equations for the two unknowns ($\hat{\beta}_0$, $\hat{\beta}_1$) gives the OLS estimator formulas (provided the Sample Variance in $x \neq 0$):
+- Solving this system of two equations for the two unknowns ($\hat{\beta}_0$, $\hat{\beta}_1$) gives the OLS estimator formulas:
 
 :::{.callout-note title="Theorem: OLS Estimates for $\beta_0$ and $\beta_1$"}
 $$
@@ -526,6 +525,8 @@ where $\bar{x}$ and $\bar{y}$ are the sample means of $x$ and $y$.
 
 :::
 
+- Note that for $\beta_1$ to be defined, the Sample Variance in $x \neq 0$, referred to as **no perfect multicollinearity**.
+
 ## Algebraic Properties of OLS
 
 - The OLS estimators have some important algebraic properties that come directly from the FOCs:
@@ -533,16 +534,16 @@ where $\bar{x}$ and $\bar{y}$ are the sample means of $x$ and $y$.
 - **The sum of the OLS residuals is zero:**
   - This implies that the sample average of the residuals, $\bar{u}$, is also zero.
 
-$$\sum_{i=1}^{n} u_i = 0$$
+$$\sum_{i=1}^{n} \hat{u}_i = 0$$
   
 
 
 ## Algebraic Properties of OLS (Cont.)
 
-- **The sample covariance between the regressor ($x$) and the OLS residuals ($u$) is zero:**
+- **The sample covariance between the regressor ($x$) and the OLS residuals ($\hat{u}$) is zero:**
   - This means the part of $y$ that we can't explain with $x$ (the residual) is uncorrelated with $x$ in our sample.
 
-$$\sum_{i=1}^{n} x_i u_i = 0$$
+$$\sum_{i=1}^{n} x_i \hat{u}_i = 0$$
 
 
 
@@ -629,13 +630,76 @@ From our definition, $Educ_{years} = \frac{1}{12} Educ_{months}$. Let's substitu
 
 ## Why use different functional forms?
 
-- So far, we've assumed a linear relationship: a one-unit change in $x$ leads to the same change in $y$, regardless of the starting value of $x$.
+- So far, we've assumed a linear relationship: a one-unit change in $x$ leads to the same change in $y$, regardless of the value of $x$.
   - But often, relationships are not linear. We use transformations (like logarithms) to:
   - **Model Non-Linear Relationships**: Capture effects that are proportional or diminishing.
   - **Change the Interpretation**: Analyze percentage changes instead of unit changes.
   - **Improve Statistical Properties**: Stabilize the variance of the error term or make the distribution of a variable more symmetric.
 
-- The most common transformations involve the natural logarithm, $\log()$.
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 12
+#| fig-height: 4
+# Load necessary libraries
+library(ggplot2)
+library(gridExtra)
+
+# --- Linear Relationship Plot ---
+
+# Create data for a linear relationship
+linear_data <- data.frame(x = 1:10, y = 2 * (1:10) + 1)
+
+# Generate the ggplot object for the linear plot
+linear_plot <- ggplot(linear_data, aes(x = x, y = y)) +
+  geom_line(color = "blue") +
+  geom_point(color = "blue") +
+  # Add segments and annotations to show constant change in y
+  geom_segment(aes(x = 2, y = 5, xend = 4, yend = 5), linetype = "dashed", color = "red") +
+  geom_segment(aes(x = 4, y = 5, xend = 4, yend = 9), linetype = "dashed", color = "red") +
+  annotate("text", x = 3, y = 4.5, label = "Δx = 2", color = "red") +
+  annotate("text", x = 4.5, y = 7, label = "Δy = 4", color = "red") +
+  geom_segment(aes(x = 6, y = 13, xend = 8, yend = 13), linetype = "dashed", color = "red") +
+  geom_segment(aes(x = 8, y = 13, xend = 8, yend = 17), linetype = "dashed", color = "red") +
+  annotate("text", x = 7, y = 12.5, label = "Δx = 2", color = "red") +
+  annotate("text", x = 8.5, y = 15, label = "Δy = 4", color = "red") +
+  labs(title = "Linear Relationship",
+       subtitle = "Constant change in y for a given change in x",
+       x = "X",
+       y = "Y") +
+  theme_minimal()
+
+# --- Logarithmic Relationship Plot ---
+
+# Create data for a logarithmic relationship
+log_data <- data.frame(x = 1:10, y = log(1:10))
+
+# Generate the ggplot object for the logarithmic plot
+log_plot <- ggplot(log_data, aes(x = x, y = y)) +
+  geom_line(color = "green") +
+  geom_point(color = "green") +
+  # Add segments and annotations to show varying change in y
+  geom_segment(aes(x = 2, y = log(2), xend = 4, yend = log(2)), linetype = "dashed", color = "purple") +
+  geom_segment(aes(x = 4, y = log(2), xend = 4, yend = log(4)), linetype = "dashed", color = "purple") +
+  annotate("text", x = 3, y = log(2) - 0.1, label = "Δx = 2", color = "purple") +
+  annotate("text", x = 4.5, y = (log(2) + log(4))/2, label = paste("Δy ≈", round(log(4) - log(2), 2)), color = "purple") +
+  geom_segment(aes(x = 8, y = log(8), xend = 10, yend = log(8)), linetype = "dashed", color = "purple") +
+  geom_segment(aes(x = 10, y = log(8), xend = 10, yend = log(10)), linetype = "dashed", color = "purple") +
+  annotate("text", x = 9, y = log(8) - 0.1, label = "Δx = 2", color = "purple") +
+  annotate("text", x = 10.5, y = (log(8) + log(10))/2, label = paste("Δy ≈", round(log(10) - log(8), 2)), color = "purple") +
+  labs(title = "Logarithmic Relationship",
+       subtitle = "Change in y depends on the value of x",
+       x = "X",
+       y = "Y") +
+  theme_minimal()
+
+# --- Arrange Plots Side-by-Side ---
+
+# Arrange the two plots in a grid with two columns
+grid.arrange(linear_plot, log_plot, ncol = 2)
+```
+
 
 ## The Log-Level Model: $\log(y)$ on $x$
 
@@ -689,9 +753,15 @@ A change in $\log(x)$ is approximately the proportional change in $x$: $\Delta \
 
 :::{.callout-tip title="Example: Level-Log Model"}
 
-Suppose that $\text{Price} = 200 + 75 \times \log(\text{Sqft})$ is an estimated regression model for house prices.
+Suppose that the estimated regression model linking advertising expenditure to monthly sales revenue is:
 
-Then, A 1% increase in square footage is associated with a $75/100 = \$0.75$ increase in price.
+  $$
+    \text{Monthly Sales Revenue} = 50 + 12 \times \log(\text{Monthly Advertising Spending})
+  $$
+
+In this model, Monthly Sales Revenue (Y) is measured in thousands of euros (Level), and Monthly Advertising Spend (X) is measured in euros (Log).
+
+A 1% increase in Monthly Advertising Spend is associated with a $12/100 = 0.12$ increase in Monthly Sales Revenue. Since Sales Revenue is measured in thousands of euros, a 1% increase in advertising spend is associated with a **€120 increase** in monthly sales revenue ($0.12 \times €1,000 = €120$).
 :::
 
 ## The Log-Log Model: $\log(y)$ on $\log(x)$
@@ -722,6 +792,7 @@ Suppose we have estimated $\log(\text{Sales}) = 4.8 - 1.2 \times \log(\text{Pric
 
 - We can also add polynomial terms (like $x^2$, $x^3$, etc.) to capture more complex non-linear patterns, such as diminishing returns.
   - **Model (Quadratic):** $y = \beta_0 + \beta_1 x + \beta_2 x^2 + u$
+  - This is another example where if $x_i$ differs among individuals, different individuals have different marginal effects. 
 
 :::{.callout-note title="Interpretation of the Quadratic Model"}
 The effect of a change in $x$ on $y$ now *depends on the level of $x$*.
@@ -733,18 +804,23 @@ A one-unit change in $x$ is associated with a change in $y$ of approximately $\b
 
 :::
 
+
+
 ## Example Polynomial
 
 :::{.callout-tip title="Example: Polynomial Regression"}
 
-Suppose we have estimated $\widehat{Wage} = 3.50 + 0.60 \times Educ - 0.02 \times Educ^2$.
+Suppose we have estimated a model for annual income based on a worker's age:
 
-The effect of the *first* year of education ($x=0 \to x=1$) is about $\$0.60$.
+$\widehat{Income} = 20,000 + 1,500 \times Age - 20 \times Age^2$.
 
-The effect of the *13th* year of education ($x=12 \to x=13$) is:
-  $0.60 + 2(-0.02)(12) = 0.60 - 0.48 = \$0.12$.
+The effect of the *first* year of work experience (e.g., going from age 20 to 21) is approximately:
+$1,500 + 2(-20)(20) = 1,500 - 800 = \$700$.
 
-This captures the *diminishing returns* to education on wage.
+The effect of gaining one more year of experience when a worker is 40 (i.e., going from age 40 to 41) is:
+$1,500 + 2(-20)(40) = 1,500 - 1,600 = -\$100$.
+
+This captures the common life-cycle pattern of earnings: income rises with age and experience, but at a decreasing rate, and may eventually begin to decline after a certain point. This demonstrates the *diminishing returns* to age and experience on income.
 :::
 
 ## Dummy Variables
@@ -793,11 +869,11 @@ where $Female_i = 1$ if person `i` is female, and $Female_i = 0$ if male.
 | Model Name | Equation | Interpretation of $\hat{\beta}_1$ |
 | :--- | :--- | :--- |
 | **Level-Level** | $y = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $\hat{\beta}_1$ unit change in $y$. |
-| **Log-Level** | $\log(y) = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $(100 \times \hat{\beta}_1)\%$ change in $y$. |
+| **Log-Level** | $\log(y) = \beta_0 + \beta_1 x$ | A 1-unit change in $x$ leads to a $(100 \times \hat{\beta}_1)\%$ change in $y$.^[This is only valid for a small $\beta_1$.] |
 | **Level-Log** | $y = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $(\hat{\beta}_1/100)$ unit change in $y$. |
 | **Log-Log** | $\log(y) = \beta_0 + \beta_1 \log(x)$ | A 1% change in $x$ leads to a $\hat{\beta}_1\%$ change in $y$. |
-| **Polynomial** | $y = \beta_0 + \beta_1 x + \beta^2 x^2 + \dots$ | A 1-unit change in $x$ leads to a variable change in $y$. |
-| **Dummies** | $y = \beta_0 + \beta_1 D_i$ | A change in the dummy from 0 to 1 leads to a $\beta_1$ change in $y$. |
+| **Polynomial** | $y = \beta_0 + \beta_1 x + \beta_2 x^2 + \dots$ | A 1-unit change in $x$ leads to a $\hat{\beta}_1 + 2 \hat{\beta}_2 x$ change in $y$. |
+| **Dummies** | $y = \beta_0 + \beta_1 D_i$ | Relative to the reference category, the 1 category has a $\hat{\beta}_1$ lower/higher $y$. |
 
 :::
 
@@ -817,50 +893,11 @@ where $Female_i = 1$ if person `i` is female, and $Female_i = 0$ if male.
     $SSE = \sum (\hat{y}_i - \bar{y})^2$
     
 **SSR (Sum of Squared Residuals):** Unexplained variation.
-    $SSR = \sum u_i^2$
+    $SSR = \sum \hat{u}_i^2$
 
-It is a mathematical property that **SST = SSE + SSR**.
+If the regression equation includes a constant term, it is a mathematical property that **SST = SSE + SSR**.
 
 :::
-
-## Goodness-of-Fit Visualization
-
-```{r echo=F, out.width=250}
-# Create example data and linear model
-set.seed(123)
-x <- 1:20
-y <- 2*x + rnorm(20, sd = 8)
-df <- data.frame(x, y)
-model <- lm(y ~ x, data = df)
-df$y_pred <- predict(model)
-mean_y <- mean(y)
-
-# Visualization
-ggplot(df, aes(x = x)) +
-  geom_point(aes(y = y, color = "Observed data"), size = 3) +
-  geom_line(aes(y = y_pred, color = "Regression line"), linewidth = 1) +
-  geom_hline(aes(yintercept = mean_y, linetype = "Mean of Y"), color = "black") +
-  geom_segment(aes(xend = x, y = y, yend = y_pred, color = "Unexplained (SSR)"), 
-               show.legend = TRUE) +
-  geom_segment(aes(xend = x, y = mean_y, yend = y_pred, color = "Explained (SSE)"), 
-               show.legend = TRUE) +
-  geom_segment(aes(xend = x, y = y, yend = mean_y, linetype = "Total (SST)"), 
-               color = "black", linetype = "dotted", show.legend = TRUE) +
-  scale_color_manual(name = "Components",
-                     values = c("Observed data" = "black",
-                               "Regression line" = "blue",
-                               "Unexplained (SSR)" = "red",
-                               "Explained (SSE)" = "green")) +
-  scale_linetype_manual(name = "Variation",
-                        values = c("Mean of Y" = "dashed",
-                                  "Total (SST)" = "dotted")) +
-  labs(title = "Goodness-of-Fit Visualization",
-       subtitle = "SST (Total) = SSE (Explained) + SSR (Residuals)",
-       x = "X", y = "Y") +
-  theme_minimal() +
-  theme(legend.position = "bottom",
-        legend.box = "vertical")
-```
 
 ## Goodness-of-Fit: $R^2$
 
@@ -880,12 +917,102 @@ $$
 - A higher $R^2$ means the model fits the data better in-sample.
 - **Caution:** A high $R^2$ is not the ultimate goal of econometrics! We care more about getting an unbiased estimate of the causal effect $\beta_1$.
 
+## $R^2$ Visualization
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 9
+# Load the required libraries
+library(ggplot2)
+library(patchwork)
+
+# --- Create the High R-squared Dataset ---
+
+# Set a seed for reproducibility
+set.seed(42)
+
+# Generate data with a strong positive correlation
+x_high <- 1:100
+y_high <- 2 * x_high + rnorm(100, mean = 0, sd = 15)
+high_r_sq_data <- data.frame(x = x_high, y = y_high)
+
+# Calculate the R-squared for the high correlation data
+model_high <- lm(y ~ x, data = high_r_sq_data)
+r_sq_high <- summary(model_high)$r.squared
+
+# --- Create the Low R-squared Dataset ---
+
+# Set a seed for reproducibility
+set.seed(42)
+
+# Generate data with a weak correlation
+x_low <- 1:100
+y_low <- 0.1 * x_low + rnorm(100, mean = 0, sd = 15)
+low_r_sq_data <- data.frame(x = x_low, y = y_low)
+
+# Calculate the R-squared for the low correlation data
+model_low <- lm(y ~ x, data = low_r_sq_data)
+r_sq_low <- summary(model_low)$r.squared
+
+# --- Create the Plots with ggplot2 ---
+
+# Plot for High R-squared
+plot_high_r_sq <- ggplot(high_r_sq_data, aes(x = x, y = y)) +
+  geom_point(color = "blue", alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  labs(
+    title = "High R-squared",
+    subtitle = paste("R² =", round(r_sq_high, 3)),
+    x = "Independent Variable",
+    y = "Dependent Variable"
+  ) +
+  theme_minimal()
+
+# Plot for Low R-squared
+plot_low_r_sq <- ggplot(low_r_sq_data, aes(x = x, y = y)) +
+  geom_point(color = "green", alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkorange") +
+  labs(
+    title = "Low R-squared",
+    subtitle = paste("R² =", round(r_sq_low, 3)),
+    x = "Independent Variable",
+    y = "Dependent Variable"
+  ) +
+  theme_minimal()
+
+# --- Arrange the Plots Side-by-Side ---
+
+# Use the patchwork package to combine the plots
+plot_high_r_sq + plot_low_r_sq
+```
+
 # OLS Classical Assumptions
+
+## Unbiasedness
+
+- A key desirable property of an estimator is **unbiasedness**. 
+- The objective of a regression is to say something about the population parameters $\beta$. However, we only have a sample equivalent, $\hat{\beta}$ at our disposal.
+  - This estimate goes paired with some uncertainty. 
+
+:::{.callout-note title="Definition: Unbiasedness"}
+An OLS estimator is considered unbiased if its expected value, across many hypothetical samples, is equal to the true population parameter it is intended to estimate. Mathematically, for a regression coefficient $\beta$, its OLS estimator $\hat{\beta}$ is unbiased if:
+
+  $$
+    E[\hat{\beta}] = \beta
+  $$
+
+:::
+
+## Unbiasedness Implication
+
+- This does not imply that an estimate from any single sample will be the true population parameter. 
+- Instead, it means that if we were to draw an infinite number of random samples from the population and compute the OLS estimate for each, the average of these estimates would be equal to the true value of $\beta$.
+- This property ensures that, on average, the OLS procedure does not systematically overestimate or underestimate the true parameter.
 
 ## The SLR Assumptions
 
-- The objective of a regression is to say something about the population parameters $\beta$. However, we only have a sample equivalent, $\hat{\beta}$ at our disposal.
-  - This estimate goes paired with some uncertainty. 
+- When does unbiasedness hold?
   - For our OLS estimates to have desirable statistical properties, certain assumptions must hold. These are the **SLR Assumptions**.
 
 :::{.callout-note title="SLR Assumptions"}
@@ -893,19 +1020,6 @@ $$
 - Assumption 2: Random Sampling. The data $(x_i, y_i)$ are a random sample from the population described by the model.
 - Assumption 3: Sample Variation in $x$. The values of $x_i$ in the sample are not all the same. This is the **no perfect collinearity** assumption. 
 - Assumption 4: Zero Conditional Mean. $E(u|x) = 0$. The average value of the unobserved factors is unrelated to the value of $x$.
-:::
-
-## The Crucial Assumption: Zero Conditional Mean
-
-- Assumption 4, $E(u|x) = 0$, is the most important assumption for establishing **causality**. 
-  - It means that the explanatory variable ($x$) must not be correlated with any of the unobserved factors ($u$) that affect the dependent variable ($y$).
-
-:::{.callout-tip title="Example: Zero Conditional Mean Assumption"}
-Let $y = Wage$, $x = Educ$, $u$ = unobserved factors like innate ability, family background, motivation. 
-
-Is it likely that $E(u|Educ)=0$? Probably not. Innate ability ($u$) is likely correlated with education ($x$). People with higher ability may find it easier to get more education.
-
-If $Cov(Educ, Ability) > 0$, then our OLS estimate $\hat{\beta}_1$ will be biased upwards. It will capture the effect of education *and* the effect of ability. This is **Omitted Variable Bias**.
 :::
 
 ## Unbiasedness of OLS
@@ -920,11 +1034,86 @@ $$
 :::
 
 - **What does this mean?**
-  - Unbiasedness is a property of the *procedure* of OLS estimation.
-    - If we could draw many, many random samples from the population and calculate $\hat{\beta}_1$ for each sample, the *average* of all these estimates would be equal to the true population parameter, $\beta_1$.
+  - Unbiasedness is a property of the OLS estimator given the assumptions.
+    - If we could draw many, many random samples (with the same $n$) from the population and calculate $\hat{\beta}_1$ for each sample, the *average* of all these estimates would be equal to the true population parameter, $\beta_1$.
   - Our estimate from any single sample might be higher or lower than the true value, but on average, we get it right.
     - This property relies critically on the Zero Conditional Mean assumption (SLR.4). If SLR.4 fails, OLS is biased.
-    
+
+## Violation of Unbiasedness
+
+- Assumption 4, $E(u|x) = 0$, is the most important assumption for establishing **causality**. 
+  - It means that the explanatory variable ($x$) must not be correlated with any of the unobserved factors ($u$) that affect the dependent variable ($y$).
+
+- When is unbiasedness violated? 
+- An important reason arises when a relevant explanatory variable is excluded from the model, referred to as **Omitted Variable Bias**.  
+  - This omission leads to biased and inconsistent estimates for the coefficients of the included variables.
+
+- For OVB to exist, two conditions must be met:
+
+  1.  The omitted variable must be a determinant of the dependent variable (i.e., its true coefficient is not zero).
+  2.  The omitted variable must be correlated with at least one of the included independent variables.
+
+- When these conditions hold, the OLS estimator for the included variable's coefficient mistakenly incorporates the effect of the omitted variable, leading to a biased result. 
+  - This violates the crucial OLS assumption that the error term is uncorrelated with the regressors.
+
+## Prediction of Direction of Bias
+
+- The direction of the bias is determined by the signs of these two key relationships.
+
+:::{.callout-note title="Omitted Variable Bias Definition"}
+
+Consider the true regression model: $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u$, where $x_2$ is the omitted variable. 
+
+Instead, we estimate the simpler model $y = \alpha_0 + \alpha_1 x_1 + v$. The bias in the estimate of $\alpha_1$ can be expressed as:
+
+  $$
+    \text{Bias} = E[\hat{\alpha_1}] - \beta_1 = \beta_2 \cdot \delta_1
+  $$
+
+Where:
+
+  - $\beta_2$ is the true coefficient of the omitted variable ($X_2$ in the correctly specified model. This represents the partial effect of $X_2$ on Y.
+  - $\delta_1$ is the coefficient from an auxiliary regression of the omitted variable ($X_2$) on the included variable ($X_1$): $X_2 = \delta_0 + \delta_1 X_1 + w$. This represents the correlation between $X_1$ and $X_2$. 
+
+:::
+
+## Examples of OVB
+
+- The direction of the bias can be predicted by the product of the signs of $\beta_2$ and $\delta_1$: 
+
+:::{.callout-tip title="Examples: OVB"}
+Suppose we estimate $\text{Wage} = \beta_0 + \beta_1 \text{Education} + u$, but there is an omitted variable $X_2$, Innate Ability. The resulting coefficient will be an _oversestimate_ of the true effect: 
+
+  - Sign of $\beta_2 (Effect of $X_2$ on $Y$): The sign is **positive (+)**. It is widely accepted that, holding education constant, individuals with higher innate ability tend to earn higher wages. This is because ability is a component of a worker's overall productivity.
+  - Sign of $\delta_1$ (Correlation of $X_2$ with $X_1$): The sign is **positive (+)**. Individuals with higher innate ability are often more likely to attain higher levels of education. They may find schooling less challenging and have greater incentives to pursue further education.
+  - The formula for the bias is $\text{Bias}=\beta_2 \cdot \delta_1$. Therefore, the predicted direction is `(+) * (+) = +`.
+  
+:::
+
+## Examples of OVB (Cont.)
+
+:::{.callout-tip title="Examples: OVB"}
+
+Suppose we estimate the model $\text{Educational_Outcome} = \beta_0 + \beta_1 \text{Class Size} + u$, with the omitted variable $X_2$ being a student's socioeconomic background or level of need. The resulting bias is positive (leading to an underestimation of a negative effect):
+
+- Sign of $\beta_2$ (Effect of $X_2$ on $Y$): The sign is **negative (-)**. Students from disadvantaged socioeconomic backgrounds or with higher needs tend to have, on average, lower educational outcomes. This can be due to fewer resources at home, less parental support, and other related challenges.
+- Sign of $\delta_1$ (Correlation of $X_2$ with $X_1$): The sign is **negative (-)**. School districts often purposefully create smaller classes for students who require more attention, such as those from lower-income families, or students with learning disabilities. Therefore, a higher prevalence of disadvantaged students is correlated with smaller class sizes.
+- Therefore, the predicted direction is `(-) * (-) = +`.
+
+::: 
+
+## Examples OVB (Cont.)
+
+:::{.callout-tip title="Examples: OVB"}
+
+Suppose we estimate $\text{Profits} = \beta_0 + \beta_1\text{Firm Size} + u$, with the omitted variable $X_2$ being Quality of Management. The resulting bias is _positive_, resulting in overestimation of the effect. 
+
+-  Sign of $\beta_2$ (Effect of $X_2$ on $Y$): The sign is **positive (+)**. High-quality management is a critical factor in a firm's success and is directly and positively related to higher profitability. Better managers make more effective strategic, operational, and financial decisions.
+- Sign of $\delta_1$ (Correlation of $X_2$ with $X_1$):The sign is **positive (+)**. Larger firms are often able to attract and retain higher-quality managerial talent. They can offer more competitive compensation packages, provide more extensive career opportunities, and may have more sophisticated recruitment processes. Conversely, better management may also lead to firm growth, increasing its size.
+- Therefore, the predicted direction is `(+) * (+) = +`.
+
+:::
+
     
 ## Visualization Unbiasedness
 
@@ -1018,7 +1207,7 @@ $$
 
 - Let's forget regression for a second. 
   - How much does a simple sample mean ($\bar{x}$) wobble?
-  - Its variance is famously simple: $Var(\bar{x}) = \frac{\sigma^2}{n}$
+  - Its variance (under random sampling) is famously simple: $Var(\bar{x}) = \frac{\sigma^2}{n}$
   
 - This formula is driven by two intuitive ideas:
   - $\sigma^2$ is the variance of the underlying population. It's the inherent "noisiness" or "spread" of the data points themselves.
@@ -1032,8 +1221,130 @@ $$
   - **The error variance, $\sigma^2$**: More "noise" in the relationship (larger $\sigma^2$) leads to a larger variance for $\hat{\beta}_1$.
   - **The total sample variation in $X$, $SST_x$**: More variation in our explanatory variable ($x$) leads to a *smaller* variance for $\hat{\beta}_1$. We learn more about the slope when our $x$ values are more spread out.
   - **The sample size, $n$**: A larger sample size generally increases $SST_x$, which *decreases* the variance of $\hat{\beta}_1$.
+  
+## Variance Illustration (Dependence on $\hat{\sigma}$)
 
-## Variance Illustration
+- We plot the distribution of the 1,000 estimated coefficients, which is centered around the true value of 5 (the solid red line).
+  - In the left panel below, we have a *high-variance estimator* ($\sigma=8$)
+    - The histogram on the left is visibly wider and flatter. This indicates a larger spread in the estimated coefficients. Any single estimate from a sample of this size could be quite far from the true value. 
+  - In the right panel below, we have a *low-variance estimator* ($\sigma=1$)
+    - The histogram on the right is much narrower and more peaked. The estimates are tightly clustered around the true value. 
+    
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 15
+# --- Model & Simulation Parameters ---
+
+# Define the true parameters of our linear model: y = beta_0 + beta_1*x + u
+true_beta_0 <- 2
+true_beta_1 <- 5
+
+# Set the number of simulations
+n_simulations <- 1000
+
+# Set a constant sample size for both scenarios
+sample_size <- 100
+
+# Set the standard deviation (sigma) of the error term for the two scenarios
+low_sigma <- 1   # For the low-variance estimator
+high_sigma <- 8  # For the high-variance estimator
+
+# --- Simulation Function ---
+
+# Create a function to run the simulation for a given error variance (sigma)
+run_simulation <- function(sample_size, sigma, n_sims, beta_0, beta_1) {
+  
+  # Create an empty vector to store the estimated coefficients for beta_1
+  estimated_beta_1 <- numeric(n_sims)
+
+  # Loop through the number of simulations
+  for (i in 1:n_sims) {
+    # Generate the independent variable x
+    x <- runif(sample_size, min = 1, max = 10)
+
+    # Generate the error term u with the specified sigma
+    u <- rnorm(sample_size, mean = 0, sd = sigma)
+
+    # Generate the dependent variable y based on the true model
+    y <- beta_0 + beta_1 * x + u
+
+    # Fit a linear model to the generated sample data
+    model <- lm(y ~ x)
+
+    # Store the estimated coefficient for beta_1
+    estimated_beta_1[i] <- coef(model)[2]
+  }
+  
+  return(estimated_beta_1)
+}
+
+# --- Run Both Simulations ---
+
+# Run simulation for the low-variance case (small sigma)
+low_variance_estimates <- run_simulation(sample_size, low_sigma, n_simulations, true_beta_0, true_beta_1)
+
+# Run simulation for the high-variance case (large sigma)
+high_variance_estimates <- run_simulation(sample_size, high_sigma, n_simulations, true_beta_0, true_beta_1)
+
+# --- Plotting the Results ---
+
+# Set up the plotting area to have two subplots side-by-side
+par(mfrow = c(1, 2))
+
+# --- Subplot 1: Low-Variance Estimator ---
+hist(low_variance_estimates,
+     main = paste("Low-Variance Estimator (sigma = ", low_sigma, ")", sep=""),
+     xlab = "Estimated Beta_1",
+     col = "lightblue",
+     freq = FALSE,
+     breaks = 30,
+     xlim = c(3.5, 6.5)) # Set common x-axis limits for comparison
+
+# Add a vertical line for the true value of beta_1
+abline(v = true_beta_1, col = "red", lwd = 2)
+
+# Add a vertical line for the mean of the estimated beta_1 coefficients
+abline(v = mean(low_variance_estimates), col = "blue", lwd = 2, lty = 2)
+
+# Add a legend
+legend("topright",
+       legend = c("True Beta_1", "Mean of Estimates"),
+       col = c("red", "blue"),
+       lwd = 2,
+       lty = c(1, 2),
+       cex = 0.7)
+
+# --- Subplot 2: High-Variance Estimator ---
+hist(high_variance_estimates,
+     main = paste("High-Variance Estimator (sigma = ", high_sigma, ")", sep=""),
+     xlab = "Estimated Beta_1",
+     col = "lightcoral",
+     freq = FALSE,
+     breaks = 30,
+     xlim = c(3.5, 6.5)) # Set common x-axis limits for comparison
+
+# Add a vertical line for the true value of beta_1
+abline(v = true_beta_1, col = "red", lwd = 2)
+
+# Add a vertical line for the mean of the estimated beta_1 coefficients
+abline(v = mean(high_variance_estimates), col = "blue", lwd = 2, lty = 2)
+
+# Add a legend
+legend("topright",
+       legend = c("True Beta_1", "Mean of Estimates"),
+       col = c("red", "blue"),
+       lwd = 2,
+       lty = c(1, 2),
+       cex = 0.7)
+
+# Reset the plotting layout to the default (1 plot)
+par(mfrow = c(1, 1))
+
+```
+
+
+## Variance Illustration (Dependence on $N$)
 
 - We plot the distribution of the 1,000 estimated coefficients, which is centered around the true value of 5 (the solid red line).
   - In the left panel below, we have a *high-variance estimator* (n=30)
@@ -1155,13 +1466,12 @@ legend("topright",
 par(mfrow = c(1, 1))
 ```
 
-## Variance Illustration
+## Variance Illustration (Dependence on $N$)
 
   
 - This demonstrates that with a larger sample size, the OLS estimator is more efficient
 - We can be more confident that any single estimate is close to the true population parameter
 - The mean of the estimates in both scenarios (the dashed blue line) is very close to the true value, confirming that both estimators are unbiased.
-
 
 
 ## Determining the Variance in Practice
@@ -1222,7 +1532,7 @@ $$
 :::{.callout-note title="Definition: Distribution of t-value under $H_0$"}
 
 $$
-t = \frac{\hat{\beta} - \beta}{se(\hat{\beta}_j)} \sim t_{n-2}
+t = \frac{\hat{\beta} - \beta}{se(\hat{\beta}_j)} \sim t_{(n-2)}
 $$
 
 :::
