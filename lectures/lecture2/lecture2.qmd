@@ -121,7 +121,9 @@ Now we have $k$ explanatory variables.
 
 :::{.callout-tip title="Example: Good Control Variable"}
 
-In estimating the effect of education ($X_1$) on wages ($Y$), innate ability is a classic confounder. Ability is likely correlated with how much education someone pursues and their potential earnings. Controlling for a proxy of ability (like an IQ test score, $X_2$) helps to prevent the estimated return to education from being biased upwards.
+In estimating the effect of education ($X_1$) on wages ($Y$), innate ability is a classic confounder. Ability is likely correlated with how much education someone pursues and their potential earnings. 
+
+Controlling for a proxy of ability (like an IQ test score, $X_2$) helps to prevent the estimated return to education from being biased upwards.
 
 :::
 
@@ -723,7 +725,7 @@ reg wage educ expr
 
 - where $G$ is the number of clusters and $N_g$ is the size of cluster $g$.
 
-- Let's focus on the variance term. We can rewrite the sum over individuals as a sum over clusters of within-cluster sums:
+- Let's focus on the variance term (the blue part). We can rewrite the sum over individuals as a sum over clusters of within-cluster sums..
 
   $$
     Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right) \right)
@@ -735,7 +737,7 @@ reg wage educ expr
 - Since errors are uncorrelated *across* clusters, the variance of this sum is the sum of the variances:
 
   $$
-    = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)
+   Var\left(\sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right) \right) = \sum_{g=1}^G Var\left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi} \right)
   $$
 
 - Now, let's expand the variance term for a *single* cluster $g$. This is where the non-zero covariances appear:
@@ -817,13 +819,21 @@ reg wage educ expr
 - **Multiple Linear Regression**:
   - We introduced the method of multiple linear regression and provided ourselves with an interpretation of the estimated coefficients. 
 
-- **Evaluated Assumptions**: 
-  - For OLS estimates to be unbiased (correct on average), a set of classical assumptions must hold. The most critical is the Zero Conditional Mean assumption, which states that unobserved factors (like innate ability) must not be correlated with the explanatory variable (like education); otherwise, the estimate will suffer from omitted variable bias.
+- **Control Variables**: 
+  - For OLS estimates to be unbiased (correct on average), a set of classical assumptions must hold. The most critical is the Zero Conditional Mean assumption, which states that unobserved factors (like innate ability) must not be correlated with the explanatory variable (like education). We discussed the logic of inclusion of control variables to minimize this kind of bias.
 
 - **Hypothesis Testing**: 
   - After estimating a model, we use hypothesis testing to determine if the results are statistically significant.
   - The t-test is used to assess the significance of a single variable, while the F-test is used to assess the joint significance of multiple variables or the overall explanatory power of the model.
 
+## What did we do? (Cont.)
+
+- **Dummies and Interactions**:
+  - We discussed the interpretation of dummy variables and interaction terms in a multiple linear regression context. 
+  
+- **Standard errors**:
+  - We discussed the issue of standard errors. We saw that the standard errors statistical software computes by default are almost certainly incorrect. We saw two alternatives, the HC-robust standard error and the Cluster-robust standard error, and focused on their estimation. 
+  
 # The End
 
 
