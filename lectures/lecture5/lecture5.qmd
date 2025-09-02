@@ -41,13 +41,13 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## This lecture
 
-* Least Squares Dummy Variable estimator
-* Within estimator (or fixed effect estimator)
-* Fixed effects versus first differences
-* Pooled OLS
-* Random-effects estimator
-* Random effects or fixed effects: Hausman test
-* Line of reasoning with panel data: final example
+- Classification
+- The first-difference estimator
+- Fixed effects versus first differences
+- Pooled OLS estimator
+- Random-effects estimator
+- Random effects or fixed effects: Hausman test
+- Line of reasoning with panel data: final example
 
 * **Material:** Wooldridge Chapter 14: 14.1, 14.2, 14.3
 

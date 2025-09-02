@@ -41,208 +41,321 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## This lecture
 
-* Motivation
-* Advantage of Panel Data
-* Main features of panel models
-* The individual specific effect
-* Strict exogeneity
-* Between and within variation
-* Classification
-* The first-difference estimator
-* Pooled OLS estimator
+- Motivation
+- Advantage of Panel Data
+- Main features of panel models
+- The individual specific effect
+- Strict exogeneity
+- Between and within variation
+- Least Squares Dummy Variable estimator
+- Within estimator (or fixed effect estimator)
 
-* **Material:** Wooldridge Chapter 13: 13.1, 13.3, 13.4, 13.5
+- **Material:*- Wooldridge Chapter 13: 13.1, 13.3, 13.4, 13.5
 
-## Motivation
+# Motivation
 
-* How to estimate the impact of the Covid-outbreak March 2020 on behaviour by individual persons?
-* The Netherlands: Lockdown from March 16th 2020 onwards.
-* What data do we need to investigate the impact of the lockdown?
-* Requirement 1: We need information from before the lockdown and during the lockdown. Dimension: time
-* Requirement 2: We need information from the same persons (or firms) in consecutive periods. Dimension: cross-sectional dimension.
-* Methodological claim: empirical analyses that are not based on panel data are in general terms not very strong (= the results can easily be falsified).
-* The two figures below give an impression about what happened in 2020 in the Netherlands. (source: Jordy Meekes, Wolter Hassink, Guyonne Kalb, *Oxford Economic Papers*, 2024)
+## Stock and Watson (1988)
 
-Image: [A thumbnail of the first page of an academic paper titled "Essential work and emergency childcare: identifying gender differences in COVID-19 effects on labour demand and supply"]
+- Imagine a government is considering increasing the tax on alcohol to reduce traffic-related deaths. A crucial question for economists is: how can we estimate the causal impact of such a policy?
 
+- To answer this, we need to overcome a fundamental challenge: states with higher beer taxes might also have other characteristics that influence traffic fatalities, such as better roads or stricter law enforcement. 
+  - A simple comparison across states at a single point in time might therefore be misleading.
 
-## COVID-19 cases and timeline of policies in the Netherlands in 2020
+- This is where panel data becomes an invaluable tool.
 
-Image: [A line graph showing the number of COVID-19 cases per 100,000 population in the Netherlands from March to December 2020, with key policy dates and events marked along the x-axis.]
+## Stock and Watson (1988) (Cont.)
 
-**Legend:**
-- Daily COVID-19 confirmed cases per 100,000 population
-- Mar 15: First full lockdown in the Netherlands until May
-- Mar 16: Emergency childcare available for essential workers until June
-- Mar 31: NOW I available from March until May
-- May 11: Primary schools and childcare facilities partly reopened
-- Jun-Jul: Relaxation of preventive measures
-- Jun 22: NOW II available from June until September
-- Sep 30: NOW III available from October until December
-- Oct 14: Second partial lockdown introduced
-- Nov: Tightening of preventive measures
-- Dec 15: Second full lockdown introduced, emergency childcare available
+- We need two requirements on our data:
 
+  - Requirement 1: Information Before and After the Policy Change (Time Dimension) We need to observe traffic fatality rates in states before and after any changes in beer taxes. This allows us to see what happens within a state when the policy changes.
 
+  - Requirement 2: Information from Multiple Entities (Cross-Sectional Dimension) We need data from the same states over consecutive periods. This allows us to compare the changes in fatality rates in states that changed their beer tax to those that did not.
+  
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 10
+# Load necessary packages
+library(AER)
+library(plm)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
 
-## Employment and Working Hours
+# Load the dataset
+data("Fatalities")
 
-**A) Employment**
+Fatalities <- Fatalities |>
+  mutate(fatal_rate = fatal/pop*10000)
+# Plot fatality rates over time for a few states
+p1 <- Fatalities %>%
+  filter(state %in% c("ca", "fl", "tx", "ny")) %>%
+  ggplot(aes(x = year, y = fatal_rate, group = state, color = state)) +
+  geom_line() +
+  labs(title = "Traffic Fatality Rate Over Time for Selected States",
+       x = "Year",
+       y = "Fatality Rate (per 10,000)") +
+  theme_minimal()
 
-Image: [A line graph showing the employment proportion from month 1 to 12 of 2020. There are four lines representing Female essential workers, Male essential workers, Female non-essential workers, and Male non-essential workers.]
+# Scatter plot of fatality rate vs. beer tax for 1988
+p2 <- Fatalities %>%
+  filter(year == "1988") %>%
+  ggplot(aes(x = beertax, y = fatal_rate)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Fatality Rate vs. Beer Tax in 1988",
+       x = "Beer Tax",
+       y = "Fatality Rate (per 10,000)") +
+  theme_minimal()
 
-**B) Working hours**
+p1 + p2
+```
 
-Image: [A line graph showing the number of monthly working hours from month 1 to 12 of 2020. There are four lines representing Female essential workers, Male essential workers, Female non-essential workers, and Male non-essential workers.]
+## Meekes, Hassink, Kalb (2024)
 
-**Legend:**
-- Female essential workers
-- Male essential workers
-- Female non-essential workers
-- Male non-essential workers
+- How to estimate the impact of the Covid-outbreak March 2020 on behaviour by individual persons?
+
+- The Netherlands: Lockdown from March 16th 2020 onwards.
+
+- What data do we need to investigate the impact of the lockdown?
+  - Requirement 1: We need information from before the lockdown and during the lockdown. Dimension: time
+  - Requirement 2: We need information from the same persons (or firms) in consecutive periods. Dimension: cross-sectional dimension.
+
+- Methodological claim: empirical analyses that are not based on panel data are in general terms not very strong (= the results can easily be falsified).
+- The two figures below give an impression about what happened in 2020 in the Netherlands.
+
+## Meekes, Hassink, Kalb (2024) (Cont.)
+
+![](screen1.png){width=80%}
+
+## Meekes, Hassink, Kalb (2024) (Cont.)
+
+![](screen2.png){width=80%}
+
 
 
 ## Advantage of Panel Data
 
+:::{.callout-tip title="Examples: Why Panel Data Is Needed?"}
 
-*Aim: to motivate the use of panel-data models*
-* Advantage of (pseudo)panel over cross section data (I)
+"Year of Birth" cohorts are followed across time. The research question is "do households sell their house when they become old?" The figure below cannot address this question because from one cross-section to another, it is not possible to disentangle cohort effects from age effects.
 
-*   **Panel data:** the same individuals (households, companies) are followed over time.
+![](screen3.png){width=50% fig-align="center"}
 
-**Example 1:**
-*   ‘year-of-birth’ cohorts are followed across time.
-*   The question is ‘do households sell their house when they become old’?
-*   The figure below cannot address this question because from one cross-section to another, it is not possible to disentangle cohort effects from age effects.
-
-**Figure 1: Home ownership rate by age in 1996 (Netherlands)**
-
-Image: [A line graph showing the home ownership rate on the y-axis against age on the x-axis, for the year 1996 in the Netherlands. The rate increases from age 20, peaks around ages 40-55, and then declines.]
+::: 
 
 ## Home Ownership
 
+:::{.callout-tip title="Examples: Why Panel Data Is Needed?"}
 
-*   The figure below is constructed by panel data.
-*   The figure indicates strong cohort effects! For each birth cohort (cohort 1913 to cohort 1968), in various years (t= 1,2,3,...,12) the average Dutch homeownership is given.
-*   From the cross section it looks like (on average) home ownership rate peaks at around 69%. However, this not necessarily the same for two different cohorts. E.g., compare the 1953 with the 1948 cohort.
+The figure below is constructed by panel data. The figure indicates strong cohort effects! For each birth cohort, in various years ($t= 1,2,3,\dots,12$) the average Dutch home ownership is given.
 
-.681542
-Image: [A line graph showing multiple trend lines for home ownership rates by age for different birth cohorts. The y-axis ranges from .152975 to .681542, and the x-axis represents age from 20 to 90. Several cohort years are labeled on the graph (e.g., 68, 63, 58, 53, 48, 43, 38, 33).]
-.152975
-**Home ownership rate by age and cohort**
-Figure 5a
+![](screen4.png){width=40% fig-align="center"}
 
-## Advantage of true panel data (II)
+From the cross section it looks like (on average) home ownership rate peaks at around 69%. However, this not necessarily the same for two different cohorts. E.g., compare the 1953 with the 1948 cohort.
 
-*Aim: to motivate the use of panel-data models*
+:::
 
-* Advantage of true panel data over (a time series of) cross sections (II)
+## Advantages of Panel Data
 
 - Estimation of dynamic models (or transition models) is impossible in the case of a time series of cross sections (panel data).
 
-**Example 2:** Let's assume that a cross-section study suggests that female labor force participation is equal to 50%.
-- There are two extreme possibilities that we cannot distinguish between cross-sections:
-    - Possibility 1: 50% of the females are always employed (annual job turnover rate is 0%)
-    - Possibility 2: In a homogenous population, there is a 50% turnover rate each year.
-- We need panel data to solve this issue.
+:::{.callout-tip title="Example: Why Panel Data is Needed?"}
 
-## Advantage of true panel data (III)
+Let's assume that a cross-section study suggests that female labor force participation is equal to 50%. There are two extreme possibilities that we cannot distinguish between cross-sections:
 
-*Aim: to further motivate the use of panel-data models*
+- Possibility 1: 50% of the females are always employed (annual job turnover rate is 0%)
+- Possibility 2: In a homogenous population, there is a 50% turnover rate each year.
 
-* The primary reason for using panel data is to solve the statistical problem of omitted variables. See the figure below. For each of the *N* individuals (here four individuals) there is a separate scatter diagram.
-* The slope of the solid line is the slope of the regression equation of OLS on all data of all individuals together.
-* The slope of the dashed line is the slope of the regression equation in which it is corrected for the individual effect.
-* In the figures below, the slope of the dashed lines is different from the slope of the solid line.
+We need panel data to solve this issue.
 
-**1.2 Utilizing panel data**
+:::
 
-Image: [Three scatter plots (Fig. 1.1, Fig. 1.2, Fig. 1.3) showing relationships between x and y. Fig 1.1 shows a single upward-sloping solid line through a set of points. Fig 1.2 shows four separate clusters of points, each with a dashed upward-sloping line, but the overall trend (solid line) is flat. Fig 1.3 shows four clusters of points where each cluster has a downward-sloping dashed line, but the overall trend (solid line) is upward-sloping.]
+## Advantages of Panel Data (Cont.)
 
-## Introduction to panel data models
+- The primary reason for using panel data is to solve the statistical problem of omitted variables. See the figure below. For each of the *N* individuals (here three individuals) there is a separate scatter diagram.
+  - The slope of the solid line is the slope of the regression equation of OLS on all data of all individuals together.
+  - The slope of the dashed line is the slope of the regression equation in which it is corrected for the individual effect.
+  - In the figures below, the slope of the dashed lines is different from the slope of the solid line.
 
-*Aim: to relate panel data to cross sections and time series. To introduce the assumption of no correlation between individual-specific effects and explanatory variables.*
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 10
 
-Note the different subscripts in each of the specifications.
+# Load necessary libraries
+library(ggplot2)
+library(gridExtra)
 
-**Specification 1: Cross section:**
-In the first week we considered cross sections:
-A random sample of *N* firms may have the following regression equation:
+# --- Figure 1.1: Positive within-group and overall correlation ---
 
-profits = β₀ + β₁innovation + β₂frmsize + u (1)
+# Generate data for Figure 1.1
+set.seed(123)
+fig1_data <- data.frame(
+  x = c(rnorm(5, 1), rnorm(5, 3), rnorm(5, 5), rnorm(5, 7)),
+  y = c(rnorm(5, 1, 0.5), rnorm(5, 3, 0.5), rnorm(5, 5, 0.5), rnorm(5, 7, 0.5)),
+  group = factor(rep(1:4, each = 5))
+)
 
-*   Cross-sectional dimension: *N*.
-*   Important: the explanatory variables may be correlated.
-*   There is one intercept β₀. Equation (1) can be reformulated as by adding a subscript *i* for the *i*-th individual firm:
+# Create plot for Figure 1.1
+fig1_plot <- ggplot(fig1_data, aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(color = "Overall OLS"), linetype = "solid") +
+  geom_smooth(method = "lm", se = FALSE, aes(group = group, color = "Within-Group"), linetype = "dashed") +
+  stat_ellipse(aes(group = group), level = 0.95) +
+  scale_color_manual(name = "Regression Lines", values = c("Overall OLS" = "black", "Within-Group" = "black")) +
+  labs(title = "Fig. 1.1: Positive Correlation", x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "none")
 
-profitsᵢ = β₀ + β₁innovationᵢ + β₂frmsizeᵢ + uᵢ  i=1,...,*N* (1)
+# --- Figure 1.2: No overall correlation, positive within-group correlation ---
 
-**Specification 2: Time series**
-In the second week we considered the following static time-series model. It is based on a data set containing outcomes for one firm, which is observed over *T* periods.
+# Generate data for Figure 1.2
+set.seed(123)
+fig2_data <- data.frame(
+  x = c(rnorm(5, 1), rnorm(5, 3), rnorm(5, 5), rnorm(5, 7)),
+  y = c(rnorm(5, 3, 0.5), rnorm(5, 3, 0.5), rnorm(5, 3, 0.5), rnorm(5, 3, 0.5)),
+  group = factor(rep(1:4, each = 5))
+)
+fig2_data$y <- fig2_data$y + as.numeric(fig2_data$group) * 0.5
 
-profitsₜ = β₀ + β₁innovationₜ + β₂frmsizeₜ + uₜ  t=1,...,*T* (2)
+# Create plot for Figure 1.2
+fig2_plot <- ggplot(fig2_data, aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(color = "Overall OLS"), linetype = "solid") +
+  geom_smooth(method = "lm", se = FALSE, aes(group = group, color = "Within-Group"), linetype = "dashed") +
+  stat_ellipse(aes(group = group), level = 0.95) +
+  scale_color_manual(name = "Regression Lines", values = c("Overall OLS" = "black", "Within-Group" = "black")) +
+  labs(title = "Fig. 1.2: Spurious Correlation", x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "none")
 
-*   Again, there is one intercept β₀
-*   In equation (2), we add a subscript *t* for the *t*-th period:
-*   Time dimension: *T*.
+# --- Figure 1.3: Negative within-group correlation, positive overall correlation ---
 
+# Generate data for Figure 1.3
+set.seed(123)
+fig3_data <- data.frame(
+  x = c(rnorm(5, 1), rnorm(5, 3), rnorm(5, 5), rnorm(5, 7)),
+  y = c(rnorm(5, 7, 0.5), rnorm(5, 5, 0.5), rnorm(5, 3, 0.5), rnorm(5, 1, 0.5)),
+  group = factor(rep(1:4, each = 5))
+)
 
-**Specification 3: Panel data**
-Equation (3) is a combination of equations (1) and (2)
-
-profitsᵢₜ = β₀ + β₁innovationᵢₜ + β₂frmsizeᵢₜ + uᵢₜ
-i=1,...,*N*;t=1,...,*T* (3)
-
-* Again, the only intercept is β₀. It has a cross-sectional dimension N and a time dimension T.
-* Subscript i refers to individual (firm) and subscript t denotes time.
-* Important: the explanatory variables innovation and frmsize may be correlated.
-* **Issue 1:** Can equation (3) be generalized by N intercepts aᵢ. Thus each firm (subscript i) has its own intercept?
-
-profitsᵢₜ = aᵢ + β₁innovationᵢₜ + β₂frmsizeᵢₜ + uᵢₜ
-i=1,...,*N*;t=1,...,*T* (4)
-
-* **Issue 2:** Is there any correlation between these N intercepts aᵢ and each of the explanatory variables innovation and frmsize?
-* **Issue 3:** Should variables that remain constant within individual firms be treated differently? E.g. in the following specification, firm size does not change across time. Thus, frmsizeᵢ has no subscript t, in case the size of the firms is constant in all of the T periods.
-
-profitsᵢₜ = aᵢ + β₁innovationᵢₜ + β₂frmsizeᵢ + uᵢₜ
-i=1,...,*N*;t=1,...,*T* (5)
-
-* **Issue 4:** Are the explanatory variables of the regression equation strictly exogenous? This is an econometric issue that is required for unbiased estimators. It will be explained below further.
-
-## The individual-specific effect
-
-*Aim: to formalize the use of the unobserved effect aᵢ*
-
-*   Suppose the following ‘true model’
-    yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ     i=1,...,*N*;t=1,...,*T*
-    Where:
-    *   aᵢ is the individual-specific effect (a random variable)
-    *   uᵢₜ is the idiosyncratic (i.i.d.: identically and independently distributed) error term with expected value zero and constant variance.
-    *   *N*: cross-sectional dimension; *T*: time-dimension
-    *   There are *k* different explanatory variables.
-
-*   aᵢ captures all individual-specific variables that are not observed by the researcher; e.g. motivation (it is referred to as unobserved heterogeneity).
-*   It is possible that E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) ≠ 0 (e.g. in an equation where wage is the dependent variable, ‘motivation’ (subsumed in aᵢ) might be correlated with the RHS-variable ‘experience’).
-    *all k explanatory variables in all T time periods*
-*   Suppose that instead one estimates the following model by OLS:
-    yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ    i=1,...,*N*;t=1,...,*T* (6)
-    *k explanatory variables*
-*   Where vᵢₜ = aᵢ + uᵢₜ (=individual specific effect + idiosyncratic error term)
-*   In model (1), is it assumed that
-    E(vᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 so that
-    *all k explanatory variables in all T time periods*
-    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 and
-    *all k explanatory variables in all T time periods*
+# Create plot for Figure 1.3
+fig3_plot <- ggplot(fig3_data, aes(x = x, y = y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, aes(color = "Overall OLS"), linetype = "solid") +
+  geom_smooth(method = "lm", se = FALSE, aes(group = group, color = "Within-Group"), linetype = "dashed") +
+  stat_ellipse(aes(group = group), level = 0.95) +
+  scale_color_manual(name = "Regression Lines", values = c("Overall OLS" = "black", "Within-Group" = "black")) +
+  labs(title = "Fig. 1.3: Omitted Variable Bias", x = "x", y = "y") +
+  theme_minimal() +
+  theme(legend.position = "none")
 
 
-E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ, aᵢ) = 0
-*all k explanatory variables in all T time periods*
+# --- Arrange plots in a grid ---
+grid.arrange(fig1_plot, fig2_plot, fig3_plot, ncol = 3)
+```
 
-*   Violation of this assumption leads to a biased estimate of the regression parameters β.
-*   An application will be given later.
+## Panel Data Models
+
+- **Specification 1: Cross section:** In the first week we considered cross sections:
+  - A random sample of *N* firms may have the following regression equation:
+
+  $$
+    \text{Profit} = \beta_0 + \beta_1 \text{Innovation} + \beta_2 \text{Firm Size} + u
+  $$
+
+- Cross-sectional dimension: *N*.
+  - Important: the explanatory variables may be correlated.
+  - There is one intercept $\beta_0$. This equation can be reformulated as by adding a subscript $i$ for the $i$-th individual firm:
+
+  $$
+    \text{Profit}_i = \beta_0 + \beta_1 \text{Innovation}_i + \beta_2 \text{Firm Size}_i + u_i
+  $$
+  
+## Time Series Dimension
+
+- In the third week we considered the following static time-series model. It is based on a data set containing outcomes for one firm, which is observed over *T* periods.
+
+  $$
+    \text{Profit}_t = \beta_0 + \beta_1 \text{Innovation}_t + \beta_2 \text{Firm Size}_t + u_t
+  $$
+
+- Time Dimension $T$. 
+- Again, there is one intercept $\beta_0$
+- In this euqation,  we add a subscript *t* for the *t*-th period:
 
 
-## Strict exogeneity (see also lecture 2)
+## Panel Data Specification 
+
+- **Specification 3: Panel data** is a combination of the previous two equations: 
+
+  $$
+    \text{Profit}_{it} = \beta_0 + \beta_1 \text{Innovation}_{it} + \beta_2 \text{Firm Size}_{it} + u_{it}
+  $$
+  
+- for $i=1,\dots, N$, $t=1,\dots, T$. 
+
+- Again, the only intercept is $\beta_0$. It has a cross-sectional dimension N and a time dimension T.
+  - Subscript i refers to individual (firm) and subscript t denotes time.
+  - Important: the explanatory variables innovation and firm size may be correlated.
+- **Issue 1:** Can equation (3) be generalized by N intercepts $\alpha_i$. Does each firm (subscript $i$) have their own intercept?
+
+## Panel Data Specification (Cont.)
+
+  $$
+    \text{Profit}_{it} = \alpha_i + \beta_1 \text{Innovation}_{it} + \beta_2 \text{Firm Size}_{it} + u_{it}
+  $$
+
+- **Issue 2:** Is there any correlation between these $N$ intercepts $\alpha_i$ and each of the explanatory variables innovation and firm size?
+- **Issue 3:** Should variables that remain constant within individual firms be treated differently? E.g. in the following specification, firm size does not change across time. Thus, frmsizeᵢ has no subscript $t$, in case the size of the firms is constant in all of the $T$ periods.
+  $$
+    \text{Profit}_{it} = \beta_0 + \beta_1 \text{Innovation}_{it} + \beta_2 \text{Firm Size}_{i} + u_{it}
+  $$
+
+-  **Issue 4:** Are the explanatory variables of the regression equation strictly exogenous? This is an econometric issue that is required for unbiased estimators. It will be explained below further.
+
+## The Individual-Specific Effect
+
+- Suppose the following "true model":
+
+  $$
+    y_{it} = a_i + \beta_1x_{1it} + ... + \beta_kx_{kit} + u_{it} \quad i=1,...,N;t=1,...,T
+  $$
+- Where:
+  - $a_i$ is the individual-specific effect (a random variable)
+  - $u_{it}$ is the idiosyncratic (i.i.d.: identically and independently distributed) error term with expected value zero and constant variance.
+  - *N*: cross-sectional dimension; *T*: time-dimension
+  - There are *k* different explanatory variables.
+
+## The Individual-Specifc Effect
+
+- The constant $a_i$ captures all individual-specific variables that are not observed by the researcher; e.g. motivation (it is referred to as **unobserved heterogeneity**).
+  - It is possible that $E(a_i | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) \neq 0$ (e.g. in an equation where wage is the dependent variable, ‘motivation’ (subsumed in $a_i$) might be correlated with the RHS-variable ‘experience’).
+
+- Suppose that instead one estimates the following model by OLS:
+    $$y_{it} = \beta_1x_{1it} + ... + \beta_kx_{kit} + v_{it} \quad i=1,\dots,N;t=1,\dots,T$$
+
+- Where $$v_{it} = a_i + u_{it}$$ (=individual specific effect + idiosyncratic error term)
+
+## Assumptions 
+
+- The model estimated by OLS: 
+
+  $$
+    y_{it} = \beta_1x_{1it} + ... + \beta_kx_{kit} + v_{it} \quad i=1,\dots,N;t=1,\dots,T
+  $$
+
+- In this model, is it assumed that:
+- $E(v_{it} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ so that, in all $k$ explanatory variables in all $T$ time periods:
+  - $E(a_i | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ and 
+  - $E(u_{it} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}, a_i) = 0$ 
+
+- Violation of this assumption leads to a biased estimate of the regression parameters $\beta$.
+- An application will be given later.
+
+
+## Strict Exogeneity
 
 *Aim: to formalize a linear panel-data model*
 
@@ -283,34 +396,30 @@ gGDPₜ = α₀ + δ₀rₜ + uₜ (8)
 
 
 
-## Between variation versus within variation?
-*Aim: to discuss the measurement of between variation and within variation.*
+## Between vs. Within Variation
 
-**Between variation:** the cross-sectional variation (across individuals). For example:
+- **Between variation:** the cross-sectional variation (across individuals). For example:
 
 | | Profit (= dependent variable) | Innovation (=explanatory variable) |
 |---|---|---|
 | Firm A | 500 thousand Euros | 1 percent |
 | Firm B | 750 thousand Euros | 3 percent |
 
-**Between variation** (across firms): as a result of the increased innovation (from 1 percent to 3 percent) the profits increase from 500 thousand Euros to 750 thousand Euros.
+- **Between variation** (across firms): as a result of the increased innovation (from 1 percent to 3 percent) the profits increase from 500 thousand Euros to 750 thousand Euros.
 
-**Within variation:** the time-series variation (for a given individual). So the variation within individuals. For example:
+## Between vs. Within Variation (Cont.)
+
+- **Within variation:** the time-series variation (for a given individual). So the variation within individuals. For example:
 
 | | Profit (= dependent variable) | Innovation (=explanatory variable) |
 |---|---|---|
 | Time 1 | 500 thousand Euros | 1 percent |
 | Time 2 | 550 thousand Euros | 3 percent |
 
-**Within variation** (for a given firm): as a result of the increased innovation (from 1 percent to 3 percent (thus by 2 percentage points) the profits increase from 500 thousand Euros to 550 thousand Euros from *t*=1 to *t* = 2.
+- **Within variation** (for a given firm): as a result of the increased innovation (from 1 percent to 3 percent (thus by 2 percentage points) the profits increase from 500 thousand Euros to 550 thousand Euros from $t=1$ to $t=2$
 
-Economists are usually interested in the within variation more than in the between variation.
-
-To measure the within variation of *x* on *y*, we need to control for individual effects. Consequently, it allows for correlation between the individual effect and the explanatory variable.
-
-22
-
----
+- Economists are usually interested in the within variation more than in the between variation.
+- To measure the within variation of *x* on *y*, we need to control for individual effects. Consequently, it allows for correlation between the individual effect and the explanatory variable.
 
 ## Classification
 
@@ -1839,4 +1948,8 @@ plot_event_study(estimation_results)
   - We then explained the classic finance approach used without a control group, which relies on calculating "abnormal returns" against a predicted "normal" outcome.
 
 # The End
+
+
+
+
 
