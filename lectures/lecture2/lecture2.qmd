@@ -664,33 +664,6 @@ reg wage educ expr
 
 # Clustered Standard Errors
 
-## OLS Variance Expansion
-
-- We now express the variance of the OLS estimator, $Var(\hat{\beta}_1)$ in a more general form:
-
-  $$
-    Var(\hat{\beta}_1) = Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})u_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
-  $$
-
-- The crucial step is calculating $Var(\sum (x_i - \bar{x})u_i)$. The variance of a sum of random variables is the sum of their variances plus twice the sum of all unique pairwise covariances:
-
-  $$
-    Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i) + \sum_{i \neq j} (x_i - \bar{x})(x_j - \bar{x}) Cov(u_i, u_j)
-  $$
-
-## Classical Assumptions
-
-- The classical linear model makes two critical assumptions here:
-
-  1.  **Homoskedasticity:** $Var(u_i) = \sigma^2$ for all $i$.
-  2.  **No serial correlation:** $Cov(u_i, u_j) = 0$ for all $i \neq j$.
-
-- Under these assumptions, the second term (the sum of covariances) vanishes entirely. The formula simplifies:
-
-  $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \frac{\sigma^2 \sum (x_i - \bar{x})^2}{\left(\sum (x_i - \bar{x})^2\right)^2} = \frac{\sigma^2}{\sum (x_i - \bar{x})^2}
-  $$
-
 ##  Intra-Cluster Correlation
 
 - In many economic datasets, the assumption that $Cov(u_i, u_j) = 0$ is unrealistic.   
@@ -714,10 +687,25 @@ reg wage educ expr
 
 - If we ignore this structure and use the standard OLS formula, we are incorrectly zeroing out all the covariance terms in the variance calculation. 
   - If these covariance terms are, on average, positive (which is common), we will systematically underestimate the true variance of $\hat{\beta}_1$. This leads to standard errors that are too small. 
+  
+## Expressing the Variance
+
+- We now express the variance of the OLS estimator, $Var(\hat{\beta}_1)$ in a form recognizing the cluster structure:
+
+  $$
+  \begin{align}
+    Var(\hat{\beta}_1) &= Var \left( \beta_1 + \frac{\sum_{i=1}^N (x_i - \bar{x})u_i}{\sum_{i=1}^N (x_i - \bar{x})^2} \right) \\
+    &= \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right) \\
+    &= \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} {Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)}
+  \end{align}
+  $$
+  
+- In the final equality, we recognize that the sum over all observations can be partitioned into the sum over _all observations within one cluster_ (from $i$ to $N_g$), and then summing over each cluster (from $g=1$ to $G$). 
+
 
 ## Deriving the Cluster-Robust Variance
 
-- Let's re-derive the variance of $\hat{\beta}_1$ under the clustering assumption. We start again from:
+- Restating the result from the previous slide:
 
   $$
     Var(\hat{\beta}_1) = \frac{1}{\left(\sum_{g,i} (x_{gi} - \bar{x})^2\right)^2} \color{blue}{Var\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)}
@@ -770,7 +758,7 @@ reg wage educ expr
 - By summing this quantity over all clusters, we get an estimate of the total variance of the numerator of $\hat{\beta}_1$^[The blue term in @eq-numerator.]:
 
   $$
-    \widehat{Var}\left(\text{numerator}\right) = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2
+    {\widehat{Var}\left(\sum_{g=1}^G \sum_{i=1}^{N_g} (x_{gi} - \bar{x})u_{gi}\right)} = \sum_{g=1}^G \left( \sum_{i=1}^{N_g} (x_{gi} - \bar{x})\hat{u}_{gi} \right)^2
   $$
 
 ## The Cluster-Robust Estimator (Cont.)
