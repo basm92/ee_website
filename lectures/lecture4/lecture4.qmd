@@ -706,9 +706,9 @@ xtreg y x1 x2, fe1 fe2 *\fixed effects separated by a comma
   - Answer: It depends on the time series behavior of $u_{it}$. If it is a white noise error term, use the within estimation procedure $\hat{\beta}_{within}$.
   - If it follows a random walk ($u_{it} = u_{i,t-1} + e_{it}$), use the first-difference procedure $\hat{\beta}_{fdif}$.
   
-## Issue: First differences or fixed effects? (III)
+## Issue: First Differences or Fixed Effects? (III)
 
-- ***Motivation for the procedure***
+- **Motivation for the procedure**
   - **Assumption:** strict exogeneity (no feedback, no lagged dependent variables).
 
 - For ease of exposition here we take one explanatory variable x
@@ -743,30 +743,36 @@ Hence, the intertemporal correlation of the FD-estimator is -0.5 if $u_{it}$ is 
 :::{.callout-note title="Correlation of $u_{it}$ in the FD model"}
 Covariance for the same individual across time:
 
-$Cov[aX+bY,cW +dZ]= acCov[X,W]+ adCov[X,Z]+bcCov[Y,W]+bdCov[Y,Z]$
+:::{style="font-size: 0.7em;"}
 
-$$
-\begin{align}
-Cov(u_{it}-u_{i,t-1}, u_{i,t-1}-u_{i,t-2})  &= \\
-Cov(u_{it},u_{i,t-1}) &+ Cov(u_{it},-u_{i,t-2}) + Cov(-u_{i,t-1},u_{i,t-1}) + \\  &Cov(-u_{i,t-1},-u_{i,t-2}) \\
-&= 0 + 0 - Var(u_{i,t-1}) + 0
-&= -\sigma_u^2
-\end{align}
-$$
+  $$
+    Cov[aX+bY,cW +dZ]= acCov[X,W]+ adCov[X,Z]+bcCov[Y,W]+bdCov[Y,Z]
+  $$
 
-$$
-\begin{align}
-Var(u_{it} - u_{i,t-1}) &= Var(u_{it}) + Var(-u_{i,t-1}) + 2Cov(u_{it},-u_{i,t-1}) \\
-&= \sigma_u^2 + \sigma_u^2 + 0 = 2\sigma_u^2
-\end{align}
-$$
+  $$
+    \begin{align}
+    Cov(u_{it}-u_{i,t-1}, u_{i,t-1}-u_{i,t-2})  &= \\
+    Cov(u_{it},u_{i,t-1}) &+ Cov(u_{it},-u_{i,t-2}) + Cov(-u_{i,t-1},u_{i,t-1}) + \\  &Cov(-u_{i,t-1},-u_{i,t-2}) \\
+    &= 0 + 0 - Var(u_{i,t-1}) + 0 \\
+    &= -\sigma_u^2
+    \end{align}
+  $$
 
-$$
-\begin{align}
-Corr(\Delta u_{it}, \Delta u_{i,t-1}) &= \frac{Cov(\Delta u_{it}, \Delta u_{i,t-1})}{\sqrt{Var(\Delta u_{it}) \cdot Var(\Delta u_{i,t-1})}} \\
-&= \frac{-\sigma_u^2}{2\sigma_u^2} = -0.5
-\end{align}
-$$
+  $$
+    \begin{align}
+    Var(u_{it} - u_{i,t-1}) &= Var(u_{it}) + Var(-u_{i,t-1}) + 2Cov(u_{it},-u_{i,t-1}) \\
+    &= \sigma_u^2 + \sigma_u^2 + 0 = 2\sigma_u^2
+    \end{align}
+  $$
+
+  $$
+    \begin{align}
+    Corr(\Delta u_{it}, \Delta u_{i,t-1}) &= \frac{Cov(\Delta u_{it}, \Delta u_{i,t-1})}{\sqrt{Var(\Delta u_{it}) \cdot Var(\Delta u_{i,t-1})}} \\
+    &= \frac{-\sigma_u^2}{2\sigma_u^2} = -0.5
+    \end{align}
+  $$
+  
+:::
 
 :::
 
@@ -790,33 +796,111 @@ To check for FE versus FD, follow the below procedure:
 
 :::
 
+## FD in Software
 
-## Some useful Stata commands
+- In R, the FD model can be estimated using the `plm` function from the `plm` library, using `plm(y ~ x1 + x2, data = df, model = "fd")`. 
+- In Python, see the implementation below.
+- In Stata, `reg d.y d.x, cluster(number)`
+  - Some students make the following mistake: `xtreg d.y d.x`
 
-*   Use the `tsset` command at the beginning of the do-file:
-    *   `tsset i t`
-    *   ‘i’ is the name of the variable that refers to the individual
-    *   ‘t’ is the name of the variable that refers to time
-    *   alternative: `xtset i t`
+:::{.panel-tabset}
 
-*   summary statistics that take into account both dimensions (individuals and time):
-    *   `xtsum y x`
+### R
 
-*   First differences
-    *   `reg d.y d.x`
-    *   `reg d.y d.x, robust`
-    *   `reg d.y d.x, cluster(number)`
-    *   Some students make the following mistake:
-        `xtreg d.y d.x`
+```{r}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+# Install the packages if you don't have them already
+# install.packages("plm")
+# install.packages("AER")
+
+# Load the libraries
+library(plm)
+library(AER)
+
+# Load the Grunfeld dataset
+data("Grunfeld")
+
+# Estimate the first difference model
+# We are modeling the change in investment (inv) as a function of
+# the change in the value of the firm (value) and the change in capital stock (capital).
+fd_model <- plm(inv ~ value + capital, data = Grunfeld, model = "fd")
+
+# Print the summary of the regression results
+summary(fd_model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+#| collapse: true
+#| code-fold: true
+
+import pandas as pd
+import statsmodels.api as sm
+from linearmodels.panel import PanelOLS
+
+# Load the Grunfeld dataset
+# The statsmodels library includes the Grunfeld dataset
+grunfeld_data = sm.datasets.grunfeld.load_pandas().data
+
+# Set firm and year as the index for the panel data model
+# The linearmodels package requires a MultiIndex of (entity, time)
+grunfeld_data = grunfeld_data.set_index(['firm', 'year'])
+
+# Define the dependent and independent variables
+dependent = grunfeld_data['invest']
+exog = sm.add_constant(grunfeld_data[['value', 'capital']])
+
+# Estimate the first difference model
+# The PanelOLS function with the entity_effects=True argument
+# when applied to first-differenced data is equivalent to a first-difference model.
+# A more direct way is to difference the data manually.
+
+# 1. Manual First-Differencing
+grunfeld_diff = grunfeld_data.groupby('firm').diff().dropna()
+dependent_diff = grunfeld_diff['invest']
+exog_diff = sm.add_constant(grunfeld_diff[['value', 'capital']])
+
+# We use OLS on the differenced data.
+# Note: For a first-difference model, the intercept represents the average time trend.
+fd_model_manual = sm.OLS(dependent_diff, exog_diff)
+fd_results = fd_model_manual.fit()
+
+# Print the summary of the regression results from our manual first difference
+print("First Difference Model Results (Manual Approach)")
+print(fd_results.summary())
+
+```
 
 
-## Estimation Procedure
+### Stata
 
-**Estimation procedure:**
-* We started with the first-difference estimator β̂fdif
-* Next, we checked for autocorrelation, using the Breusch Godfrey test.
-* The parameter on the lagged residual was statistically different from zero (t-value: -8.93).
-* We re-estimated the model with the first-difference estimator, using clustered standard errors.
+```{stata}
+#| echo: true
+#| eval: false
+#| collapse: true
+#| code-fold: true
+
+* 1. Load Stata's built-in Grunfeld dataset
+* The 'clear' option removes any data currently in memory
+webuse grunfeld, clear
+
+* 2. Declare the data as a panel dataset
+* Stata needs to know the panel identifier ('company') and the time variable ('time')
+xtset company time
+
+* 3. Estimate the first difference model
+* We use the 'xtreg' command with the 'fd' option.
+* Note: Stata's Grunfeld dataset uses the variable names mvalue and kstock.
+xtreg invest mvalue kstock, fd
+
+```
+
+:::
 
 ## What did we do?
 
