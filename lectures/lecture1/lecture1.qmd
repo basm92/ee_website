@@ -1225,10 +1225,11 @@ $$
 ## Variance Illustration (Dependence on $\hat{\sigma}$)
 
 - We plot the distribution of the 1,000 estimated coefficients, which is centered around the true value of 5 (the solid red line).
-  - In the left panel below, we have a *high-variance estimator* ($\sigma=8$)
-    - The histogram on the left is visibly wider and flatter. This indicates a larger spread in the estimated coefficients. Any single estimate from a sample of this size could be quite far from the true value. 
-  - In the right panel below, we have a *low-variance estimator* ($\sigma=1$)
+  - In the left panel below, we have a *low-variance estimator* ($\sigma=1$)
     - The histogram on the right is much narrower and more peaked. The estimates are tightly clustered around the true value. 
+  - In the right panel below, we have a *high-variance estimator* ($\sigma=8$)
+    - The histogram on the right is visibly wider and flatter. This indicates a larger spread in the estimated coefficients. Any single estimate from a sample of this size could be quite far from the true value. 
+    
     
 ```{r}
 #| echo: false
