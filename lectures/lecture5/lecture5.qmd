@@ -87,6 +87,185 @@ Research question: can we explain the volume of profits by the country of origin
 **Question 2:** Can we have a panel data estimator that includes country of headquarter? This week: **random effects estimator**
 
 **Question 3:** Is there any road map for the preferred estimator? Five options: 1. first difference estimator, 2. pooled OLS (both in week 4), 3. LSDV estimator, 4. fixed effects estimator, 5. random effects estimator (this week). These week: several testing procedures.
+## Classification
+
+## Static model: a classification
+
+*   Consider the following equation:
+    yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ   i=1,...,*N*;t=1,...,*T* (10)
+*   The assumptions in the table on the next slide are necessary to estimate equation (10). It leads to the following two questions:
+*   **Question 1:** Is there any nonzero correlation between aᵢ and all of the k RHS vars xᵢₜ? Is it nonzero in all T time periods?
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0 or
+    *all k explanatory variables in all T time periods*
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) ≠ 0?
+    *all k explanatory variables in all T time periods*
+    
+    
+*   **Question 2:** Are all of the k variables xᵢₜ strictly exogenous (conditional on the unobserved individual effect aᵢ)?
+    E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ, aᵢ) = 0
+    *all k explanatory variables in all T time periods*
+    (thus, no lagged dependent variables, no feedback mechanism)
+*   In all of the estimators of this week we assume that the exogenous time-varying regressors are strictly exogenous. (conditional on the unobserved effect):
+    E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,...,xᵢₜₖ) = 0
+    *all k explanatory variables in all T time periods*
+*   So again: no lagged dependent variables; no feedback mechanism.
+*   In explaining estimation procedures, we assume a **balanced panel**: for every cross-sectional unit, we have the same number of time periods *T*.
+    Model: yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ   i=1,...,*N*;t=1,...,*T* (10)
+*   Stata allows for estimation of **unbalanced panels**, in which not all units have *T* observations. Thus the i-th individual has Tᵢ observations.
+
+
+**Table A: Estimation methods under different assumptions of strict exogeneity and on the correlation between the individual effect and RHS-variables:**
+
+| | E(aᵢ | Xᵢ₁₁,..,Xᵢ₁ₖ,..,Xᵢₜ₁,..,Xᵢₜₖ) ≠ 0 Correlation between aᵢ and all of the explanatory variables is allowed to be nonzero | E(aᵢ | Xᵢ₁₁,..,Xᵢ₁ₖ,..,Xᵢₜ₁,..,Xᵢₜₖ) = 0 A zero correlation between aᵢ and all of the explanatory variables is assumed. |
+| :--- | :--- | :--- |
+| **All xᵢₜ strictly exogenous** | 1. First differences <br> 2. LSDV procedure <br> 3. Within estimation | 4. Random effects |
+| **Some xᵢₜ not strictly exogenous** | Instrumental Variables (IV) | 5. Pooled OLS (no lagged dependent variables) <br> 6. Instrumental variables (IV) (lagged dep. vars. Included) |
+
+yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + uᵢₜ i=1,...,*N*;t=1,...,*T*
+
+## Time-Invariant Variables
+
+**Table B: Estimating the effect of time-invariant variables zᵢ**
+
+| | No estimation of γ: no effect of zᵢ on yᵢₜ | Estimation of γ: effect of zᵢ on yᵢₜ |
+| :--- | :--- | :--- |
+| **All xᵢₜ strictly exogenous** | 1. First differences<br>2. LSDV procedure<br>3. Within estimation | 4. Random effects |
+| **Some xᵢₜ not strictly exogenous** | Instrumental Variables (IV) | 5. Pooled OLS (no lagged dependent variables)<br>6. Instrumental variables (IV) (lagged dep. vars. Included) |
+
+yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + γ₁z₁ᵢ + ... + γₕzₕᵢ + uᵢₜ   i=1,...,*N*;t=1,...,*T*
+
+* The variables z do not change across time but they are different across individuals
+* E.g. zᵢ: gender and ethnicity in wage equation
+* zᵢ picks up the between variation (between individuals).
+    * Between individuals: cross-sectional perspective
+* xᵢₜ picks up the within variation (within individuals)
+    * Within individuals: time-series perspective for a given individual
+* Economists are usually more interested in within variation.
+
+
+
+# Pooled OLS
+
+## Assumptions 
+
+- Suppose that instead one estimates the following model by OLS:
+    $$y_{it} = \beta_1x_{1it} + ... + \beta_kx_{kit} + v_{it} \quad i=1,\dots,N;t=1,\dots,T$$
+
+- Where $$v_{it} = a_i + u_{it}$$ (=individual specific effect + idiosyncratic error term)
+
+- In this model, is it assumed that:
+- $E(v_{it} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ so that, in all $k$ explanatory variables in all $T$ time periods:
+  - $E(a_i | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ and 
+  - $E(u_{it} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}, a_i) = 0$ 
+
+- Violation of this assumption leads to a biased estimate of the regression parameters $\beta$.
+  - An application will be given later.
+
+
+## Strict Exogeneity
+
+- **Assumption TS.2 (strict exogeneity)**
+  - For each $t$, the expected value of $u_$ given ALL of the $k$ explanatory variables FOR ALL $T$ time periods, is equal to zero: $E[u_t | X] = 0$
+
+- **Assumption TS.2’ (contemporaneous exogeneity)**
+  - For each *t*, the expected value of uₜ, given ALL of the *k* explanatory variables in period *t*, is equal to zero: E(uₜ | xₜ₁,...,xₜₖ) = E(uₜ | **x**ₜ) = 0
+  - This assumption implies that the error term in period *t* is uncorrelated with all *k* regressors in the same period, $t$: Corr(uₜ,xₜⱼ)=0   *j*=1,...,*k*
+
+
+
+## Violation of Exogeneity
+
+- Violation of the strict exogeneity assumption while assumption contemporaneous exogeneity is satisfied
+
+:::{.callout-tip title="Example: Dynamic variable with lagged dependent variable"}
+
+$y_t = \alpha_0 + \alpha_1y_{t-1} + \delta_1z_t + u_t$
+
+- $u_t$ is assumed to be an idiosyncratic error term and contemporaneously exogenous: $E(u_t | y_{t-1}, z_t) = 0$, so that OLS yields consistent estimates.
+- However, $y_{t-1}$ is NOT a strictly exogenous variable:
+  - The assumption of strict exogeneity implies that $u_t$ is uncorrelated not only with $\mathbf{x}_t = (y_{t-1}, z_t)'$, but also with $\mathbf{x}_{t+1} = (y_t, z_{t+1})'$
+  - According to equation (7), $y_t$ and $u_t$ are related to each other. In other words, $E(u_t | \mathbf{x}_{t+1}) = E(u_t | y_t, z_{t+1}) \neq 0$,
+- Thus the lagged dependent variable $y_{t-1}$ is not strictly exogenous the model.
+
+:::
+
+## Examples
+
+:::{.callout-tip title="Example: Models with a feedback mechanism"}
+
+$gGDP_t = \alpha_0 + \delta_0r_t + u_t$ (8)
+
+*   gGDP: GDP-growth rate
+*   $r_t$: Interest rate, which is assumed to be contemporaneously exogenous: $E(u_t | r_t) = 0$
+*   The independent variable $r_t$ depends on the lagged value of the dependent variable (feedback mechanism):
+    $r_t = \gamma_0 + \gamma_1(gGDP_{t-1} – 3) + v_t$ (9)
+*   Equation (9) implies that $r_{t+1}$ depends on $gGDP_t$ and consequently on $u_t$.
+*   $E(u_t | \mathbf{x}_{t+1}) = E(u_t | r_{t+1}) \neq 0$
+*   **Thus $r_t$ is not strictly exogenous in the model.**
+
+:::
+
+
+## Pooled OLS
+
+* An estimator for a zero correlation between $\alpha_i$ and the explanatory variables
+*Aim: to introduce the estimator that assumes there is no correlation between aᵢ and the explanatory variables*
+
+*   Now we assume that there is no correlation between aᵢ and xᵢₜ.
+*   Consider the following methods:
+    *   Random effects (method 4 from Table A; next week)
+    *   Pooled OLS (method 5 from Table A)
+
+
+## Estimation method 5: Pooled OLS
+
+*Aim: to introduce the OLS-estimator for a panel data specification.*
+
+*   Now we assume that there is no correlation between aᵢ and all of the k explanatory variables xᵢₜ.
+*   Equation (12) can be estimated with OLS. This is referred to as pooled OLS:
+*   yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ (12)
+    *   For which vᵢₜ = aᵢ + uᵢₜ where uᵢₜ is i.i.d.
+    *   As a result of the identical distribution: Var(vᵢₜ) = Var(vᵢ,ₜ₋₁)
+    *   In a pooled regression vᵢₜ = aᵢ + uᵢₜ
+    *   So, in equation (12), it is assumed that:
+
+        E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ) = 0 and
+        E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ, aᵢ) = 0
+
+*   aᵢ is uncorrelated with all of the explanatory variables.
+*   uᵢₜ is uncorrelated with all of the explanatory variables and aᵢ
+
+*   Autocorrelation between the error terms vᵢₜ and vᵢ,ₜ₋₁ of equation (12) is:
+*   Corr(vᵢₜ,vᵢ,ₜ₋₁) = Cov(vᵢₜ,vᵢ,ₜ₋₁) / sqrt(Var(vᵢₜ)Var(vᵢ,ₜ₋₁)) = Cov(vᵢₜ,vᵢ,ₜ₋₁) / Var(vᵢₜ)
+
+*   We can show that the numerator:
+    Cov(vᵢₜ,vᵢ,ₜ₋₁) = Cov(aᵢ + uᵢₜ, aᵢ + uᵢ,ₜ₋₁) =
+    = Cov(aᵢ,aᵢ) + Cov(aᵢ,uᵢ,ₜ₋₁) + Cov(uᵢₜ, aᵢ) + Cov(uᵢₜ,uᵢ,ₜ₋₁)
+    =σₐ² (=0) (=0) (=0)
+    = Var(aᵢ) + 0 + 0 + 0
+
+= σₐ²
+
+*   And the denominator:
+    Var(vᵢₜ) = Var(aᵢ + uᵢₜ)
+    = Var(aᵢ) + Var(uᵢₜ) + 2Cov(aᵢ,uᵢₜ) =
+    =σₐ² + σᵤ² (=0)
+    = σₐ² + σᵤ²
+
+*   So that: Cov(vᵢₜ,vᵢ,ₜ₋₁) / Var(vᵢₜ) = σₐ² / (σₐ² + σᵤ²)
+
+*   Conclusion: In pooled OLS there is always autocorrelation.
+*   The estimation procedure for pooled OLS: OLS on (12), with Newey-West robust standard errors, which is also referred to as clustered standard errors. It corrects for both heteroskedasticity and autocorrelation. Stata command Pooled OLS: reg y x, cluster(i)
+
+## Example 5 (continued): Pooled OLS
+
+
+
+**Estimation procedure:**
+*   We started with the pooled OLS estimator.
+*   Next, we checked for autocorrelation, using the Breusch Godfrey test.
+*   The parameter on the lagged residual was statistically different from zero (t-value: 27.90).
+*   We re-estimated the model with the pooled OLS estimator, using clustered standard errors.
 
 
 ## Least Squares Dummy Variable Estimator
@@ -278,124 +457,9 @@ Then it is possible to show that:
 
 ## Further remarks
 
-**Aim:** *to discuss issues about the within estimator.*
-
-yᵢₜ = β₁x₁ᵢₜ +...+ βₖxₖᵢₜ + aᵢ + uᵢₜ
-
-ÿᵢₜ = β₁ẍ₁ᵢₜ + ... + βₖẍₖᵢₜ +üᵢₜ   i=1,...,N;t=1,...,T   (4)
-
-where
-ÿᵢₜ = yᵢₜ - ȳᵢ; ẍᵢₜ = xᵢₜ - x̄ᵢ; üᵢₜ = uᵢₜ - ūᵢ
-
-- The parameter vector β is identified ('can be estimated') due to time-variation in xᵢₜ for each individual: the variables differ across time at the level of the individual.
-- Individual-specific variables that are constant over time (e.g. gender, year of birth) cannot be included in (4). Their parameters are not identified, as they are incorporated in the individual effect aᵢ.
-- Estimator β̂_within and âᵢ are consistent if T and N are large.
-- If T is small and N is large, then β̂_within is still consistent. âᵢ is inconsistent because of the small number of observations (T).
-- Why is β̂_within a consistent estimator? Let's assume for simplicity we have a bivariate model: yᵢₜ = xᵢₜβ + aᵢ + uᵢₜ or
-  ÿᵢₜ = ẍᵢₜβ + üᵢₜ (5)
-- Consistency requires that the error term is uncorrelated with the explanatory variable: In (5):
-  Corr(ẍᵢₜ,üᵢₜ) = Corr(xᵢₜ - x̄ᵢ, uᵢₜ - ūᵢ) = 0
-- It means that uᵢₜ is uncorrelated with x̄ᵢ
-- It means that uᵢₜ is uncorrelated with xᵢ₁,...,xᵢₜ
-- Uncorrelated with x in the past, present and future....
-Conclusion: strict exogeneity is needed (this excludes lagged dependent variables and feedback effects).
-
-- Contemporaneous exogeneity is too weak to prove consistency of the fixed effects estimator β_within because it does not exclude correlation between uᵢₜ and xᵢ₁,...,xᵢₜ.
-
-## FE in Software
-
-**Some useful Stata commands (II)**
-
-Fixed effects (do not forget the subcommand fe which says Stata should apply the FE estimator:
-*   xtreg y x, fe
-*   xtreg y x, fe cluster(id_firm)
 
 
 ## Example 1 (continued): fixed effects
-
-`xtreg leverage i.year i.ncountry cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, fe`
-note: 2.ncountry omitted because of collinearity
-note: 3.ncountry omitted because of collinearity
-...
-note: 18.ncountry omitted because of collinearity
-
-Fixed-effects (within) regression
-Group variable: id_firm
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.2635 | Number of obs | = 38018 |
-| | between = 0.1852 | Number of groups | = 4453 |
-| | overall = 0.2094 | | |
-| | | Obs per group: min | = 1 |
-| | | avg | = 8.5 |
-| | | max | = 24 |
-| corr(u_i, Xb) = 0.1416 | F(29,33536) | = 413.74 |
-| | Prob > F | = 0.0000 |
-
-| leverage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **year** | | | | | |
-| 1991 | -.0071953 | .0128123 | -0.56 | 0.574 | -.0323079 | .0179173 |
-| 1992 | .0063964 | .012046 | 0.53 | 0.595 | -.0172141 | .030007 |
-| 1993 | -.0500511 | .0120103 | -4.17 | 0.000 | -.0735917 | -.0265104 |
-| 1994 | -.0187898 | .0118235 | -1.59 | 0.112 | -.0419643 | .0043847 |
-| 1995 | -.0041872 | .0115466 | -0.36 | 0.717 | -.026819 | .0184446 |
-| 1996 | -.0273106 | .0114664 | -2.38 | 0.017 | -.0497853 | -.004836 |
-| 1997 | -.0383464 | .011436 | -3.35 | 0.001 | -.0607614 | -.0159314 |
-| 1998 | -.0394148 | .0115158 | -3.42 | 0.001 | -.0619861 | -.0168435 |
-| 1999 | -.0286589 | .0115514 | -2.48 | 0.013 | -.0513 | -.0060179 |
-| 2000 | -.0048752 | .0112476 | -0.43 | 0.665 | -.0269209 | .0171704 |
-| 2001 | -.0107868 | .0111608 | -0.97 | 0.334 | -.0326624 | .0110889 |
-| 2002 | .0005191 | .0112197 | 0.05 | 0.963 | -.0214719 | .0225102 |
-| 2003 | -.02291 | .0112636 | -2.03 | 0.042 | -.044987 | -.000833 |
-| 2004 | -.0283002 | .0112057 | -2.53 | 0.012 | -.0502636 | -.0063367 |
-| 2005 | -.0476214 | .0111731 | -4.26 | 0.000 | -.0695211 | -.0257217 |
-| 2006 | -.0417042 | .0111741 | -3.73 | 0.000 | -.0636059 | -.0198025 |
-| 2007 | -.0310703 | .0111437 | -2.79 | 0.005 | -.0529123 | -.0092282 |
-| 2008 | .0297393 | .0110511 | 2.69 | 0.007 | .0080788 | .0513997 |
-| 2009 | -.0450109 | .0120865 | -3.72 | 0.000 | -.0687009 | -.021321 |
-| 2010 | .0212174 | .0112624 | 1.88 | 0.060 | -.0008573 | .043292 |
-| 2011 | .0361837 | .0111027 | 3.26 | 0.001 | .014422 | .0579454 |
-| 2012 | .007615 | .0112974 | 0.67 | 0.500 | -.0145283 | .0297583 |
-| 2013 | -.0082831 | .0115645 | -0.72 | 0.474 | -.0309498 | .0143837 |
-| **ncountry** | | | | | |
-| 2 | 0 (omitted) | | | | | |
-| 3 | 0 (omitted) | | | | | |
-| 4 | 0 (omitted) | | | | | |
-| 5 | 0 (omitted) | | | | | |
-
-## Example Continued
-
-| | | | | | | |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 6 | 0 (omitted) | | | | | |
-| 7 | 0 (omitted) | | | | | |
-| 8 | 0 (omitted) | | | | | |
-| 9 | 0 (omitted) | | | | | |
-| 10 | 0 (omitted) | | | | | |
-| 11 | 0 (omitted) | | | | | |
-| 12 | 0 (omitted) | | | | | |
-| 13 | 0 (omitted) | | | | | |
-| 14 | 0 (omitted) | | | | | |
-| 15 | 0 (omitted) | | | | | |
-| 16 | 0 (omitted) | | | | | |
-| 17 | 0 (omitted) | | | | | |
-| 18 | 0 (omitted) | | | | | |
-| cashflow_assets | -.3282559 | .0119771 | -27.41 | 0.000 | -.3517314 | -.3047804 |
-| net_income_MV | -.0717367 | .0022064 | -32.51 | 0.000 | -.0760613 | -.0674121 |
-| capex_MV | .281408 | .0048738 | 57.74 | 0.000 | .2718552 | .2909609 |
-| volatility | .0016269 | .0001371 | 11.86 | 0.000 | .0013581 | .0018957 |
-| gdp_growth | -.0095725 | .0004607 | -20.78 | 0.000 | -.0104755 | -.0086695 |
-| inflation | -.0027681 | .0009939 | -2.78 | 0.005 | -.0047163 | -.00082 |
-| _cons | .3082911 | .0121223 | 25.43 | 0.000 | .2845309 | .3320513 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .23427663 |
-| sigma_e | .12571004 |
-| rho | .77644166 | (fraction of variance due to u_i) |
-| F test that all u_i=0: | F(4452, 33536) = 22.42 Prob > F = 0.0000 |
 
 ## Fixed effects versus First Differences
 
@@ -1584,4 +1648,328 @@ Group variable: nr
 | married | .2328783 | .0161908 | 14.38 | 0.000 | .201145 | .2646117 |
 | educ | .0758092 | .0086334 | 8.78 | 0.000 | .058888 | .0927303 |
 | union | .0991208 | .0189042 | 5.24 | 0.000 | .0620693 | .13617
+
+
+
+
+# The Pooled OLS Model
+
+## The Pooled OLS Model
+
+- The simplest approach is to ignore the panel structure entirely.
+
+:::{.callout-note title="Definition: Pooled OLS Model"}
+  $$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+:::
+- **Method:**
+  - Stack all $N \times T$ observations together.
+  - Run a single OLS regression as if it were one large cross-section.
+
+- **Key Assumption:**
+  - The error term $u_{it}$ is uncorrelated with the regressors $X_{it}$.
+  - This implicitly assumes that there are **no unobserved individual-specific or time-specific effects** that are correlated with our $X$ variables. 
+  - This assumption is almost always violated in practice! It ignores the very heterogeneity that panel data is designed to address, leading to biased estimates.
+
+## Unobserved Heterogeneity
+
+- The error term $u_{it}$ in a panel model is often thought to have multiple parts:
+
+  $$ u_{it} = \alpha_i + \lambda_t + \epsilon_{it} $$
+
+- $\alpha_i$: **Individual-specific effect**. This is an unobserved factor that is constant over time for a given individual $i$, but varies across individuals.
+- $\lambda_t$: **Time effect**. This is an unobserved factor that is constant for all individuals at a given time $t$, but varies over time.
+- $\epsilon_{it}$: The idiosyncratic error term that varies across both $i$ and $t$.
+- The core challenge of panel data is how to deal with $\alpha_i$ and $\lambda_t$.
+
+## Unobserved Heterogeneity Examples
+
+:::{.callout-tip title="Example: Unobserved Heterogeneity"}
+
+$\alpha_i$:  An individual's innate ability, a firm's management quality, a country's cultural norms. All of these affect a particular individual, firm, or country $i$ in a way that is constant over time.
+
+$\lambda_t$: A global financial crisis, a major policy change, a technological shock. All of these affect an entire cross-section at particular point in time $t$.
+
+:::
+
+
+# The Random Effects Estimator
+
+## The Random Effects (RE) Model
+
+- **Core Idea:** Instead of treating $\alpha_i$ as a fixed parameter for each individual, we treat it as a **random variable** that is part of the composite error term.
+
+:::{.callout-note title="Definition: Random Effects"}
+
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
+
+Where the composite error term is:
+$$ u_{it} = \alpha_i + \epsilon_{it} $$
+
+- $\alpha_i$ is the random individual-specific error component.
+- $\epsilon_{it}$ is the idiosyncratic error.
+
+:::
+
+- The RE model is a compromise between Pooled OLS and Fixed Effects.
+
+## Random Effects Specification
+
+- The Random Effects Estimator can also be written as follows:
+
+  $$
+    y_{it} - \theta \bar{y_i}  = \beta_1( x_{1it} -\theta\overline{x_{1i}}) +\dots + \beta_k(x_{kit} - \theta\overline{x_{ki}}) + (u_{it} -\theta \bar{u}_i)
+  $$
+
+
+- $\bar{y_i} = (1/T) \sum_t y_{it}$ (the mean of $y$ for individual $i$). Similar for $\overline{x_{ji}}$.
+- $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T_i \sigma^2_\alpha + \sigma^2_\epsilon)}}$, with $\sigma^2_{.}$ denoting the variance of the $\epsilon$ and $\alpha$ terms respectively. 
+- $T_i$ is the no. of observations for individual $i.$ If balanced, $T_i = T$.
+
+
+## The Key Assumption for Random Effects
+
+- For the RE model to be valid (i.e., provide consistent estimates), we must assume:
+
+$$ E(\alpha_i | X_{it}) = 0 $$
+
+- **In English:** The unobserved individual-specific effects ($\alpha_i$) are **uncorrelated** with the explanatory variables ($X_{it}$) for all time periods.
+
+- This is a much stronger assumption than in the FE model.
+  - **Example where it might be violated:** In a wage regression, if unobserved `ability` ($\alpha_i$) is correlated with `education` ($X_{it}$), the RE assumption is violated, and the RE estimator will be biased.
+  - **Example where it might hold:** In an experiment where treatment ($X_{it}$) is randomly assigned, the assumption would hold by design.
+
+## Estimation of RE Models (GLS)
+
+- Estimating the RE model can "almost" be done using Pooled OLS. 
+  - If we run Pooled OLS on the data, assuming the RE model, the estimates of $\beta$ will be unbiased (if the key assumption holds), but they will be **inefficient**.
+
+- The composite error term $u_{it} = \alpha_i + \epsilon_{it}$ creates serial correlation within each individual. 
+  - The error for individual $i$ at time $t$ is correlated with their error at time $t+1$ because they share the same $\alpha_i$:
+  
+  $$\rho(u_{it}, u_{is}) \neq 0 \quad \text{for } t \neq s$$
+
+- **Solution:** Generalized Least Squares (GLS).
+    - GLS is a method that transforms the data to account for this specific error structure, producing efficient estimates.
+    - In practice, we use **Feasible GLS (FGLS)** because we have to estimate the components of the error correlation first. This is what statistical software does automatically.
+
+## Interpretation of RE Coefficients
+
+- The RE estimator uses a weighted average of the "within" and "between" variation in the data.
+
+:::{.callout-tip title="Interpretation of RE Estimates"}
+
+The coefficient $\beta_1$ from an RE model is interpreted as:
+
+The estimated change in $y$ for a one-unit increase in $X$, assuming the unobserved individual effects $\alpha_i$ are uncorrelated with $X$.
+
+:::
+
+- It's a more general interpretation than the FE coefficient.
+- The reliability of this interpretation hinges entirely on the key RE assumption holding true.
+
+## Pros and Cons of the Random Effects Model
+
+- **Pros:**
+    - **Can estimate the effects of time-invariant variables** (e.g., gender, race, industry), because it does not wipe them out.
+    - **More efficient** (i.e., has smaller standard errors) than the FE model, *if* the key assumption ($E(\alpha_i | X_{it}) = 0$) is met. It uses both "within" and "between" variation.
+
+- **Cons:**
+    - **Estimates are biased and inconsistent if the key assumption is violated.** This is the critical weakness. If the unobserved effects are correlated with your regressors, the RE model suffers from omitted variable bias.
+
+## Comparing FE and RE: The Hausman Test
+
+- So, which model should we use? FE or RE? The **Hausman Test** helps us decide.
+
+- **Intuition:**
+    - The FE estimator is **always consistent**, whether the unobserved effects $\alpha_i$ are correlated with $X$ or not.
+    - The RE estimator is **consistent AND efficient** if $\alpha_i$ and $X$ are uncorrelated, but **inconsistent** if they are correlated.
+
+- **The Test:** We compare the coefficient estimates from FE and RE.
+    - If the coefficients are "close" to each other, it suggests the RE assumption holds, and we should use the more efficient RE model.
+    - If the coefficients are "far apart" and statistically different, it suggests the RE assumption is violated. We must use the consistent FE model.
+
+
+## Hausman Test Statistic
+
+- The test is based on the difference between the coefficient vectors from the two models: $(\hat{\beta}_{FE} - \hat{\beta}_{RE})$.
+
+- The Hausman statistic, $H$, is a measure of the squared distance between the two vectors of coefficients, weighted by the precision (1/variance) of this difference. 
+  - It is constructed so that large, systematic differences between the coefficients lead to a large test statistic.
+
+- Under the null hypothesis ($H_0$), the test statistic follows a Chi-squared distribution with $k$ degrees of freedom, where $k$ is the number of time-varying regressors in the model.
+
+$$ H \sim \chi^2(k) $$
+
+## $\chi^2$ Test Visualization
+
+- The $\chi^2$ distribution is one-sided.
+  - A significance level $\alpha$ gives you a critical value on the basis of which a test can be rejected. 
+  - Alternatively, the $p$-value can be calculated according to the cdf. 
+  
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 10
+#| fig-height: 4
+# Load required packages
+library(ggplot2)
+
+# Set degrees of freedom for the Chi-squared distribution
+df <- 5
+
+# Generate Chi-squared distribution data
+x <- seq(0, 20, length.out = 1000)
+chi_sq_density <- dchisq(x, df)
+
+# Create a data frame for plotting
+plot_data <- data.frame(x = x, density = chi_sq_density)
+
+# Generate a random critical value (greater than median for demonstration)
+set.seed(123)  # For reproducibility
+critical_value <- runif(1, qchisq(0.5, df), qchisq(0.99, df))
+
+# Calculate the p-value (right-tailed test)
+p_value <- pchisq(critical_value, df, lower.tail = FALSE)
+
+# Find the y-position for the critical value label (just above the line)
+label_y <- dchisq(critical_value, df) * 1.1
+
+# Find the x-position for the p-value label (in the middle of the tail area)
+p_label_x <- critical_value + (max(x) - critical_value)/2
+p_label_y <- max(chi_sq_density)/4  # Position in the empty space
+
+# Plot the Chi-squared distribution
+p <- ggplot(plot_data, aes(x = x, y = density)) +
+  geom_line(color = "blue", linewidth = 1) +
+  geom_area(data = subset(plot_data, x > critical_value), 
+            aes(y = density), fill = "red", alpha = 0.3) +
+  geom_vline(xintercept = critical_value, color = "darkgreen", linetype = "dashed") +
+  
+  # Critical value label positioned at the line
+  geom_text(aes(x = critical_value, y = label_y, 
+                label = paste("Critical value =", round(critical_value, 2))),
+            hjust = -0.1, vjust = 0, color = "darkgreen") +
+  
+  # p-value label positioned in the tail area
+  geom_text(aes(x = p_label_x, y = p_label_y, 
+                label = paste("p-value =", round(p_value, 4))),
+            color = "darkred") +
+  
+  labs(title = paste("Chi-squared Distribution with", df, "Degrees of Freedom"),
+       x = "Value", y = "Density") +
+  theme_minimal()
+
+p
+```
+
+## The Hausman Test: Application
+
+:::{.callout-note title="Hausman Test: Procedure"}
+- $H_0$: The Random Effects model is the appropriate model. (The difference in coefficients between FE and RE is not systematic, i.e., $E(\alpha_i | X_{it}) = 0$).
+
+- $H_A$: The Fixed Effects model is the appropriate model. (The difference in coefficients is systematic, i.e., $E(\alpha_i | X_{it}) \neq 0$).
+
+- Statistical software calculates a test statistic (Chi-squared) and a p-value.
+    - **If p-value < 0.05 (or your chosen significance level):** Reject the null hypothesis. The models are significantly different. Conclude that the RE assumption is likely violated. **Use the Fixed Effects model.**
+    - **If p-value >= 0.05:** Fail to reject the null hypothesis. You do not have evidence that the RE assumption is violated. **Use the more efficient Random Effects model.**
+
+:::
+
+# The First Difference Estimator
+
+## The First Difference Model
+
+- There is another way to eliminate the fixed effect $\alpha_i$. Instead of de-meaning, we difference the data across time periods.
+
+:::{.callout-note title="First Differences: Procedure"}
+**Original Model at time t:** $y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
+
+**Model at time t-1:** $y_{i,t-1} = \alpha_i + \beta_1 X_{i,t-1} + \epsilon_{i,t-1}$
+
+**Subtracting the two:**
+  $$
+    (y_{it} - y_{i,t-1}) = \beta_1 (X_{it} - X_{i,t-1}) + (\epsilon_{it} - \epsilon_{i,t-1})
+  $$
+$$\Delta y_{it} = \beta_1 \Delta X_{it} + \Delta \epsilon_{it}$$
+
+The fixed effect $\alpha_i$ is eliminated. We can estimate $\beta_1$ by running OLS on the differenced data.
+
+:::
+
+
+
+## FD vs. FE: The Case of Random Walk Errors
+
+- The standard Fixed Effects (FE) estimator is the most efficient linear unbiased estimator when the idiosyncratic errors, $\epsilon_{it}$, are serially uncorrelated.
+  - But what happens if they are not?
+
+:::{.callout-tip title="Panel Data Model with a Random Walk Error"}
+- Consider the case where the error term follows a **random walk**: 
+
+$$ y_{it} = \beta_1 X_{it} + \alpha_i + \epsilon_{it} $$
+
+- Let's assume the error term $\epsilon_{it}$ is not i.i.d., but instead follows a random walk process. This means today's error is equal to yesterday's error plus a new, well-behaved shock, $\nu_{it}$.
+
+$$ \epsilon_{it} = \epsilon_{i,t-1} + \nu_{it} $$
+
+- Here, $\nu_{it}$ is a "white noise" error, meaning it is not serially correlated. The random walk structure means that $\epsilon_{it}$ is highly serially correlated.
+:::
+
+## Impact on the FE Estimator
+
+- The FE estimator transforms the model by de-meaning the data.
+- The resulting error term is:
+
+  $$
+    \tilde{\epsilon}_{it} = \epsilon_{it} - \bar{\epsilon}_i
+  $$
+
+- If the original error $\epsilon_{it}$ has a random walk structure, this transformed error $\tilde{\epsilon}_{it}$ will **still be serially correlated**. 
+- While the FE estimator remains consistent, it is no longer efficient, and standard errors will be biased unless we use robust (clustered) standard errors.
+
+## Impact on the FD Estimator
+
+- The First Differences (FD) estimator transforms the model by differencing the data.
+- The new error term is the difference of the original errors:
+
+  $$
+    \Delta \epsilon_{it} = \epsilon_{it} - \epsilon_{i,t-1}
+  $$
+
+- Now, let's substitute our random walk assumption into this equation:
+
+  $$
+    \Delta \epsilon_{it} = (\epsilon_{i,t-1} + \nu_{it}) - \epsilon_{i,t-1}
+  $$
+
+- This simplifies perfectly to $\Delta \epsilon_{it} = \nu_{it}$. 
+
+## Conclusion 
+
+- The FD transformation has converted the highly serially correlated random walk error ($\epsilon_{it}$) into a non-serially correlated error ($\nu_{it}$).
+
+- Because OLS on the transformed data is most efficient when the errors are not serially correlated, the **FD estimator will be more efficient than the FE estimator** under the specific condition of random walk errors. 
+  - This makes FD a powerful alternative, especially for panels with a long time dimension (large T) where such error dynamics are more plausible.
+
+- **Comparison with FE:**
+  - If $T=2$, FD and FE give identical results.
+  - For $T>2$, they are different. FE is more efficient if the original errors ($\epsilon_{it}$) are not serially correlated.
+  - FD can be better if the errors follow a random walk. FD is a popular choice for robustness checks.
+
+## Practical Considerations & Summary
+
+- In practice, researchers opt almost always for the FE model.
+  - However, if you want to be robust, you can follow this workflow: 
+
+:::{.callout-tip title="Workflow for Panel Models"}
+
+1.  Start by considering your research question. Are you interested in time-invariant variables? If yes, FE is not an option for those variables.
+2.  Run both FE and RE models.
+3.  Perform the Hausman test.
+4.  **If Hausman test rejects H0 (p < 0.05):** Use FE. The correlation between unobserved effects and your regressors is a significant problem that FE solves.
+5.  **If Hausman test fails to reject H0 (p >= 0.05):** You can justify using the more efficient Random Effects model.
+6.  Consider Pooled OLS only if you have a strong theoretical reason to believe there is no unobserved heterogeneity (very rare).
+7.  Consider the First Differences model as a robustness check.
+
+:::
 
