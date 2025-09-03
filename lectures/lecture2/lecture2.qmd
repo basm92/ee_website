@@ -73,7 +73,7 @@ slr_model <- lm(wage ~ educ, data = dat)
 - This lecture:
   - Multiple linear regression, hypotheses tests, F-tests, Interactions, Understanding Statistical Output
   
-- **Material:** Wooldridge Chapter 3
+- **Material:** Wooldridge Chapters 3 and 4
 
 
 # Multiple Regression

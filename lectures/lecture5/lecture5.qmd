@@ -49,7 +49,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Random effects or fixed effects: Hausman test
 - Line of reasoning with panel data: final example
 
-* **Material:** Wooldridge Chapter 14: 14.1, 14.2, 14.3
+* **Material:** Wooldridge Chapter 13: 13.1, 13.3, 13.4, 13.5
 
 ## Motivation
 
@@ -460,103 +460,6 @@ Then it is possible to show that:
 
 
 ## Example 1 (continued): fixed effects
-
-## Fixed effects versus First Differences
-
-**Fixed effects versus first differences (I)**
-**Similarities and differences**
-
-**What do the estimators have in common?**
-- They allow for correlation between aᵢ and the explanatory variables xᵢ₁...xᵢₜ: E(aᵢ | xᵢ₁,...,xᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ) ≠ 0
-- The assumption of strict exogeneity (which means that the regression equation contains no feedback mechanism; there is no lag of dependent variable)
-
-**Consequence:**
-- The parameter estimates of both estimators should be about the same (if the assumption of strict exogeneity is true).
-
-## Fixed effects versus First Differences
-
-**How do they differ?**
-- Assumption about the error term u:
-  - Fixed effects estimator: uᵢₜ is independent over time and across individuals
-  - First difference estimator (see week 4): uᵢₜ = uᵢ,ₜ₋₁ + eᵢₜ
-    - eᵢₜ is independent over time and across individuals
-    - Thus Δuᵢₜ is independent over time and across individuals
-    - Thus it is assumed that uᵢₜ follows a random walk, i.e.:
-      uᵢₜ = uᵢ,ₜ₋₁ + eᵢₜ
-      E(eᵢₜ) = 0; Var(eᵢₜ) = σₑ² (expected value of zero; constant variance)
-
-**Consequence:**
-- Fixed-effect estimator gives smaller standard errors if the specification is correct and there is strict exogeneity. This estimator is more efficient.
-
-- First-difference estimator is preferred if there is a unit root in the error terms: uᵢₜ = uᵢ,ₜ₋₁ + eᵢₜ
-
-## Issue: First differences or fixed effects? (II)
-
-**Aim:** *to discuss whether to apply first differences or fixed effects*
-
-- If the regression equation is correctly specified,
-  yᵢₜ = β₁x₁ᵢₜ +...+ βₖxₖᵢₜ + aᵢ + uᵢₜ
-
-  the within estimation procedure and the 'first-difference estimation' procedure should yield similar estimates for the parameter vector β.
-
-- Question: which of the two estimation procedures is preferable?
-  Answer: It depends on the time series behaviour of uᵢₜ. If it is a white noise error term, use the within estimation procedure β̂_within.
-  If it follows a random walk (uᵢₜ = uᵢ,ₜ₋₁ + eᵢₜ), use the first-difference procedure β̂_fdif.
-
-## Issue: First differences or fixed effects? (III)
-
-***Motivation for the procedure***
-
-**Assumption:** strict exogeneity (no feedback, no lagged dependent variables).
-
-For ease of exposition here we take one explanatory variable x
-
-Fixed-effects estimator: uᵢₜ is identically and independently distributed.
-First-difference estimator: Δuᵢₜ is identically and independently distributed. In other words, uᵢₜ has a unit root.
-
-As will be shown and derived in exercise 14.1, the correlation between the error terms of a first-difference estimator is as follows.
-
-**Assumption:** uᵢₜ is identically and independently distributed:
-
-Cov(uᵢₜ,uᵢₛ) = 0 for t ≠ s (same individual i)
-Cov(uᵢₜ,uᵢₜ) = σᵤ² for t = s
-
-Next, we estimate the model:
-Δyᵢₜ = Δxᵢₜβ + Δuᵢₜ   i=1,...,N;t = 2,...,T
-
-The correlation between Δuᵢₜ and Δuᵢ,ₜ₋₁ is:
-
-Corr(Δuᵢₜ, Δuᵢ,ₜ₋₁) = Corr(uᵢₜ - uᵢ,ₜ₋₁, uᵢ,ₜ₋₁ - uᵢ,ₜ₋₂) = -0.5.
-
-Hence, the intertemporal correlation of the FD-estimator is -0.5 if uᵢₜ is i.i.d.
-
-
-**Motivation:**
-Covariance for the same individual across time:
-
-Cov[aX+bY,cW +dZ]= acCov[X,W]+ adCov[X,Z]+bcCov[Y,W]+bdCov[Y,Z]
-
-Cov(uᵢₜ-uᵢ,ₜ₋₁, uᵢ,ₜ₋₁-uᵢ,ₜ₋₂) =
-= Cov(uᵢₜ,uᵢ,ₜ₋₁) + Cov(uᵢₜ,-uᵢ,ₜ₋₂) + Cov(-uᵢ,ₜ₋₁,uᵢ,ₜ₋₁) + Cov(-uᵢ,ₜ₋₁,-uᵢ,ₜ₋₂)
-= 0 + 0 - Var(uᵢ,ₜ₋₁) + 0
-= -σᵤ²
-
-Var(uᵢₜ - uᵢ,ₜ₋₁) = Var(uᵢₜ) + Var(-uᵢ,ₜ₋₁) + 2Cov(uᵢₜ,-uᵢ,ₜ₋₁)
-= σᵤ² + σᵤ² + 0 = 2σᵤ²
-
-Corr(Δuᵢₜ, Δuᵢ,ₜ₋₁) = Cov(Δuᵢₜ, Δuᵢ,ₜ₋₁) / sqrt(Var(Δuᵢₜ) * Var(Δuᵢ,ₜ₋₁)) = -σᵤ² / 2σᵤ² = -0.5
-
-## Fixed effects or first differences? (IV)
-
-- To check for FE versus FD, follow the below procedure:
-  - Step 1: Run a first-difference regression equation of Δyᵢₜ on Δxᵢₜ
-  - Step 2: Predict the residuals (which gives Δûᵢₜ) and run a Breusch-Godfrey test for autocorrelation of Δûᵢₜ on Δûᵢ,ₜ₋₁ and Δxᵢₜ.
-  - Step 3A: If the estimated coefficient on Δûᵢ,ₜ₋₁ is about -0.5 (i.e. -0.5 is within the 95% confidence interval) then there is an indication that uᵢₜ is an independent error term (uᵢₜ is i.i.d.). Conclusion: prefer within-estimates (fixed effects).
-  - Step 3B: If the estimated coefficient on Δûᵢ,ₜ₋₁ is not equal to -0.5 (i.e. -0.5 is outside the 95% confidence interval) then there is an indication that uᵢₜ is not an independent error term. Conclusion: prefer first-differences.
-- If the two procedures yield dramatically different estimates for β, the two conclusions are possible, either:
-  - For some RHS-variables, the assumption of strict exogeneity does not hold.
-  - The regression model is incorrectly specified. Some important time-varying regressors are missing in the equation.
-- It is useful to compare the results of both regression procedures.
 
 
 ## Example: first differences, autocorrelation, and fixed effects**

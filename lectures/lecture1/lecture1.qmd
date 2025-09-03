@@ -154,7 +154,7 @@ dat_mlr <- data.frame(wage = wage_mlr, educ = educ, exper = exper)
   - How do we uncover patterns between variables?
   - The linear model and further econometrics
   
-- **Material:** Wooldridge Chapter 3
+- **Material:** Wooldridge Chapters 1 and 2
 
   
 # Prediction vs. Causation

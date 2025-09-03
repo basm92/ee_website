@@ -38,6 +38,17 @@ use_python("/home/bas/anaconda3/bin/python")
 - Potential Outcomes and Difference-in-differences
 - Instrumental Variables
 
+## What do we do today?
+
+- First look at time series data
+- Discuss statistics measuring the persistence of univariate time series (autocovariance, autocorrelation)
+- Discuss various univariate processes
+- Switch to bivariate time series and consider the danger of spurious regression
+- Consider more advanced time series models
+- Predictinon in all aforementioned models
+
+- **Material**: Wooldridge Chapters 10 and 11
+
 
 ## What is Time Series Data?
 
@@ -53,8 +64,6 @@ Time series data consists of observations of a variable or several variables ove
 - Daily stock prices
 - Annual government budget deficits
 :::
-
----
 
 ## Characteristics of Time Series Data
 
