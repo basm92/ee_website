@@ -49,3 +49,8 @@
 .slide-logo {
   max-height: 5.2rem !important;
 }
+
+.scroll-container {
+  overflow-y: scroll;
+  height: 250px; 
+}

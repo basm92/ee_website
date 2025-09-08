@@ -447,6 +447,117 @@ $$
 
 - **Choosing p:** The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
 
+## Information Criterion
+
+- A key feature of AIC is that it balances the goodness of fit of the model with its simplicity.
+  - It penalizes models that have more parameters, which helps to prevent overfitting—a scenario where a model is too complex and captures noise in the data rather than the underlying pattern.
+
+:::{.callout-note title="Definition: AIC"}
+
+$$AIC = 2k - 2ln(L)$$
+
+Where:
+
+*   **k** is the number of estimated parameters in the model.
+*   **L** is the maximized value of the likelihood function for the model.
+
+:::
+
+- When comparing multiple models, the one with the minimum AIC value is preferred.
+
+## Optimal Lags
+
+
+- The AIC provides a systematic way to select the optimal number of lags. The general procedure is as follows:
+
+  1.  **Define a maximum number of lags to consider.** This is an upper limit to prevent the model from becoming overly complex.
+  2.  **Fit a series of AR models.** Starting from a model with one lag, fit successive AR models, increasing the number of lags by one up to the defined maximum.
+  3.  **Calculate the AIC for each model.** For each fitted model, compute the AIC value.
+  4.  **Select the model with the lowest AIC.** The number of lags corresponding to the model with the minimum AIC is considered the optimal lag order.
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+# Load a sample time series dataset
+data(sunspot.year)
+
+# Fit an AR model and let the function select the best lag order based on AIC
+ar_model <- ar(sunspot.year)
+
+# The optimal number of lags is stored in the 'order' component of the model object
+optimal_lags <- ar_model$order
+
+# Print the optimal number of lags
+print(paste("Optimal number of lags based on AIC:", optimal_lags))
+
+# You can also view the AIC values for different lag orders
+print(ar_model$aic)
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pandas as pd
+from statsmodels.tsa.ar_model import ar_select_order
+import statsmodels.api as sm
+
+# Load a sample time series dataset (e.g., Sunspots data)
+# This data is available in statsmodels
+data = sm.datasets.sunspots.load_pandas().data
+series = data['SUNACTIVITY']
+
+# Use ar_select_order to find the optimal lag
+# We specify a maximum lag to consider and the information criterion to use ('aic')
+selection = ar_select_order(series, maxlag=20, ic='aic')
+
+# The selected lags are stored in the 'ar_lags' attribute
+optimal_lags = selection.ar_lags
+
+# Print the optimal number of lags
+print(f"Optimal number of lags based on AIC: {optimal_lags}")
+```
+
+:::
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+#| collapse: true
+
+* Load a sample time series dataset (Sunspot data)
+* webuse is Stata's command to load data from the internet
+webuse sunspot
+
+* Declare the data as a time series
+* The 'year' variable indicates the time period
+tsset year
+
+* Use varsoc to get the selection criteria for lags 1 through 20
+* Stata will automatically mark the optimal lag for each criterion with a '*'
+varsoc sunspot, maxlag(20)
+
+```
+
+:::
+
 ## The Moving Average Model
 
 - In the MA model, the current value is a function of the current and past **random shocks**.
