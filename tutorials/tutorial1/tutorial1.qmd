@@ -18,6 +18,25 @@ resources:
 
 # Tutorial 1
 
+## Design of the Tutorials
+
+Tutorials consist of two parts:
+
+Part 1: Short recapitulation of lecture
+
+Part 2: Exercises
+
+- Two kinds of exercises, _applied_ and _theoretical_
+- Mixed in order
+- Usually about 6/7 exercises in class, others for self-study. 
+
+Role of the teacher:
+
+- Recapitulate lecture
+- Moderate discussion about exercises
+- Demonstrate and explain exercises
+- **Not** debugging code
+
 ## Recapitulation of the Lecture
 
 ## Slide 1
@@ -63,7 +82,7 @@ This question explores the relationship between a CEO's salary and the sales of 
 
 ## Socioeconomic Factors and Fertility
 
-This question investigates the factors influencing standardized fertility rates in Botswana around 1888. You will use the built-in R dataset `swiss`. This dataset contains information on fertility and several potential socioeconomic indicators for about 4400 Botswanean women.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv).]
+This question investigates the factors influencing fertility rates in Botswana around 1988. This dataset contains information on fertility and several potential socioeconomic indicators for about 4400 Botswanean women.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv).]
 
 (a) Estimate a linear regression model where `children` is the dependent variable, and `catholic` is the independent variable. Write out the estimated regression equation.
 
