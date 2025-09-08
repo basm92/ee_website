@@ -29,113 +29,93 @@ use_python("/home/bas/anaconda3/bin/python")
 
 # Questions
 
-##  The Nature of Statistics and Parameters
+## Wage Determinants
 
-The lecture states that a **parameter** is a fixed value, while a **statistic** is a random variable. 
+:::{style="font-size: 0.7em;"}
 
-Eplain why this is the case. Use the example of the average height of all citizens in a country versus the average height of a 1,000-person sample to illustrate your explanation.
+You are provided with a dataset named `SLEEP75.DTA`. Your task is to investigate the relationship between hourly wages and several explanatory variables using multiple linear regression. The variables of interest are:`lhrwage`- the natural logarithm of the hourly wage, `educ` - years of education, `exper` - years of potential work experience, `union`: a binary variable, where 1 indicates union membership and 0 indicates non-membership, and `male`: a binary variable, where 1 indicates male and 0 indicates female.
 
-## Constructing an Exact Sampling Distribution
+  1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
+  2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
+  3. Based on your regression output, provide a clear and concise interpretation for the `educ` and `union` coefficients.
+  4. Perform a hypothesis test for the `exper` coefficient to determine if it is statistically significant at the 5% significance level. State your null and alternative hypotheses, report the relevant test statistic and p-value from your model output, and conclude whether you reject or fail to reject the null hypothesis. What does this conclusion imply about the relationship between experience and the logarithm of hourly wage in this model?
+  
+:::
 
-Consider a tiny population consisting of only five numbers: `[10, 20, 30, 40, 50]`.
+## Heteroskedasticity
 
-a) Calculate the true population mean, $\mu$.
-b) Now, consider taking random samples of size **n=2** *without replacement*. List all possible unique samples you can draw. (Hint: The number of combinations is "5 choose 2").* 
-c) Calculate the sample mean ($\bar{x}$) for each of these possible samples.
-d) The list of sample means you created in part (c) is the exact sampling distribution of the sample mean. Present this distribution as a frequency table.
-e) Is the mean of this sampling distribution equal to the true population mean you calculated in part (a)?
+:::{style="font-size: 0.7em;"}
 
-*:  You can use `comb()` in R or `itertools.combinations` in Python. 
+Using the same multiple linear regression model from the previous question, where `lhrwage` is regressed on `educ`, `exper`, `union`, and `male`, you will now investigate the presence and consequences of heteroskedasticity.
 
-## Simulating a Sampling Distribution {#sec-simulation}
+1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
 
-The lecture demonstrated simulating the sampling distribution from a Normal population. Your task is to do the same for a different type of population.
+2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
 
-Assume the *population* data follows a highly skewed **Exponential distribution**. The exponential distribution is often used to model time until an event. 
+3. Examine the plot. Does the spread of the squared residuals appear to change as the fitted values decrease? Describe the pattern you see and explain why it might suggest the presence of heteroskedasticity.
 
-a) Simulate a population, i.e. a large number of draws.*
-b) Draw 5,000 different random samples, each of size **n=50**, from this population.**
-c) For each of the 5,000 samples, calculate its sample mean.
-d) Plot a histogram of the 5,000 sample means you calculated.
-e) Describe the shape of the histogram of sample means. Does it look like the original Exponential distribution, or does it look like something else?
+4. Re-estimate the model, but this time calculate **heteroskedasticity-robust standard errors**. 
 
-- *: In Python, you can simulate a large number of draws from an exponential distribution using `numpy.random.exponential(scale=10, size=100000)`. Let's say the `scale` parameter (which is the true mean, $\mu$) is 10.
-- **: You can use `np.random.choice()` in Python or `sample()` in R
+5. Compare the "normal" OLS standard errors with the robust standard errors for each of the four coefficients (`educ`, `exper`, `union`, and `male`).
 
-## Applying the CLT Conceptually
+:::
 
-A logistics company knows that the weight of packages it processes is not normally distributed; it is right-skewed with a long tail (a few very heavy packages). The true mean weight of all packages is $\mu = 8$ kg, and the true standard deviation is $\sigma = 5$ kg.
+## Omitted Variable Bias 
 
-The company takes a random sample of 100 packages.
+:::{style="font-size: 0.7em;"}
+This is a challenging but crucial derivation. Suppose the *true* population model is a multiple regression:
+  $$
+    y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u
+  $$
+However, you mistakenly estimate a simple regression, omitting $x_2$:
+    $$
+      y = \gamma_0 + \gamma_1 x_1 + v
+    $$
+Let $\hat{\gamma}_1$ be the OLS estimate from your incorrect (short) regression. Show that the expected value of this estimator is:
 
-a) According to the Central Limit Theorem, what can you say about the shape of the sampling distribution of the sample mean weight ($\bar{x}$)?
-b) What will be the theoretical mean of this sampling distribution?
-c) What will be the theoretical standard deviation of this sampling distribution (i.e., the standard error)?
+  $$
+    E(\hat{\gamma}_1) = \beta_1 + \beta_2 \cdot \delta_1
+  $$
+  
+where $\delta_1$ is the slope coefficient from an auxiliary regression of the omitted variable ($x_2$) on the included variable ($x_1$): $x_2 = \delta_0 + \delta_1 x_1 + \text{error}$.
 
-## Verifying the CLT in Python/R/Stata
+- *(Hint: Start with the formula for $\hat{\gamma}_1$, substitute the true model for y, and then take the expectation. The term $\beta_2 \cdot \delta_1$ represents the omitted variable bias.)*
+- *(Hint: $\frac{\sum(x_{1i}-\bar{x}_1)x_{2i}}{\sum(x_{1i}-\bar{x}_1)^2} = \frac{\sum(x_{1i}-\bar{x}_1)(x_{2i}-\bar{x}_2)}{\sum(x_{1i}-\bar{x}_1)^2}$)*
 
-Let's use the simulation from [Slide @sec-simulation] to verify the predictions of the Central Limit Theorem. Your population is from an Exponential distribution with a true mean ($\mu$) of 10 and a true standard deviation ($\sigma$) also of 10. Your sample size was `n=50`.
-
-a) From the list of 5,000 sample means you generated in Exercise 4, calculate the *empirical mean* (the average of all your sample means) and the *empirical standard deviation*.
-b) According to the CLT, what *should* the theoretical mean of the sampling distribution be?
-c) According to the CLT, what *should* the theoretical standard deviation of the sampling distribution (the standard error) be? The formula is $\sigma / \sqrt{n}$.
-d) Compare the empirical results from part (a) with the theoretical results from parts (b) and (c). Are they close?
+:::
 
 
-## Formulating Hypotheses
+## Perfect Multicollinearity
 
-For each research question below, formulate the appropriate null hypothesis ($H_0$) and alternative hypothesis ($H_A$). State whether a one-sided or a two-sided test would be more appropriate and justify your choice.
+The variance of a coefficient estimator in a multiple regression model with two variables ($x_1, x_2$) is given by:
 
-*   **Scenario A:** A city's water department wants to know if the average daily water consumption per household has changed from last year's average of 350 gallons.
-*   **Scenario B:** A pharmaceutical company has developed a new drug to lower blood pressure. They want to test if the drug is effective, meaning it *reduces* blood pressure compared to a placebo.
-*   **Scenario C:** An online retailer is testing a new website design. They want to know if the new design has a *different* conversion rate (proportion of visitors who make a purchase) than the old design's rate of 15%.
+  $$
+    Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_1 (1 - R_1^2)}
+  $$
 
-## Interpretation and Calculation
+where $R_1^2$ is the R-squared from a regression of $x_1$ on $x_2$.
 
-A car manufacturer claims its new hybrid model has a mean fuel efficiency of 50 miles per gallon (`mpg`). A consumer watchdog group tests a random sample of **n=36** cars and finds a sample mean efficiency of **$\bar{x}$ = 48.5 mpg**. Assume the population standard deviation for fuel efficiency is known to be **$\sigma = 6$ MPG**.
+(a) What does it mean for $x_1$ and $x_2$ to have *perfect multicollinearity* in terms of their relationship?
 
-The consumer watchdog group wants to test if the manufacturer's claim is overstated (i.e., if the true mean is less than 50 MPG). They set $\alpha = 0.05$.
+(b) Analytically, what happens to the value of $R_1^2$ under perfect multicollinearity?
 
-a) State the null ($H_0$) and alternative ($H_A$) hypotheses for this test.
-b) Calculate the standard error of the sample mean.
-c) Calculate the Z-test statistic using the formula: $Z = (\bar{x} - \mu_0) / SE$.
-d) Using your Z-statistic, find the corresponding p-value. (You may need a Z-table or a statistical function for this).
-e) Based on your p-value and the significance level of $\alpha=0.05$, what is your conclusion? Do you reject or fail to reject the null hypothesis?
-
-## Performing a Hypothesis Test
-
-Use the `WAGE2.DTA` dataset. Import it in R/Python/Stata. Conduct a hypothesis test on the `IQ` variable. The null hypothesis is that `mu_0 = 100`.
-
-a) Calculate the standard error and the Z-test statistic in Python.
-b) The p-value for a two-tailed test is the area under the standard normal curve that is more extreme (on both sides) than your calculated Z-statistic. Use `scipy.stats.norm.cdf()` or `pnorm()` to find this p-value.
-
-## Correct Interpretation
-
-A researcher calculates a 95% confidence interval for the average number of hours students at a university study per week and gets **[12.5, 15.0]** hours.
-
-Which of the following statements is the correct interpretation of this result? Explain why the other statement is incorrect.
-
-*   **Statement 1:** "There is a 95% probability that the true average study time for all students at the university is between 12.5 and 15.0 hours."
-*   **Statement 2:** "We are 95% confident that the method we used to generate this interval captures the true average study time for all students at the university."
-
-## Factors Affecting Interval Width
-
-Without doing any calculations, explain how the width of a confidence interval would be affected by the following changes, assuming all other factors remain constant.
-
-a) Increasing the confidence level from 90% to 99%.
-b) Increasing the sample size from 100 to 400.
-c) The sample having a larger standard deviation.
-
-## Constructing a Confidence Interval
-
-You are given the same data from the fuel efficiency test: a sample of **n=36** cars yielded a sample mean of **$\bar{x}$ = 48.5 MPG**, and the population standard deviation is **$\sigma = 6$ MPG**.
-
-a) Write a Python script to calculate a **95% confidence interval** for the true mean fuel efficiency.
-
-    *   Find the point estimate.
-    *   Calculate the standard error.
-    *   Find the critical Z-value for a 95% CI. (Hint: for a 95% CI, you need the value that leaves 2.5% in each tail. You can use `scipy.stats.norm.ppf(0.975)`).
-    *   Calculate the margin of error (Critical Value * Standard Error).
-    *   Construct the interval: Point Estimate ± Margin of Error.
+(c) Using the variance formula, explain mathematically why it is impossible to calculate the OLS estimate $\hat{\beta}_1$ in this scenario. What happens to the variance of the estimator?
     
-b) Now, calculate a **99% confidence interval** using the same data. Is it wider or narrower than the 95% interval?
+## Zero Conditional Mean
+
+The lecture states that the **Zero Conditional Mean assumption** ($E(u|x) = 0$) is the most crucial assumption for causality.
+
+(a) Explain in your own words what this assumption means.
+
+(b) Using the lecture's example of `wage` on `education`, explain why "innate ability" is a potential unobserved factor ($u$) that likely violates this assumption.
+
+(c) If higher ability is positively correlated with both education and wages, in which direction will the OLS estimate for the effect of education on wages ($\hat{\beta}_1$) be biased? Explain your reasoning.
+
+
+## Mitigating Omitted Variable Bias 
+
+The lecture introduces multiple regression as a way to control for other factors and mitigate omitted variable bias. Let's return to the `wage` on `education` model.
+
+Besides experience (which was added in the lecture), what are two or three other variables you would want to include in the model to get a more credible estimate of the true return to education?
+
+What practical challenges might you face in obtaining data for these variables?
