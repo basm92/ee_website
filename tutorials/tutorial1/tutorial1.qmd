@@ -102,6 +102,9 @@ The standard error for the intercept coefficient is 10,000, and the standard err
 
 (a) You want to test if house size has a statistically significant effect on price. State the null hypothesis ($H_0$) and the alternative hypothesis ($H_A$) for this test.
 (b) Using the information provided, manually calculate the t-statistic for the coefficient on the `Size` variable. Show your formula and calculation.
+
+## Hypothesis Testing and the t-statistic (Cont.)
+
 (c) The lecture notes state that the t-distribution is characterized by its degrees of freedom (df). What are the degrees of freedom for this t-statistic?
 (d) For a 5% significance level with this many degrees of freedom, the critical t-value is approximately 1.96. Based on your calculated t-statistic, would you reject or fail to reject the null hypothesis? Explain what this conclusion means in plain language.
 
