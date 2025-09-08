@@ -218,4 +218,88 @@ reg lhrwage educ exper union male, robust
     -   **Measurement:** These variables are difficult to measure accurately. "Ability" is a complex construct, and IQ tests are controversial. "School quality" is also multifaceted and hard to summarize with a single number.
     -   **Privacy:** Data on IQ and parental income are highly sensitive and can be difficult to obtain due to privacy concerns.
 
+## Hypothesis Testing
 
+1.  **t-test for `exper`:**
+    *   **Hypotheses:**
+        *   Null Hypothesis ($H_0$): $\beta_{exper} = 0$. Work experience has no effect on wage, holding education constant.
+        *   Alternative Hypothesis ($H_A$): $\beta_{exper} \neq 0$. Work experience has a non-zero effect on wage, holding education constant.
+    *   **Conclusion:** Yes, you would reject the null hypothesis at a 5% significance level. The p-value for `exper` is `< 0.001`, which is much smaller than the significance level of 0.05. This indicates that the estimated effect of experience is statistically significant.
+
+2.  **F-test for Overall Significance:**
+    *   **Hypotheses:**
+        *   Null Hypothesis ($H_0$): $\beta_{educ} = 0 \text{ and } \beta_{exper} = 0$. Neither education nor experience have an effect on wages; the model has no explanatory power.
+        *   Alternative Hypothesis ($H_A$): At least one of the coefficients ($\beta_{educ}$ or $\beta_{exper}$) is not equal to zero.
+    *   **Conclusion:** The p-value for the F-test is `< 0.001`. This means we reject the null hypothesis and conclude that the model as a whole is statistically significant. The variables `educ` and `exper` are jointly significant in explaining the variation in `wage`.
+
+3.  **Restricted Model for the Joint Hypothesis Test:**
+    *   **Regression Equation:** If we impose the restriction that $\beta_1=0$ and $\beta_2=0$, the regression equation becomes:
+        $$
+        \text{wage} = \beta_0 + u
+        $$
+        This model suggests that the best prediction for anyone's wage, regardless of their education or experience, is simply the average wage ($\hat{\beta}_0 = \bar{\text{wage}}$).
+    *   **Sum of Squared Residuals ($SSR_{restricted}$):** In this restricted model, the residuals are the differences between each observation and the sample mean ($u_i = y_i - \bar{y}$). The Sum of Squared Residuals is therefore the sum of the squared deviations from the mean, which is the definition of the **Total Sum of Squares (TSS)**. Using the provided statistics, we can calculate it:
+        $$
+        R^2 = 1 - \frac{SSR_{unrestricted}}{TSS} \implies TSS = \frac{SSR_{unrestricted}}{1 - R^2}
+        $$
+        $$
+        SSR_{restricted} = TSS = \frac{875.2}{1 - 0.583} = \frac{875.2}{0.417} \approx 2098.8
+        $$
+
+
+## Interpreting Interaction Effects
+
+
+1.  **Equation for Non-Homeowners:**
+    For non-homeowners, `is_homeowner` = 0. We substitute this into the equation:
+    $$
+    \widehat{\text{donations}} = 50 + 150(0) + 5 \cdot \text{age} + 3(0 \cdot \text{age})
+    $$
+    $$
+    \widehat{\text{donations}} = 50 + 5 \cdot \text{age}
+    $$
+    The estimated effect of an additional year of age on donations for a non-homeowner is **€5**.
+
+2.  **Equation for Homeowners:**
+    For homeowners, `is_homeowner` = 1. We substitute this into the equation and group terms:
+    $$
+    \widehat{\text{donations}} = 50 + 150(1) + 5 \cdot \text{age} + 3(1 \cdot \text{age})
+    $$
+    $$
+    \widehat{\text{donations}} = (50 + 150) + (5 + 3) \cdot \text{age}
+    $$
+    $$
+    \widehat{\text{donations}} = 200 + 8 \cdot \text{age}
+    $$
+    The estimated effect of an additional year of age on donations for a homeowner is **€8**.
+
+3.  **Interpretation of the Interaction Coefficient:**
+    The coefficient on the interaction term ($\hat{\beta}_3 = 3$) represents the **difference in the slopes** between the two groups. It means that the positive effect of an additional year of age on charitable donations is **€3 higher** for homeowners than it is for non-homeowners.
+
+4.  **Predicted Difference at Age 50:**
+    *   Predicted donations for a 50-year-old homeowner: $200 + 8(50) = 200 + 400 = €600$.
+    *   Predicted donations for a 50-year-old non-homeowner: $50 + 5(50) = 50 + 250 = €300$.
+    *   The predicted difference is $600 - 300 = \text{€}300$.
+
+## Good vs. Bad Controls
+
+1.  `fitness_level` (before training): **Good Control (Confounder)**.
+    *   **Justification:** This is a pre-treatment variable. It is likely correlated with the treatment (fitter people are more likely to run a marathon) and the outcome (fitter people may be happier in general). Failing to control for it would likely lead to omitted variable bias, where the marathon's effect would incorrectly absorb the pre-existing effect of fitness.
+
+2.  `hours_trained`: **Bad Control (Mediator)**.
+    *   **Justification:** Training is a direct consequence of the decision to run a marathon and lies on the causal pathway between running the marathon and happiness. Controlling for it would mean you are holding constant one of the key mechanisms through which running a marathon affects happiness. This would "block" part of the effect you want to measure.
+
+3.  `has_gym_membership` (after the marathon): **Bad Control (Collider)**.
+    *   **Justification:** This variable is a common effect of both the treatment (`ran_marathon`) and the outcome (`happiness`). Running a marathon might make someone feel accomplished and buy a membership, and being happy might also make someone more likely to buy a membership. Controlling for a variable that is caused by both the treatment and the outcome will induce a spurious correlation and bias your estimate of the causal effect.
+
+
+## Correct Standard Errors
+
+1.  **Study A:** **(b) Heteroskedasticity-Robust (HC) SEs.**
+    *   **Explanation:** The suspicion that the variance of electricity usage is different for high-income and low-income households is a direct description of heteroskedasticity. Since the data is a cross-section of households, HC-robust standard errors are the appropriate tool to ensure valid statistical inference.
+
+2.  **Study B:** **(c) Cluster-Robust SEs, clustered at the country level.**
+    *   **Explanation:** This is panel data where observations for the same country over time are likely correlated due to persistent unobserved factors (e.g., policy, geography, culture). This violates the assumption of independent errors. Clustering the standard errors by `country` allows the errors for a given country to be correlated over time, leading to more accurate inference.
+
+3.  **Study C:** **(c) Cluster-Robust SEs, clustered at the school level.**
+    *   **Explanation:** Students within the same school share common unobserved factors (teacher quality, school resources, peer effects). This will likely cause the error terms for students in the same school to be correlated. To account for this intra-cluster correlation, one must cluster the standard errors at the `school` level.

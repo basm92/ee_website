@@ -182,6 +182,7 @@ You are given the following summary output for a regression model that predicts 
 | exper | 0.163 | 0.041 | 3.976 | < 0.001 |
 
 **Model Fit Statistics:**
+
 -   **R-squared:** 0.583
 -   **F-statistic:** 67.5 on 2 and 97 DF
 -   **p-value (F-test):** < 0.001
@@ -198,9 +199,9 @@ You are given the following summary output for a regression model that predicts 
 A researcher studies the relationship between a person's `age` and their annual charitable `donations` (in €). They want to see if this relationship differs for individuals who are homeowners (`is_homeowner` = 1) versus those who are not (`is_homeowner` = 0).
 
 They estimate the following model:
-$$
-\widehat{\text{donations}} = 50 + 150 \cdot \text{is\_homeowner} + 5 \cdot \text{age} + 3 \cdot (\text{is\_homeowner} \cdot \text{age})
-$$
+  $$
+    \widehat{\text{donations}} = 50 + 150 \cdot \text{is_homeowner} + 5 \cdot \text{age} + 3 \cdot (\text{is_homeowner} \cdot \text{age})
+  $$
 
 1.  Write the specific regression equation for **non-homeowners**. What is the estimated effect of an additional year of age on their donations?
 2.  Write the specific regression equation for **homeowners**. What is the estimated effect of an additional year of age on their donations?
@@ -213,17 +214,22 @@ A researcher wants to estimate the causal effect of completing a marathon (`ran_
 
 For each potential control variable below, decide if it is a **"good control" (confounder)** or a **"bad control" (mediator or collider)**. Justify your reasoning.
 
+:::{style="font-size:0.8em;"}
+
 1.  `fitness_level`: The individual's baseline fitness level measured *before* they started training for the marathon.
 2.  `hours_trained`: The total number of hours the individual spent training to prepare for the marathon.
 3.  `has_gym_membership`: A dummy variable for whether the individual had a gym membership *after* completing the marathon. Assume that both the feeling of accomplishment from the marathon and the resulting happiness could lead someone to invest more in their fitness by getting a membership.
 
+:::
 
 ## Correct Standard Errors
 
 For each of the following research scenarios, choose the most appropriate type of standard error to use and briefly explain your choice. The options are standard (Homoskedastic) OLS SEs, Heteroskedasticity-Robust (HC) SEs, or Cluster-Robust SEs (if you choose this, specify the level of clustering). 
 
+:::{style="font-size:0.8em;"}
+
 1.  **Study A:** You are analyzing the relationship between household income and electricity consumption using a random sample of 2,000 households from across a country for a single year. You suspect that high-income households have much more variation in their electricity use (e.g., pools, electric cars) than low-income households.
 2.  **Study B:** You are studying the effect of a country's GDP on its level of CO2 emissions. Your dataset consists of annual data for 150 countries over 30 years (a panel dataset). You believe that unobserved country-specific factors (like environmental policy culture) persist over time.
 3.  **Study C:** You are evaluating the impact of a new teaching method on student exam scores. The experiment was conducted on 5,000 students spread across 100 different schools. All students within a given school were taught by teachers who received similar training and used the same school resources.
 
-
+:::
