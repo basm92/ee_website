@@ -4,6 +4,7 @@ title: "Tutorial Slides"
 
 The tutorial slides can be found below:
 
+- [Prerequisite Knowledge](tutorials/prerequisite/prerequisite.qmd)
 - [Tutorial 1](tutorials/tutorial1/tutorial1.qmd)
 - [Tutorial 2](tutorials/tutorial2/tutorial2.qmd)
 - [Tutorial 3](tutorials/tutorial3/tutorial3.qmd)
