@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 3: The Linear Model"
+subtitle: "Tutorial 1: The Linear Model"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:

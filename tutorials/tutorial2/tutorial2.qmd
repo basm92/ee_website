@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 2: Statistics and Probability"
+subtitle: "Tutorial 2: The Linear Model II"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,7 +11,7 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Tutorial 2 - Statistics and Probability'
+    footer: 'Empirical Economics: Tutorial 2 - The Linear Model II'
 resources:
   - demo.pdf
 ---

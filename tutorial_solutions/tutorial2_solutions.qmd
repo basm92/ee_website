@@ -14,14 +14,6 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
-
-```{r setup}
-#| echo: false
-
-library(reticulate)
-use_python("/home/bas/anaconda3/bin/python")
-```
-
 ## Wage Determinants
 
 
