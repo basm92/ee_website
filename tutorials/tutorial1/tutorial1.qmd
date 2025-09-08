@@ -48,6 +48,63 @@ Suppose you run a log-log regression to analyze the relationship between online 
 
 How would you interpret the coefficient -0.85? What is the economic term for this value?
 
+## CEO Compensation and Firm Sales
+
+This question explores the relationship between a CEO's salary and the sales of their firm. In economics, this relationship is often modeled with a log-log specification. You will use the `ceosal1` dataset from the `wooldridge` package.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv).]
+
+(a) Estimate a linear regression model where the natural log of CEO salary (`lsalary = log(salary)`) is the dependent variable, and the natural log of firm sales (`lsales = log(sales)`) is the independent variable. Write down the estimated regression equation.
+
+(b) Provide a precise interpretation of the slope coefficient on the `lsales` variable. What does this elasticity value tell you about the relationship between CEO salary and firm sales?
+
+(c) Is the relationship between log-salary and log-sales statistically significant at the 1% level? Justify your answer by referencing the appropriate value from the R model summary output.
+
+(d) What is the R-squared value of this regression? What does this number tell you about how well the model fits the data?
+
+
+## Socioeconomic Factors and Fertility
+
+This question investigates the factors influencing standardized fertility rates in Botswana around 1888. You will use the built-in R dataset `swiss`. This dataset contains information on fertility and several potential socioeconomic indicators for about 4400 Botswanean women.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv).]
+
+(a) Estimate a linear regression model where `children` is the dependent variable, and `catholic` is the independent variable. Write out the estimated regression equation.
+
+(b) Provide a precise interpretation of the coefficient on the `catholic` variable. What does its sign and magnitude imply, holding the other variables in the model constant?
+
+(c) Provide a summary of the model. What is the $t$-value corresponding to the `catholic` variable? What does that imply?
+
+## The Algebra of OLS
+
+Consider the following small dataset of 4 observations for variables $x$ and $y$:
+
+| Observation (i) |  y  |  x  |
+|:---------------:|:---:|:---:|
+|        1        |  2  |  1  |
+|        2        |  7  |  2  |
+|        3        |  6  |  4  |
+|        4        |  9  |  5  |
+
+(a) Calculate the sample means, $\bar{x}$ and $\bar{y}$.
+
+(b) Using the OLS formula from the lecture, calculate the slope estimator $\hat{\beta}_1 = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2}$.
+
+(c) Using the formula $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$, calculate the intercept estimator $\hat{\beta}_0$.
+
+(d) Write down the Sample Regression Function (SRF). Then, calculate the four residuals ($\hat{u}_1, \hat{u}_2, \hat{u}_3, \hat{u}_4$) and verify that their sum is zero, confirming one of the algebraic properties of OLS.
+
+
+## Hypothesis Testing and the t-statistic
+
+You estimate a simple regression model to understand the relationship between house prices and house size. Your software produces the following output for a sample of 202 houses:
+
+$$
+\widehat{\text{Price}} = 40,000 + 150 \times \text{Size}
+$$
+The standard error for the intercept coefficient is 10,000, and the standard error for the `Size` coefficient is 25. The $R^2$ is 0.65. `Price` is in euros and `Size` is in square meters.
+
+(a) You want to test if house size has a statistically significant effect on price. State the null hypothesis ($H_0$) and the alternative hypothesis ($H_A$) for this test.
+(b) Using the information provided, manually calculate the t-statistic for the coefficient on the `Size` variable. Show your formula and calculation.
+(c) The lecture notes state that the t-distribution is characterized by its degrees of freedom (df). What are the degrees of freedom for this t-statistic?
+(d) For a 5% significance level with this many degrees of freedom, the critical t-value is approximately 1.96. Based on your calculated t-statistic, would you reject or fail to reject the null hypothesis? Explain what this conclusion means in plain language.
+
 
 ## Error Term and Residual
 
@@ -105,7 +162,7 @@ Using this formula as your guide, what two things could you do in your experimen
 
 ## R-squared
 
-A junior analyst tells you, "My model is great, it has an R-squared of 0.92!" 
+Suppose somebody tells you, "My model is great, it has an R-squared of 0.92!" 
 
 Why is a high R-squared not necessarily the ultimate goal of an econometric analysis, especially if we are interested in making policy decisions based on one specific variable?
 

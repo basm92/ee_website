@@ -47,6 +47,293 @@ The regression result is: `log(Sales) = 2.1 - 0.85 * log(Ad_Price)`.
 -   **Interpretation:** In a log-log model, the coefficient represents an elasticity. A **1% increase in the advertising price (`Ad_Price`) is associated with a 0.85% decrease in product sales (`Sales`)**, on average.
 -   **Economic Term:** This value is the **price elasticity of demand**. Since the absolute value is less than 1 (\|-0.85\| \< 1), we would say that the demand for the product is **inelastic** with respect to the advertising price.
 
+
+## CEO Compensation and Firm Sales
+
+**(a) Estimate a linear regression model and write down the estimated equation.**
+
+First, we load the data and estimate the model using the `statsmodels` library.
+
+:::{.panel-tabset}
+
+### Python
+
+```{python ceo_py}
+#| echo: true
+#| collapse: true
+
+import pandas as pd
+import numpy as np
+import statsmodels.formula.api as smf
+
+# Load the dataset from the URL
+url = 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv'
+ceosal1 = pd.read_csv(url, sep=";", decimal=',')
+
+# Create the log-transformed variables
+ceosal1['lsalary'] = np.log(ceosal1['salary'])
+ceosal1['lsales'] = np.log(ceosal1['sales'])
+
+# Estimate the OLS model
+model = smf.ols('lsalary ~ lsales', data=ceosal1).fit()
+
+# Print the summary to see the coefficients
+print(model.summary())
+```
+
+### R
+
+```{r ceo_r}
+#| echo: true
+#| collapse: true
+#| warning: false
+#| message: false
+
+library(fixest); library(tidyverse)
+url <- 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv'
+ceosal1 <- read_csv2(url)
+model <- feols(log(salary) ~ log(sales), data = ceosal1)
+summary(model)
+```
+
+### Stata
+
+```{stata ceo_stata}
+#| echo: true
+#| eval: false
+
+* 1. Import the data from the URL
+* The 'clear' option removes any data currently in memory
+import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv", clear
+
+* 2. Generate the natural log variables
+* In Stata, the function for the natural logarithm is ln()
+generate ln_salary = ln(salary)
+generate ln_sales = ln(sales)
+
+* 3. Run the OLS regression
+* The 'regress' command estimates the linear model. 
+* The first variable is the dependent, followed by the independent(s).
+regress ln_salary ln_sales
+```
+
+:::
+
+The estimated regression equation is:
+$$
+\widehat{\text{lsalary}} = 4.8220 + 0.2567 \times \text{lsales}
+$$
+
+**(b) Provide a precise interpretation of the slope coefficient.**
+
+Since this is a log-log model, the slope coefficient is an elasticity. The interpretation is:
+
+**A 1% increase in firm sales is associated with an estimated 0.257% increase in CEO salary, on average.** This suggests that CEO salary increases with firm sales, but at a diminishing rate (a 1% increase in sales leads to a less than 1% increase in salary).
+
+**(c) Is the relationship statistically significant at the 1% level?**
+
+Yes, the relationship is statistically significant at the 1% level.
+
+To justify this, we look at the p-value for the `lsales` coefficient in the model summary, which is listed as `P>|t|`. The output shows a p-value of **0.000**. Since **0.000 < 0.01**, we reject the null hypothesis that there is no relationship between log(sales) and log(salary).
+
+**(d) What is the R-squared value of this regression?**
+
+The **R-squared** value from the summary is **0.207**.
+
+This means that approximately **20.7% of the variation** in the natural log of CEO salaries can be explained by the variation in the natural log of firm sales in this model.
+
+## Socioeconomic Factors and Fertility
+
+**(a) Estimate a linear regression model and write out the estimated equation.**
+
+First, we load the `fertil2` dataset and estimate the simple linear model.
+
+:::{.panel-tabset}
+
+### Python
+
+```{python fertil_py}
+#| echo: true
+#| collapse: true
+
+import pandas as pd
+import statsmodels.formula.api as smf
+
+# Load the dataset from the URL
+url = 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv'
+fertil2 = pd.read_csv(url, sep=';', decimal=',')
+
+# Estimate the OLS model
+# 'children' is the dependent variable, 'catholic' is the independent dummy variable
+model_fertility = smf.ols('children ~ catholic', data=fertil2).fit()
+
+# Print the summary
+print(model_fertility.summary())
+```
+
+### R
+
+```{r fertil_r}
+#| echo: true
+#| collapse: true
+#| warning: false
+#| message: false
+
+library(fixest); library(tidyverse)
+url <- 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv'
+fertil2 <- read_csv2(url)
+model <- feols(children ~ catholic, data=fertil2)
+summary(model)
+```
+
+### Stata
+
+```{stata fertil_stata}
+#| echo: true
+#| eval: false
+* 1. Import the data from the URL
+* The 'clear' option removes any data currently in memory
+import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv", clear
+
+* 2. Generate the natural log variables
+* In Stata, the function for the natural logarithm is ln()
+generate ln_salary = ln(salary)
+generate ln_sales = ln(sales)
+
+* 3. Run the OLS regression
+* The 'regress' command estimates the linear model. 
+* The first variable is the dependent, followed by the independent(s).
+regress ln_salary ln_sales
+```
+
+:::
+
+The estimated regression equation is:
+$$
+\widehat{\text{children}} = 2.284 - 0.166 \times \text{catholic}
+$$
+
+**(b) Provide a precise interpretation of the coefficient on the `catholic` variable.**
+
+The `catholic` variable is a dummy variable (taking a value of 1 if the woman is Catholic and 0 otherwise). The interpretation is as follows:
+
+*   The intercept (2.284) represents the average number of children for the reference group (non-Catholic women).
+*   The slope coefficient (-0.166) represents the estimated difference in the average number of children between Catholics and the rest.
+
+Therefore, the interpretation is: **On average, Catholic women are estimated to have 0.166 fewer children than non-Catholic women.**
+
+**(c) Provide a summary of the model. What is the t-value corresponding to the `catholic` variable? What does that imply?**
+
+The full model summary is printed by the code above.
+
+The **t-value** corresponding to the `catholic` variable is **-1.49**.
+
+This t-value implies that the estimated coefficient (-0.166) is approximately **1.5 standard errors away from zero**. Since this value is smaller than the typical critical value of ~1.96 (for a 5% significance level), it suggests that the difference in the number of children between Catholic and non-Catholic women is not statistically significant. The corresponding p-value (`P>|t|`) is **0.133**, which is more than 0.05, confirming this conclusion. We do not reject the null hypothesis that there is no difference between the two groups.
+
+
+## The Algebra of OLS
+
+Consider the following small dataset of 4 observations for variables $x$ and $y$:
+
+| Observation (i) |  y  |  x  |
+|:---------------:|:---:|:---:|
+|        1        |  2  |  1  |
+|        2        |  7  |  2  |
+|        3        |  6  |  4  |
+|        4        |  9  |  5  |
+
+**(a) Calculate the sample means, $\bar{x}$ and $\bar{y}$.**
+
+*   **Sample mean of y:**
+    $\bar{y} = \frac{2 + 7 + 6 + 9}{4} = \frac{24}{4} = 6$
+*   **Sample mean of x:**
+    $\bar{x} = \frac{1 + 2 + 4 + 5}{4} = \frac{12}{4} = 3$
+
+**(b) Using the OLS formula, calculate the slope estimator $\hat{\beta}_1$.**
+
+First, we set up a table to calculate the numerator $\sum (x_i - \bar{x})(y_i - \bar{y})$ and the denominator $\sum (x_i - \bar{x})^2$.
+
+| $y_i$ | $x_i$ | $(y_i - \bar{y})$ | $(x_i - \bar{x})$ | $(x_i - \bar{x})(y_i - \bar{y})$ | $(x_i - \bar{x})^2$ |
+|:-----:|:-----:|:----------------:|:----------------:|:-----------------------------:|:------------------:|
+|   2   |   1   |      $2-6=-4$    |      $1-3=-2$    |         $(-4) \times (-2) = 8$        |   $(-2)^2 = 4$     |
+|   7   |   2   |      $7-6=1$     |      $2-3=-1$    |         $1 \times (-1) = -1$          |   $(-1)^2 = 1$     |
+|   6   |   4   |      $6-6=0$     |      $4-3=1$     |          $0 \times 1 = 0$           |    $(1)^2 = 1$     |
+|   9   |   5   |      $9-6=3$     |      $5-3=2$     |          $3 \times 2 = 6$           |    $(2)^2 = 4$     |
+| **Sum** | **-** |        **-**       |        **-**       |           **8 - 1 + 0 + 6 = 13**          |   **4 + 1 + 1 + 4 = 10**   |
+
+Now, we can calculate $\hat{\beta}_1$:
+$$
+\hat{\beta}_1 = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2} = \frac{13}{10} = 1.3
+$$
+
+**(c) Using the formula, calculate the intercept estimator $\hat{\beta}_0$.**
+
+$$
+\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} = 6 - (1.3 \times 3) = 6 - 3.9 = 2.1
+$$
+
+**(d) Write down the Sample Regression Function (SRF). Then, calculate the four residuals and verify that their sum is zero.**
+
+The Sample Regression Function (SRF) is:
+$$
+\hat{y} = 2.1 + 1.3x
+$$
+
+Now we calculate the predicted values ($\hat{y}_i$) and the residuals ($\hat{u}_i = y_i - \hat{y}_i$) for each observation:
+
+*   **Observation 1:** $\hat{y}_1 = 2.1 + 1.3(1) = 3.4 \implies \hat{u}_1 = 2 - 3.4 = -1.4$
+*   **Observation 2:** $\hat{y}_2 = 2.1 + 1.3(2) = 4.7 \implies \hat{u}_2 = 7 - 4.7 = 2.3$
+*   **Observation 3:** $\hat{y}_3 = 2.1 + 1.3(4) = 7.3 \implies \hat{u}_3 = 6 - 7.3 = -1.3$
+*   **Observation 4:** $\hat{y}_4 = 2.1 + 1.3(5) = 8.6 \implies \hat{u}_4 = 9 - 8.6 = 0.4$
+
+Finally, we verify that the sum of the residuals is zero:
+$$
+\sum \hat{u}_i = (-1.4) + 2.3 + (-1.3) + 0.4 = 0
+$$
+The sum is indeed zero, confirming this fundamental algebraic property of OLS.
+
+## Hypothesis Testing and the t-statistic
+
+You estimate a simple regression model to understand the relationship between house prices and house size. Your software produces the following output for a sample of 202 houses:
+
+$$
+\widehat{\text{Price}} = 40,000 + 150 \times \text{Size}
+$$
+The standard error for the intercept coefficient is 10,000, and the standard error for the `Size` coefficient is 25.
+
+**(a) State the null hypothesis ($H_0$) and the alternative hypothesis ($H_A$) for this test.**
+
+*   **Null Hypothesis ($H_0$):** House size has no effect on house price. The true population slope coefficient is zero.
+    $$ H_0: \beta_{Size} = 0 $$
+*   **Alternative Hypothesis ($H_A$):** House size has a non-zero effect on house price.
+    $$ H_A: \beta_{Size} \neq 0 $$
+
+**(b) Manually calculate the t-statistic for the coefficient on the `Size` variable.**
+
+The formula for the t-statistic is:
+$$
+t = \frac{\text{Estimated Coefficient} - \text{Hypothesized Value}}{\text{Standard Error}} = \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)}
+$$
+Plugging in the values:
+$$
+t = \frac{150 - 0}{25} = 6
+$$
+The t-statistic is **6**.
+
+**(c) What are the degrees of freedom for this t-statistic?**
+
+For a simple linear regression, the degrees of freedom are calculated as $n - 2$, where $n$ is the sample size.
+$$
+df = 202 - 2 = 200
+$$
+There are **200** degrees of freedom.
+
+**(d) For a 5% significance level with this many degrees of freedom, the critical t-value is approximately 1.96. Based on your calculated t-statistic, would you reject or fail to reject the null hypothesis? Explain what this conclusion means in plain language.**
+
+*   **Decision:** We compare our calculated t-statistic (6) to the critical value (1.96). Since **|6| > 1.96**, we **reject the null hypothesis**.
+
+*   **Explanation in Plain Language:** Our test result is highly statistically significant. This means that the relationship we observed in our sample (where larger houses are associated with higher prices) is extremely unlikely to have occurred by random chance if there were truly no relationship in the overall population. Therefore, we can confidently conclude that house size has a significant effect on house price.
+
 ## Error Term and Residual
 
 **What is the fundamental difference between the population error term (**$u_i$) and the OLS residual ($e_i$)? Why can we observe one but not the other?
