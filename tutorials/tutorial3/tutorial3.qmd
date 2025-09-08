@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 3: The Linear Model"
+subtitle: "Tutorial 3: Time Series"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,167 +11,161 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Tutorial - The Linear Model'
+    footer: 'Empirical Economics: Tutorial - Time Series'
 resources:
   - demo.pdf
 ---
 
 # Tutorial 3
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
+## Univariate Time Series 
 
-## Slide 2
+Time series data consists of observations of a variable or several variables over time, where the chronological ordering is crucial. Its key characteristics include:
 
+*   **Serial Correlation:** Observations are often correlated with their past values.
+*   **Trends:** A long-term upward or downward movement.
+*   **Seasonality:** Regular patterns at certain times of the year.
+
+For a time series to be analyzable, we often assume it is **covariance stationary**, which means its statistical properties are constant over time:
+
+1.  **Constant Mean:** $E(Y_t) = \mu$
+2.  **Constant Variance:** $Var(Y_t) = \sigma^2$
+3.  **Constant Autocovariance:** $Cov(Y_t, Y_{t-k})$ depends only on the lag $k$, not on time $t$.
+
+## Spurious Regression
+
+Regressing two unrelated, non-stationary time series on each other, such as:
+$$ Y_t = \alpha + \beta X_t + \epsilon_t $$
+can lead to a **spurious regression**. This occurs when both variables have a trend (e.g., they are random walks), causing the OLS estimator to fail.
+
+**Consequences:**
+*   You find a high R-squared and statistically significant coefficients, even if the true relationship is zero.
+*   The results are misleading and economically meaningless.
+
+A key warning sign of spurious regression is highly autocorrelated residuals, which can be detected using the **Breusch-Godfrey test**.
+
+## Dynamic Models
+
+To model relationships correctly and avoid spurious results, we use dynamic models that explicitly account for the time-dependent structure of the data.
+
+*   **Distributed Lag (DL) Model:** Models how a change in $X$ affects $Y$ over several periods.
+    $$ Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t $$
+  - **$\beta_0$** is the immediate **impact multiplier**.
+  - The **long-run multiplier** is the total effect, calculated as $\sum_{s=0}^{q} \beta_s$.
+
+*   **Autoregressive Distributed Lag (ARDL) Model:** A more flexible model that includes lags of both the dependent variable ($Y$) and the explanatory variable ($X$).
+    $$ Y_t = \alpha + \sum_{i=1}^{p} \rho_i Y_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + u_t $$
+  - This model separates the short-run dynamics from the long-run relationship. The **long-run multiplier** for a permanent change in X is:
+    $$ \theta = \frac{\sum_{j=0}^{q} \beta_j}{1 - \sum_{i=1}^{p} \rho_i} $$
+
+
+## Forecasting
+
+Forecasting involves predicting future values of a time series based on its past. The primary goal is to calculate the **conditional expectation** of a future value, given the information set ($I_t$) available up to time $t$:
+
+$$ \text{Forecast} = E[Y_{t+h} | I_t] $$
+where $h$ is the forecast horizon. The accuracy of forecasts is evaluated on **out-of-sample** data using metrics like **Mean Absolute Error (MAE)** or **Root Mean Squared Error (RMSE)**.
+
+## Forecasting with Different Models
+
+The structure of a model dictates its forecast behavior:
+
+*   **AR(p) Models:** Forecasting is an iterative process. To predict $Y_{t+2}$, you first need the forecast for $Y_{t+1}$. This gives the forecast a long, decaying memory that slowly converges to the series' mean.
+    $$ \hat{Y}_{t+2|t} = c + \rho_1 \mathbf{\hat{Y}_{t+1|t}} + \rho_2 Y_t + \dots $$
+
+*   **MA(q) Models:** These models have a **short memory**. The effect of past random shocks disappears after $q$ periods. For any forecast horizon $h > q$, the forecast reverts to the mean of the series.
+    $$ \hat{Y}_{t+h|t} = \mu \quad \text{for all } h > q $$
+
+*   **ARMA(p,q) Models:** This hybrid approach combines the long-memory persistence of the AR component with the short-term shock effects of the MA component.
+
+*   **ARDL(p,q) Models:** These models use external variables ($X$) to improve forecasts. However, this introduces a new challenge: to forecast $Y$ for a future period, you also need the future values of $X$. This requires either building a separate forecast model for $X$ or creating specific scenarios.
 
 # Questions
 
+## Forecasting US Economic Growth
+
+This question focuses on **univariate modeling and prediction**. You will model the fertility rate using the `FERTIL3.DTA` dataset available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA). Import it into R/Python/Stata and 
+
+1. Fit an Autoregressive, AR(p), model. Use an information criterion (like the AIC or BIC/SIC) to select the optimal number of lags, `p`.
+
+2. Using the autoregressive specification you've found, compute (by hand) a forcast of two periods into the future. 
+
+2. Generate a forecast from your fitted model for 10 periods after the end of the dataset. 
+
+3. What happens to the forecast after a certain number of periods?
 
 
-## Log-Log Model
+## Investigating Stationarity and Spurious Regression
 
-Suppose you run a log-log regression to analyze the relationship between online ad spending and product sales, and you get the following result:
+This question tests your ability to identify **non-stationary data and avoid spurious regression**. You will investigate the relationship between housing inventory (the dependent variable) and population size (the independent variable) from the `HSEINV.DTA` dataset available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA). 
 
-`log(Sales) = 2.1 - 0.85 * log(Ad_Price)`
+1. Run a simple OLS regression with the Housing Inventory (`inv`) as the dependent variable and Population (`pop`) as the independent variable.
 
-How would you interpret the coefficient -0.85? What is the economic term for this value?
+2. Report the R-squared value and the t-statistic (or p-value) for the `inv` coefficient. What would a naive interpretation of these results suggest about the relationship between these two variables?
 
-# Theory Questions
+3. Run the Breusch-Godfrey test with `order=1` and report the $p$-value. What does this suggest? 
 
-## Error Term and Residual
+4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
 
-What is the fundamental difference between the population error term ($u_i$) and the OLS residual ($e_i$)?
+## Derivation of the Unconditional Mean of an AR(1) Process
 
-Why can we observe one but not the other?
+The lecture notes mention that for a stationary AR(1) process, $Y_t = \alpha + \rho Y_{t-1} + u_t$ (with $|\rho|<1$), the unconditional mean is $E(Y_t) = \frac{\alpha}{1-\rho}$.
 
-## Proving a Fundamental OLS Property
+Prove this result.
 
-The lecture states that the OLS regression line always passes through the point of sample means, $(\bar{x}, \bar{y})$. 
+*Hint: Start by taking the expected value of both sides of the AR(1) equation. Then, use the stationarity assumption, which implies that $E(Y_t) = E(Y_{t-1}) = \mu$, and solve for $\mu$.*
 
-Using the formula for the OLS intercept estimator, $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$, prove that this is true. 
+## Statistical Properties of an MA(1) Process
 
-That is, show that if you plug $\bar{x}$ into the estimated regression equation, the predicted value $\hat{y}$ is exactly $\bar{y}$.
-  
-## Unbiasedness
+Consider the Moving Average model of order 1, or MA(1):
+$Y_t = \mu + u_t + \theta u_{t-1}$
+where $u_t$ is a white noise process with mean 0 and variance $\sigma^2_u$.
 
-The unbiasedness of the OLS estimator, $E(\hat{\beta}_1) = \beta_1$, is a cornerstone result that relies on the first four Gauss-Markov assumptions. Let's prove it. Start with the formula for the slope estimator:
-    $$
-      \hat{\beta}_1 = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2}
-    $$
+Derive the following properties for the MA(1) process:
 
-(a) First, substitute the true population model $y_i = \beta_0 + \beta_1 x_i + u_i$ into the numerator. Show that the estimator can be rewritten as:
+  1. The mean: $E(Y_t)$
+  2. The variance: $Var(Y_t) = \gamma_0$
+  3. The first-order autocovariance: $Cov(Y_t, Y_{t-1}) = \gamma_1$
+  4. The second-order autocovariance: $Cov(Y_t, Y_{t-2}) = \gamma_2$
+  5. Based on your result for (d), what can you conclude about the "memory" of an MA(1) process?
 
-    $$ \hat{\beta}_1 = \beta_1 + \frac{\sum_{i=1}^{n} (x_i - \bar{x})u_i}{\sum_{i=1}^{n} (x_i - \bar{x})^2} $$
-   
-- *(Hint: You will need to use the fact that $\sum(x_i - \bar{x})(c) = 0$ for any constant c, and that $\sum(x_i - \bar{x})(\bar{y}) = 0$.)*
-- *(Hint: A useful property is $\sum (x_i - \bar{x})(y_i - \bar{y}) = \sum (x_i - \bar{x})y_i$.)*
+## Proving the Stationarity of a Differenced Random Walk
 
-## Unbiasedness (Cont.)
+A random walk, $Y_t = Y_{t-1} + u_t$, is the classic example of a non-stationary process. The lecture suggests that differencing the data can induce stationarity.
 
-(b) Now, take the conditional expectation of your result from part (a) with respect to X (the set of all $x_i$ values). Use the Zero Conditional Mean assumption, $E(u_i|X) = 0$, to prove that $E(\hat{\beta}_1|X) = \beta_1$.
+Show that the first difference of a random walk, defined as $\Delta Y_t = Y_t - Y_{t-1}$, is a stationary process.
 
+*Hint: To prove stationarity, you must show that $\Delta Y_t$ satisfies the three conditions: constant mean, constant variance, and constant autocovariance that depends only on the lag.*
 
-## Omitted Variable Bias 
+## Calculating the Long-Run Multiplier for a Specific ARDL Model
 
-:::{style="font-size: 0.7em;"}
-This is a challenging but crucial derivation. Suppose the *true* population model is a multiple regression:
-  $$
-    y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u
-  $$
-However, you mistakenly estimate a simple regression, omitting $x_2$:
-    $$
-      y = \gamma_0 + \gamma_1 x_1 + v
-    $$
-Let $\hat{\gamma}_1$ be the OLS estimate from your incorrect (short) regression. Show that the expected value of this estimator is:
+The lecture provides the general formula for the Long-Run Multiplier (LRM). Now, apply that logic to a specific case. Consider the following ARDL(2,1) model:
 
-  $$
-    E(\hat{\gamma}_1) = \beta_1 + \beta_2 \cdot \delta_1
-  $$
-  
-where $\delta_1$ is the slope coefficient from an auxiliary regression of the omitted variable ($x_2$) on the included variable ($x_1$): $x_2 = \delta_0 + \delta_1 x_1 + \text{error}$.
+$$Y_t = 10 + 0.5 Y_{t-1} + 0.2 Y_{t-2} + 2.0 X_t - 0.8 X_{t-1} + u_t$$
 
-- *(Hint: Start with the formula for $\hat{\gamma}_1$, substitute the true model for y, and then take the expectation. The term $\beta_2 \cdot \delta_1$ represents the omitted variable bias.)*
-- *(Hint: $\frac{\sum(x_{1i}-\bar{x}_1)x_{2i}}{\sum(x_{1i}-\bar{x}_1)^2} = \frac{\sum(x_{1i}-\bar{x}_1)(x_{2i}-\bar{x}_2)}{\sum(x_{1i}-\bar{x}_1)^2}$)*
+**Task:** Calculate the Long-Run Multiplier for this model.
 
-:::
+  1. First, derive the algebraic expression for the LRM using the equilibrium condition where $Y_t = Y_{t-1} = Y_{t-2} = Y_{eq}$ and $X_t = X_{t-1} = X_{eq}$.
+  2. Second, substitute the numerical coefficients from the model to find the value of the LRM.
+  3. Provide a one-sentence interpretation of the numerical value you calculated.
 
-## Marginal Effects
+## The Random Walk Hypothesis
 
-The lecture explains how to interpret coefficients in models with different functional forms. 
+The lecture defines a random walk as an AR(1) model with $\rho=1$. If the daily price of a stock is believed to follow a random walk, what is the single best piece of information you could use to forecast its price for tomorrow? 
 
-Use calculus to derive the *marginal effect* of a change in $x$ on $y$ for the following two models:
+Explain why a shock (e.g., unexpected good news) on a given day has a "permanent" effect on the future price path of the stock.
 
-(a) **The Quadratic Model:** For the model $y = \beta_0 + \beta_1 x + \beta_2 x^2 + u$, find the derivative $\frac{dy}{dx}$. How does your result show that the effect of a one-unit change in $x$ on $y$ depends on the current level of $x$?
+## The Role of the Breusch-Godfrey Test
 
-(b) **The Level-Log Model:** For the model $y = \beta_0 + \beta_1 \log(x) + u$, show that a 1% change in $x$ leads to an approximate change of $(\beta_1/100)$ units in $y$.
+You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and suspect the relationship might be spurious. You run a Breusch-Godfrey test with an order of p=2 and get a very small p-value (e.g., 0.001). 
 
-*(Hint: For (b), recall that a change in $\log(x)$, i.e., $d(\log(x))$, is equal to $\frac{dx}{x}$, which is the proportional change in x.)*
+What is the null hypothesis of this test, and what does this result tell you about the error term $\epsilon_t$? How does this finding support the concern about a spurious regression?
 
-## Perfect Multicollinearity
+## ARDL Model Interpretation
 
-The variance of a coefficient estimator in a multiple regression model with two variables ($x_1, x_2$) is given by:
+In an ARDL(1,1) model, $Y_t = \alpha + \rho_1 Y_{t-1} + \beta_0 X_t + \beta_1 X_{t-1} + u_t$, the long-run multiplier is given by the formula $\theta = (\beta_0 + \beta_1) / (1 - \rho_1)$. 
 
-  $$
-    Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_1 (1 - R_1^2)}
-  $$
+Provide an intuitive explanation for why we divide the sum of the X-coefficients by $(1 - \rho_1)$. What role does the persistence factor, $\rho_1$, play in determining the total long-run effect?
 
-where $R_1^2$ is the R-squared from a regression of $x_1$ on $x_2$.
-
-(a) What does it mean for $x_1$ and $x_2$ to have *perfect multicollinearity* in terms of their relationship?
-
-(b) Analytically, what happens to the value of $R_1^2$ under perfect multicollinearity?
-
-(c) Using the variance formula, explain mathematically why it is impossible to calculate the OLS estimate $\hat{\beta}_1$ in this scenario. What happens to the variance of the estimator?
-    
-## Zero Conditional Mean
-
-The lecture states that the **Zero Conditional Mean assumption** ($E(u|x) = 0$) is the most crucial assumption for causality.
-
-(a) Explain in your own words what this assumption means.
-
-(b) Using the lecture's example of `wage` on `education`, explain why "innate ability" is a potential unobserved factor ($u$) that likely violates this assumption.
-
-(c) If higher ability is positively correlated with both education and wages, in which direction will the OLS estimate for the effect of education on wages ($\hat{\beta}_1$) be biased? Explain your reasoning.
-
-## Variance of the OLS Estimator
-
-The variance of the OLS estimator in a simple linear regression is given by: $Var(\hat{\beta}_1) = \frac{\sigma^2}{SST_x}$.
-
-Imagine you are a researcher designing an experiment to find the causal effect of fertilizer ($x$) on crop yield ($y$). 
-
-Using this formula as your guide, what two things could you do in your experimental design to increase the *precision* of your estimate, $\hat{\beta}_1$?
-
-# Discussion Questions
-
-## R-squared
-
-A junior analyst tells you, "My model is great, it has an R-squared of 0.92!" 
-
-Why is a high R-squared not necessarily the ultimate goal of an econometric analysis, especially if we are interested in making policy decisions based on one specific variable?
-
-What is often more important than a high R-squared?
-
-## Omitted Variable Bias
-
-The lecture introduces multiple regression as a way to control for other factors and mitigate omitted variable bias. Let's return to the `wage` on `education` model.
-
-Besides experience (which was added in the lecture), what are two or three other variables you would want to include in the model to get a more credible estimate of the true return to education?
-
-What practical challenges might you face in obtaining data for these variables?
-
-## OLS Minimization
-
-Why do we use the *sum of squared residuals* as the criterion to minimize in OLS?
-
-Why not minimize the sum of the absolute values of the residuals, or just the sum of the residuals?
-
-What are the statistical and practical advantages of squaring them?
-
-## Polynomials
-
-The lecture introduced polynomial terms (e.g., adding $x^2$) to model non-linear relationships. 
-
-When might you suspect that a simple linear model is not sufficient and that a quadratic model (like `wage` on `experience` and `experience²`) would be more appropriate?
-
-What would a negative coefficient on the `experience²` term imply about the relationship between experience and wages?
