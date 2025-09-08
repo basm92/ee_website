@@ -3,6 +3,7 @@ title: "Solutions Tutorial 1"
 format: html
 ---
 
+
 ```{r setup}
 #| warning: false
 #| message: false
@@ -11,9 +12,9 @@ format: html
 library(ggplot2)
 library(gridExtra)
 library(reticulate)
+
 use_python("/home/bas/anaconda3/bin/python")
 ```
-
 
 
 ## Housing prices
@@ -60,6 +61,7 @@ First, we load the data and estimate the model using the `statsmodels` library.
 
 ```{python ceo_py}
 #| echo: true
+#| eval: false
 #| collapse: true
 
 import pandas as pd
@@ -68,6 +70,7 @@ import statsmodels.formula.api as smf
 
 # Load the dataset from the URL
 url = 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv'
+
 ceosal1 = pd.read_csv(url, sep=";", decimal=',')
 
 # Create the log-transformed variables
