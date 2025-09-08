@@ -819,7 +819,7 @@ print(f"{theoretical_se:.3f}")
 
 ### R
 
-```{r}
+```{r repro}
 #| echo: true
 
 # Set the random seed for reproducibility (same as before)
@@ -979,14 +979,18 @@ b)  The p-value for a two-tailed test is the area under the standard normal curv
 
 ### Python
 
-```{python}
+```{python zstat_py}
 #| echo: true
+#| collapse: true
+#| eval: false
+
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
 
 np.random.seed(42)
-data = pd.read_stata("../tutorials/datafiles/WAGE2.DTA")
+url = 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE2.DTA'
+data = pd.read_stata(url)
 mu_0 = 100
 
 # a)  Calculate the standard error and the Z-test statistic in Python.
@@ -1015,7 +1019,7 @@ library(haven)
 library(dplyr)
 
 set.seed(42)
-data <- read_dta("../tutorials/datafiles/WAGE2.DTA")
+data <- read_dta("https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE2.DTA")
 mu_0 <- 100
 
 # a) Calculate the standard error and the Z-test statistic in R
@@ -1043,7 +1047,7 @@ cat(sprintf("The p-value is: %.3f\n", p_value))
 set seed 42
 
 * Load the data
-use "../tutorials/datafiles/WAGE2.DTA", clear
+use "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE2.DTA", clear
 
 * Set null hypothesis value
 scalar mu_0 = 100

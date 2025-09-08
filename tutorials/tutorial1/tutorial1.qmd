@@ -20,15 +20,12 @@ resources:
 
 ## Design of the Tutorials
 
-Tutorials consist of two parts:
-
-Part 1: Short recapitulation of lecture
-
-Part 2: Exercises
+Tutorials consist of two parts: short recapitulation of lecture and exercises.
 
 - Two kinds of exercises, _applied_ and _theoretical_
 - Mixed in order
 - Usually about 6/7 exercises in class, others for self-study. 
+- Catching up? Prerequisite practice questions also available on Brightspace.
 
 Role of the teacher:
 

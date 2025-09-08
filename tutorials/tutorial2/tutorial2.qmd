@@ -27,13 +27,64 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
+# Recapitulation of the Lecture
+
+## Multiple Linear Regression & Hypothesis Testing
+
+The MLR model extends simple regression by including multiple explanatory variables to better control for confounding factors.
+
+The general form is:
+
+  $$
+    y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + ... + \beta_k x_k + u
+  $$
+
+-   **Core Interpretation**: The coefficient $\beta_j$ measures the effect of a one-unit change in $x_j$ on $y$, holding all other explanatory variables constant. This is the principle of *ceteris paribus*.
+-   **Goal of Control Variables**: The primary reason to include variables ($x_2, ..., x_k$) is to prevent **omitted variable bias** in our coefficient of interest ($\beta_1$). A good control is a confounder—a variable correlated with both $x_1$ and $y$.
+
+## Multivariate Hypothesis Testing
+
+We use statistical tests to determine if the estimated coefficients are reliably different from zero.
+
+| Test | Scope & Purpose | Null Hypothesis ($H_0$) | Key Question |
+| :--- | :--- | :--- | :--- |
+| **t-test** | Tests a **single coefficient**. | $\beta_j = 0$ | Does variable $x_j$ have a statistically significant effect on $y$, holding other factors constant? |
+| **F-test** | Tests **multiple coefficients** at once. Most often used for the *overall significance* of the model. | $\beta_1 = \beta_2 = \dots = \beta_k = 0$ | Does our model, as a whole, have any explanatory power? Are the variables jointly significant? |
+
+An F-test can find a group of variables to be jointly significant even if no single variable has a significant t-statistic.
+
+
+## Interactions
+
+Sometimes, the effect of one variable depends on the level of another. We model this by including an **interaction term** (the product of the two variables).
+
+*Model with interaction:*
+$$
+Wage = \beta_0 + \beta_1 \text{Female} + \beta_2 \text{Educ} + \beta_3 (\text{Female} \cdot \text{Educ}) + u
+$$
+
+-   **$\beta_2$**: The effect of an additional year of education *for the reference group* (males, where `Female`=0).
+-   **$\beta_3$**: The **difference in the effect** of education for females compared to males. It measures how the slope of the wage-education profile differs between the two groups.
+-   **Total Effect**: The effect of education for females is no longer a single coefficient, but the sum $(\beta_2 + \beta_3)$. Similarly, the wage gap between genders, $(\beta_1 + \beta_3 \text{Educ})$, now depends on the level of education.
+
+## Robust Standard Errors
+
+The default standard errors calculated by statistical software rely on strong assumptions that are often violated in economic data. Using them can lead to incorrect conclusions (e.g., finding a significant effect when none exists).
+
+| Problem | Description | When It Occurs | Solution |
+| :--- | :--- | :--- | :--- |
+| **Heteroskedasticity** | The variance of the error term ($u_i$) is not constant across observations. $Var(u_i) = \sigma_i^2$. | Common in cross-sectional data where the scale or volatility of the outcome varies (e.g., spending vs. income). | Use **Heteroskedasticity-Robust (HC) Standard Errors**. Also known as White or robust standard errors. |
+| **Intra-Cluster Correlation** | The error terms are correlated for observations within the same group (e.g., students in the same school). $Cov(u_{gi}, u_{gj}) \neq 0$. | Common in panel data or when data is sampled at a group level (states, schools, villages). | Use **Cluster-Robust Standard Errors**, clustered at the level where shocks are shared. |
+
+**Practical Takeaway:** In modern empirical work, using HC-robust or cluster-robust standard errors is the default practice to ensure statistical inference is valid.
+
 # Questions
 
 ## Wage Determinants
 
 :::{style="font-size: 0.7em;"}
 
-You are provided with a dataset named `SLEEP75.DTA`. Your task is to investigate the relationship between hourly wages and several explanatory variables using multiple linear regression. The variables of interest are:`lhrwage`- the natural logarithm of the hourly wage, `educ` - years of education, `exper` - years of potential work experience, `union`: a binary variable, where 1 indicates union membership and 0 indicates non-membership, and `male`: a binary variable, where 1 indicates male and 0 indicates female.
+You are provided with a dataset named `SLEEP75.DTA` [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/SLEEP75.DTA). Your task is to investigate the relationship between hourly wages and several explanatory variables using linear regression. The variables of interest are:`lhrwage`- the natural logarithm of the hourly wage, `educ` - years of education, `exper` - years of potential work experience, `union`: a binary variable, where 1 indicates union membership and 0 indicates non-membership, and `male`: a binary variable, where 1 indicates male and 0 indicates female.
 
   1. Estimate a multiple linear regression model where `lhrwage` is the dependent variable and `educ`, `exper`, `union`, and `male` are the independent variables.
   2. Present the summary of your regression model, including the estimated coefficients, standard errors, t-statistics, and p-values.
@@ -119,3 +170,60 @@ The lecture introduces multiple regression as a way to control for other factors
 Besides experience (which was added in the lecture), what are two or three other variables you would want to include in the model to get a more credible estimate of the true return to education?
 
 What practical challenges might you face in obtaining data for these variables?
+
+## Hypothesis Testing
+
+You are given the following summary output for a regression model that predicts the hourly `wage` based on years of `education` (`educ`) and years of `experience` (`exper`). The sample size is $n=100$.
+
+| Variable | Estimate | Std. Error | t value | Pr(>\|t\|) |
+| :--- | :--- | :--- | :--- | :--- |
+| (Intercept) | 1.145 | 1.550 | 0.739 | 0.462 |
+| educ | 1.021 | 0.095 | 10.747 | < 0.001 |
+| exper | 0.163 | 0.041 | 3.976 | < 0.001 |
+
+**Model Fit Statistics:**
+-   **R-squared:** 0.583
+-   **F-statistic:** 67.5 on 2 and 97 DF
+-   **p-value (F-test):** < 0.001
+-   **Sum of Squared Residuals (SSR):** 875.2
+
+## Hypothesis Testing (Cont.)
+
+1.  A colleague claims that work experience has no effect on wages once you account for education. State the null ($H_0$) and alternative ($H_A$) hypotheses to test this claim. Based on the output, would you reject the null hypothesis at a 5% significance level? Why?
+2.  State the null and alternative hypotheses for the F-test of overall significance. What does the p-value of the F-test tell you about the model?
+3.  You are asked to test the hypothesis that *both* education and experience have no effect on wages. If you were to run a "restricted" model for this F-test, what would that regression equation look like? What would its Sum of Squared Residuals ($SSR_{restricted}$) be equal to in this specific case? (Hint: Think about what the model predicts if $\beta_1=0$ and $\beta_2=0$).
+
+## Interpreting Interaction Effects
+
+A researcher studies the relationship between a person's `age` and their annual charitable `donations` (in €). They want to see if this relationship differs for individuals who are homeowners (`is_homeowner` = 1) versus those who are not (`is_homeowner` = 0).
+
+They estimate the following model:
+$$
+\widehat{\text{donations}} = 50 + 150 \cdot \text{is\_homeowner} + 5 \cdot \text{age} + 3 \cdot (\text{is\_homeowner} \cdot \text{age})
+$$
+
+1.  Write the specific regression equation for **non-homeowners**. What is the estimated effect of an additional year of age on their donations?
+2.  Write the specific regression equation for **homeowners**. What is the estimated effect of an additional year of age on their donations?
+3.  Interpret the meaning of the coefficient on the interaction term ($\hat{\beta}_3 = 3$).
+4.  Calculate the predicted difference in annual donations between a 50-year-old homeowner and a 50-year-old non-homeowner.
+
+## Good vs. Bad Controls
+
+A researcher wants to estimate the causal effect of completing a marathon (`ran_marathon`, a dummy variable) on an individual's self-reported happiness level (`happiness`, on a scale of 1-10). The goal is to isolate the psychological or physical boost from the marathon itself.
+
+For each potential control variable below, decide if it is a **"good control" (confounder)** or a **"bad control" (mediator or collider)**. Justify your reasoning.
+
+1.  `fitness_level`: The individual's baseline fitness level measured *before* they started training for the marathon.
+2.  `hours_trained`: The total number of hours the individual spent training to prepare for the marathon.
+3.  `has_gym_membership`: A dummy variable for whether the individual had a gym membership *after* completing the marathon. Assume that both the feeling of accomplishment from the marathon and the resulting happiness could lead someone to invest more in their fitness by getting a membership.
+
+
+## Correct Standard Errors
+
+For each of the following research scenarios, choose the most appropriate type of standard error to use and briefly explain your choice. The options are standard (Homoskedastic) OLS SEs, Heteroskedasticity-Robust (HC) SEs, or Cluster-Robust SEs (if you choose this, specify the level of clustering). 
+
+1.  **Study A:** You are analyzing the relationship between household income and electricity consumption using a random sample of 2,000 households from across a country for a single year. You suspect that high-income households have much more variation in their electricity use (e.g., pools, electric cars) than low-income households.
+2.  **Study B:** You are studying the effect of a country's GDP on its level of CO2 emissions. Your dataset consists of annual data for 150 countries over 30 years (a panel dataset). You believe that unobserved country-specific factors (like environmental policy culture) persist over time.
+3.  **Study C:** You are evaluating the impact of a new teaching method on student exam scores. The experiment was conducted on 5,000 students spread across 100 different schools. All students within a given school were taught by teachers who received similar training and used the same school resources.
+
+

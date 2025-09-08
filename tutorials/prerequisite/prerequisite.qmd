@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 1: Statistics and Probability"
+subtitle: "Tutorial 0: Statistics and Probability"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,7 +11,7 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Tutorial - Statistics and Probability'
+    footer: 'Empirical Economics: Tutorial 0 - Statistics and Probability'
 resources:
   - demo.pdf
 ---
@@ -29,37 +29,6 @@ use_python("/home/bas/anaconda3/bin/python")
 
 # Introduction
 
-## Set-Up
-
-Empirical Economics has **lectures** and **tutorials**
-
-Both are important for the exam:
-
-- Lectures feature theoretical material
-- Tutorials recapitulate theoretical material
-
-These tutorials also feature **exercises**, sometimes with **code** (R/Python/Stata). Make sure to bring your laptop. 
-
-Exercises help you understand the sometimes abstract theoretical materials. Exercise answers will be available on Brightspace after the last tutorials in a week. 
-
-- Code and coding exercises will allow you to practice with the material and obtain practical programming experience
-
-- In total, we have **8** tutorials, one each week
-
-## Contact Points
-
-Course coordinator:
-
-- Bas Machielsen ([a.h.machielsen@uu.nl](mailto:a.h.machielsen@uu.nl]))
-
-Tutorial teachers:
-
-- Teacher 1: [x](mailto:x@uu.nl)
-- Teacher 2: [x](mailto:y@uu.nl)
-- Teacher 3: [z](mailto:z@uu.nl)
-
-Further information about course organization: See course manual (Brightspace)
-
 ## This Week
 
 We set up Python/Stata/R.
@@ -68,7 +37,7 @@ We focus on downloading and importing datasets.
 
 We focus on **statistics and probability**. Both "on pen and paper" and "with the help of your laptop". 
 
-- These are important building blocks for the linear model (week 3)
+- These are important building blocks for the linear model (week 1 and 2)
 - Which in turn is an important building block for more complicated models later on in the course
 
 # Setting Up
@@ -549,7 +518,7 @@ $E[I | E=e] = 15000 + 4000e$
 
 ## Univariate Statistics
 
-Import a dataset with (hourly) wages, `WAGE1.DTA` (see Brightspace), and calculate the expected value, variance and standard deviation of the `wage` variable. 
+Import a dataset with (hourly) wages, `WAGE1.DTA`, downloadable [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE1.DTA) and calculate the expected value, variance and standard deviation of the `wage` variable. 
 
 Solutions: 
 
@@ -562,7 +531,8 @@ Solutions:
 #| code-fold: true
 #| collapse: true
 library(haven)
-dataset <- read_dta("../datafiles/WAGE1.DTA")
+url <- 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE1.DTA'
+dataset <- read_dta(url)
 mean(dataset$wage)
 var(dataset$wage)
 sd(dataset$wage)
@@ -577,7 +547,8 @@ sd(dataset$wage)
 
 import pandas as pd
 import numpy as np
-dataset = pd.read_stata("../datafiles/WAGE1.DTA")
+url= 'https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE1.DTA'
+dataset = pd.read_stata(url)
 np.mean(dataset['wage'])
 np.var(dataset['wage'])
 np.std(dataset['wage'])
@@ -585,7 +556,16 @@ np.std(dataset['wage'])
 
 ### Stata
 
-Hey
+```{stata}
+#| eval: false
+#| echo: true
+
+* Load the dataset from the URL, replacing the current dataset in memory
+use "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE1.DTA", clear
+
+* Calculate and display summary statistics for the 'wage' variable
+summarize wage, detail
+```
 
 :::
 
@@ -664,7 +644,7 @@ e) Based on your p-value and the significance level of $\alpha=0.05$, what is yo
 
 ## Performing a Hypothesis Test
 
-Use the `WAGE2.DTA` dataset. Import it in R/Python/Stata. Conduct a hypothesis test on the `IQ` variable. The null hypothesis is that `mu_0 = 100`.
+Use the `WAGE2.DTA` dataset available [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/WAGE2.DTA). Import it in R/Python/Stata. Conduct a hypothesis test on the `IQ` variable. The null hypothesis is that `mu_0 = 100`.
 
 a) Calculate the standard error and the Z-test statistic in Python.
 b) The p-value for a two-tailed test is the area under the standard normal curve that is more extreme (on both sides) than your calculated Z-statistic. Use `scipy.stats.norm.cdf()` or `pnorm()` to find this p-value.
