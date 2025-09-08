@@ -37,11 +37,65 @@ Role of the teacher:
 - Demonstrate and explain exercises
 - **Not** debugging code
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
+## The Linear Model
 
-## Slide 2
+**Goal:** Use sample data to estimate the true, unknown relationship between variables in a population.
+
+*   We propose a linear relationship between a dependent variable $y$ (e.g., wages) and an independent variable $x$ (e.g., education).
+    *   **Population Regression Function (PRF):** The true, unobservable relationship is $y=\beta_0 + \beta_1x+u$. $\beta_0$ and $\beta_1$ are the unknown population intercept and slope. $u$ is the unobserved error term, capturing all other factors affecting $y$. 
+    *   Since we can't see the whole population, we use a sample to estimate the model. OLS is the method used to find the "best-fitting" line through the sample data.
+    *   OLS finds the specific intercept ($\hat{\beta_0}$) and slope ($\hat{\beta_1}$) that **minimize the sum of the squared residuals (SSR)**. The residual is the difference between the actual $y$ value and the value predicted by our line ($\hat{y}$)
+
+*   **Estimated Coefficients**
+    *   The OLS estimation gives us the **Sample Regression Function (SRF):** $\hat{y} = \hat{\beta_0} + \hat{\beta_1}x$.
+    *   The slope $\hat{\beta_1}$ is calculated as the sample covariance of $x$ and $y$ divided by the sample variance of $x$.
+
+
+
+## Interpretation and Model Fit
+
+**Goal:** Understand what the estimated coefficients mean and how well the model explains our data.
+
+*   **Interpreting Coefficients:** The meaning of $\hat{\beta_1}$ depends on how the variables are measured (their functional form). This allows for modeling different types of economic relationships.
+
+| Model | Equation | Interpretation of `β̂₁` |
+| :--- | :--- | :--- |
+| **Level-Level** | `y = β₀ + β₁x` | A 1-unit change in `x` is associated with a `β̂₁` unit change in `y`. |
+| **Log-Level** | `log(y) = β₀ + β₁x` | A 1-unit change in `x` is associated with a `(100 × β̂₁)%` change in `y`. |
+| **Level-Log** | `y = β₀ + β₁log(x)` | A 1% change in `x` is associated with a `(β̂₁/100)` unit change in `y`. |
+| **Log-Log** | `log(y) = β₀ + β₁log(x)` | A 1% change in `x` is associated with a `β̂₁%` change in `y` (elasticity). |
+| **Dummy Variable** | `y = β₀ + β₁D` | `β̂₁` is the average difference in `y` between the group where `D=1` and the reference group (`D=0`). |
+
+*   **Measuring Goodness-of-Fit: R-squared (R²)**
+    *   `R²` measures the proportion of the total variation in the dependent variable (`y`) that is explained by the independent variable (`x`).
+    *   It is a value between 0 and 1. A higher `R²` indicates a better in-sample fit.
+    *   **Caution:** The primary goal is often finding the true causal effect, not just maximizing `R²`.
+
+
+## Quality of Estimates
+
+
+**Goal:** Knowing when our estimates are reliable and how to test their statistical significance.
+
+*   **Unbiasedness: A Key Property of OLS**
+    *   An estimator is **unbiased** if its expected value equals the true population parameter (`E[β̂₁] = β₁`).
+    *   This means that, on average, the OLS procedure gives the correct answer. This property holds if the **Classical Linear Model Assumptions** are met.
+    *   **Most Critical Assumption:** The **Zero Conditional Mean** assumption (`E(u|x) = 0`). This implies the unobserved factors in the error term `u` are not correlated with the explanatory variable `x`.
+
+*   **Omitted Variable Bias (OVB)**
+    *   The Zero Conditional Mean assumption is violated if we omit a relevant variable from the model that is correlated with `x`. This leads to **Omitted Variable Bias**.
+    *   The OLS estimate `β̂₁` will be biased, capturing both the effect of `x` and part of the effect of the omitted variable.
+    *   **Example:** Estimating the effect of education on wages while omitting "innate ability." Since ability is correlated with both education and wages, the estimate for the education coefficient will be biased upwards.
+
+
+## Hypothesis Testing
+
+*   We often want to test if a variable has a statistically significant effect on `y` (e.g., `H₀: β₁ = 0`).
+    *   We use a **t-test** for this purpose. The t-statistic is calculated as:
+        `t = (β̂₁ - 0) / SE(β̂₁)`
+    *   The **Standard Error (SE)** measures the precision of our estimate `β̂₁`. A larger t-statistic (and a corresponding small p-value) indicates that the estimated effect is unlikely to be due to random chance, allowing us to reject the null hypothesis.
 
 
 # Questions
@@ -69,20 +123,23 @@ How would you interpret the coefficient -0.85? What is the economic term for thi
 
 ## CEO Compensation and Firm Sales
 
-This question explores the relationship between a CEO's salary and the sales of their firm. In economics, this relationship is often modeled with a log-log specification. You will use the `ceosal1` dataset from the `wooldridge` package.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv).]
+This question explores the relationship between a CEO's salary and the sales of their firm. In economics, this relationship is often modeled with a log-log specification. You will use the `ceosal1` dataset.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/ceosal1.csv).]
 
-(a) Estimate a linear regression model where the natural log of CEO salary (`lsalary = log(salary)`) is the dependent variable, and the natural log of firm sales (`lsales = log(sales)`) is the independent variable. Write down the estimated regression equation.
+:::{style="font-size: 0.9em;"}
 
-(b) Provide a precise interpretation of the slope coefficient on the `lsales` variable. What does this elasticity value tell you about the relationship between CEO salary and firm sales?
+(a) Estimate a linear regression model where the natural log of CEO salary (`log(salary)`) is the dependent variable, and the natural log of firm sales (`log(sales)`) is the independent variable. Write down the estimated regression equation.
+
+(b) Provide a precise interpretation of the slope coefficient on the `log(sales)` variable. What does this elasticity value tell you about the relationship between CEO salary and firm sales?
 
 (c) Is the relationship between log-salary and log-sales statistically significant at the 1% level? Justify your answer by referencing the appropriate value from the R model summary output.
 
 (d) What is the R-squared value of this regression? What does this number tell you about how well the model fits the data?
 
+:::
 
 ## Socioeconomic Factors and Fertility
 
-This question investigates the factors influencing fertility rates in Botswana around 1988. This dataset contains information on fertility and several potential socioeconomic indicators for about 4400 Botswanean women.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv).]
+This question investigates the factors influencing fertility rates in Botswana around 1988. This dataset contains information on fertility (how many children they have) and several potential socioeconomic indicators for about 4400 Botswanean women.^[The dataset can be downloaded [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/fertil2.csv).]
 
 (a) Estimate a linear regression model where `children` is the dependent variable, and `catholic` is the independent variable. Write out the estimated regression equation.
 
@@ -153,8 +210,10 @@ The unbiasedness of the OLS estimator, $E(\hat{\beta}_1) = \beta_1$, is a corner
 
     $$ \hat{\beta}_1 = \beta_1 + \frac{\sum_{i=1}^{n} (x_i - \bar{x})u_i}{\sum_{i=1}^{n} (x_i - \bar{x})^2} $$
    
-- *(Hint: You will need to use the fact that $\sum(x_i - \bar{x})(c) = 0$ for any constant c, and that $\sum(x_i - \bar{x})(\bar{y}) = 0$.)*
-- *(Hint: A useful property is $\sum (x_i - \bar{x})(y_i - \bar{y}) = \sum (x_i - \bar{x})y_i$.)*
+:::{class="hint"}
+
+*(Hint: You will need to use the fact that $\sum(x_i - \bar{x})(c) = 0$ for any constant c, and that $\sum(x_i - \bar{x})(\bar{y}) = 0$.) Another useful property is $\sum (x_i - \bar{x})(y_i - \bar{y}) = \sum (x_i - \bar{x})y_i$.)*
+:::
 
 ## Unbiasedness (Cont.)
 
@@ -192,7 +251,7 @@ What is often more important than a high R-squared?
 
 ## OLS Minimization
 
-Why do we use the *sum of squared residuals* as the criterion to minimize in OLS?
+Why do we use the sum of squared residuals as the criterion to minimize in OLS?
 
 Why not minimize the sum of the absolute values of the residuals, or just the sum of the residuals?
 

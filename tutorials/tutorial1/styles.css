@@ -10,6 +10,14 @@
 
 .reveal ul,
 .reveal li {
+    font-size: 0.85em !important;
+}
+
+.reveal div.hint {
+    font-size: 0.6em !important;
+}
+
+.reveal ol[type="a"] li {
     font-size: 0.7em !important;
 }
 
