@@ -101,6 +101,11 @@ On exam: no code output - only formatted output like in journals
         `t = (β̂₁ - 0) / SE(β̂₁)`
     *   The **Standard Error (SE)** measures the precision of our estimate `β̂₁`. A larger t-statistic (and a corresponding small p-value) indicates that the estimated effect is unlikely to be due to random chance, allowing us to reject the null hypothesis.
 
+# Wooclap
+
+## Wooclap Quesions
+
+<iframe allowfullscreen frameborder="0" height="70%" mozallowfullscreen src="https://app.wooclap.com/OFZFSD/questionnaires/68c07e26100c1c1b8ee527f0" style="min-height: 550px; min-width: 300px" width="100%"></iframe>
 
 # Questions
 
