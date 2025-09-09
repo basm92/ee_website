@@ -20,19 +20,26 @@ resources:
 
 ## Design of the Tutorials
 
+:::{style="font-size: 0.8em;"}
+
 Tutorials consist of two parts: short recapitulation of lecture and exercises.
 
-- Two kinds of exercises, _applied_ and _theoretical_
-- Mixed in order
+- Two kinds of exercises, _applied_ and _theoretical_, mixed in order
 - Usually about 6/7 exercises in class, others for self-study. 
 - Catching up? Prerequisite practice questions also available on Brightspace.
+- Policy: tutorial answers released after the tutorials are finished
 
 Role of the teacher:
 
 - Recapitulate lecture
 - Moderate discussion about exercises
 - Demonstrate and explain exercises
+- Code policy: show Stata, other languages are self-study
 - **Not** debugging code
+
+On exam: no code output - only formatted output like in journals
+
+:::
 
 # Recapitulation of the Lecture
 
