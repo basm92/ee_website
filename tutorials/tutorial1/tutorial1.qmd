@@ -103,9 +103,11 @@ On exam: no code output - only formatted output like in journals
 
 # Wooclap
 
-## Wooclap Quesions
+## Wooclap Questions
 
-<iframe allowfullscreen frameborder="0" height="70%" mozallowfullscreen src="https://app.wooclap.com/OFZFSD/questionnaires/68c07e26100c1c1b8ee527f0" style="min-height: 550px; min-width: 300px" width="100%"></iframe>
+- Either use the below frame or go to [wooclap.com](wooclap.com) and use the code OFZFSD. 
+
+<iframe allowfullscreen frameborder="0" height="60%" mozallowfullscreen src="https://app.wooclap.com/OFZFSD/questionnaires/68c07e26100c1c1b8ee527f0" style="min-height: 350px; min-width: 300px" width="100%"></iframe>
 
 # Questions
 
