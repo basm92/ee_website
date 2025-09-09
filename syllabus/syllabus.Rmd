@@ -38,7 +38,7 @@ date8 <- "24-10 at 13:15 + Question Hour After"
 
 ## Course Overview
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse); library(tinytable)
 
 info <- tribble(~ "", ~ "", 
@@ -57,13 +57,13 @@ info <- tribble(~ "", ~ "",
 )
 
 tinytable::tt(info, width=c(0.2, 0.5)) |>
-  theme_tt("placement", latex_float = "htbp")
+    theme_latex(placement = "htbp")
 
 ```
 
 ## Course Planning
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 schedule <- tribble(
   ~"Event", ~"Date and Time",
   "Lecture 1", date1,
@@ -80,7 +80,7 @@ schedule <- tribble(
 )
 
 tinytable::tt(schedule, width=c(0.3, 0.5)) |>
-  theme_tt("placement", latex_float = "htbp")
+    theme_latex(placement = "htbp")
 ```
 
 For tutorials, please refer to [MyTimeTable](mytimetable.uu.nl). Log-in with your student ID, click Add Timetable, search for "Empirical Economics", click "Add timetables", and select your corresponding tutorial group (e.g. USEMEE-2025-V-1-TUTORIAL-1-05). Optionally, you can also add the lectures and examinations. 
@@ -109,6 +109,16 @@ The course also focuses on research questions related to the different economic 
   - Recommended (but not required) material: Adams, C.P. (2024), Learning Microeconometrics with R. Available [here](https://sites.google.com/view/microeconometricswithr/bookdown).
   - Recommended (but not required) material: Huntington-Klein, N. (2024), The Effect: An Introduction to Research Design and Causality. Available [here](https://theeffectbook.net/index.html).
   
+| Lecture | Literature |
+|---|---|
+| Lecture 1 | Wooldridge 1 & 2 |
+| Lecture 2 | Wooldridge 3 & 4 |
+| Lecture 3 | Wooldridge 10 & 11 |
+| Lecture 4 | Wooldridge 14 |
+| Lecture 5 | Wooldridge 13 |
+| Lecture 6 | Wooldridge 17 |
+| Lecture 7 | Causal Inference The Mixtape 4 and 9 |
+| Lecture 8 | Wooldridge 15 and Causal Inference The Mixtape 7 |
 
 ## Format
 
