@@ -203,7 +203,9 @@ Model: $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_k x_k + u$
 
 **Null Hypothesis ($H_0$)**: *None* of the independent variables have an effect on $y$. The model has no explanatory power. $H_0: \beta_1 = \beta_2 = \dots = \beta_k = 0$
 
-**Alternative Hypothesis ($H_A$)**: *At least one* of the coefficients is not zero. The model has some explanatory power. $H_A: \text{At least one } \beta_j \neq 0 \text{ for } j=1, \dots, k$
+**Alternative Hypothesis ($H_A$)**: $H_0$ not true.
+  
+- *At least one* of the coefficients is not zero. The model has some explanatory power. $H_A: \text{At least one } \beta_j \neq 0 \text{ for } j=1, \dots, k$
 
 :::
 
@@ -435,10 +437,12 @@ $Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot 
 
 - The interpretation of the "main effects" ($\beta_1$ and $\beta_2$) changes fundamentally when an interaction term is present.
 
-- **$\beta_0$ (Intercept):** The expected wage for the reference group (males) when `Educ` = 0.
-- **$\beta_2$ (Main Effect of Continuous Variable):** The effect of an additional year of education on wages *for the reference group (males) only*.
-- **$\beta_1$ (Main Effect of Dummy):** The difference in expected wages between females and males when `Educ` = 0. This is the difference in the intercepts. This coefficient is often not meaningful on its own if `Educ=0` is not a relevant value in the data.
-- **$\beta_3$ (Interaction Coefficient):** The **difference in the slopes**. It measures by how much the effect of an additional year of education differs for females compared to males. This is often the coefficient of primary interest.
+- $\beta_2$ is the effect of an additional year of education on wages *for the reference group (males) only*.
+- $\beta_1$ is the difference in expected wages between females and males when `Educ` = 0. This is the difference in the intercepts. This coefficient is often not meaningful on its own if `Educ=0` is not a relevant value in the data.
+- $\beta_3$ (Interaction Coefficient) is the **difference in the slopes** between males and females. It measures by how much the effect of an additional year of education differs for females compared to males. This is often the coefficient of primary interest.
+
+- Hence, the effect of `Educ` on `Wage` for men is $\beta_2$, and $\beta_2 + \beta_3$ for women.
+
 
 ## Visualization
 
@@ -492,6 +496,182 @@ ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
   - To test if education has a different effect for females, the null hypothesis is $H_0: \beta_3 = 0$.
   - To test if gender has any effect on wages at all, you must test if the lines are identical, which requires a joint test: $H_0: \beta_1 = 0 \text{ and } \beta_3 = 0$. This is done with an F-test.
 
+## Multiple Categories
+
+- Suppose now you have a categorical variable with *k* distinct categories (e.g., region, with categories North, South, East, West).   
+  - You cannot simply code this as 1, 2, 3, 4 because that would impose a nonsensical ordered relationship.
+
+- To properly include this information in a regression, you must create *k-1* binary (or "dummy") variables.
+  - Each dummy variable represents one of the categories. 
+  - An observation will have a value of 1 for the dummy variable corresponding to its category, and 0 for all other dummy variables.
+
+- **The Dummy Variable Trap**
+  - You must always omit one category, which becomes the **baseline** or **reference category**. If you were to include a dummy variable for every category, you would fall into the "dummy variable trap." 
+  - This is a situation of perfect multicollinearity, where one dummy variable can be perfectly predicted by the others. 
+
+
+## Example Model
+
+- For example, if you know an observation is not in the North, South, or East, it must be in the West. This redundancy makes it impossible for the model to estimate the individual effect of each category.
+
+:::{.callout-tip title="Example: Multiple Dummies with Reference Category"}
+
+With "West" as the baseline, the model would be:
+
+  $$
+    y_i = \beta_0 + \beta_1 \text{North}_i + \beta_2 \text{South}_i + \beta_3 \text{East}_i + \dots + u_i
+  $$
+
+Where:
+
+  - $\text{North}_i = 1$ if the observation is in the North, 0 otherwise.
+  - $\text{South}_i = 1$ if the observation is in the South, 0 otherwise.
+  - $\text{East}_i = 1$ if the observation is in the East, 0 otherwise.
+
+:::
+
+
+## Interpretation of the Coefficients
+
+-   **The Intercept ($\beta_0$)** now represents the average value of the dependent variable for the **baseline category** (the one you omitted). 
+  - In our example, it would be the average value of $y$ for the "West" region, assuming all other independent variables in the model are zero.
+
+-   **The Dummy Coefficients ($\beta_1, \beta_2, \dots$)**: Each dummy variable's coefficient represents the **average difference** in the dependent variable between that category and the baseline category, holding all other variables constant.
+    -   $\beta_1$: Represents the average difference in $y$ between the "North" region and the "West" region.
+    -   $\beta_2$: Represents the average difference in $y$ between the "South" region and the "West" region.
+    -   $\beta_3$: Represents the average difference in $y$ between the "East" region and the "West" region.
+
+- The coefficients do not show the average value of $y$ for that category directly. They show the difference relative to the baseline.
+
+- **Statistical Significance**: If the $p$-value for a dummy variable's coefficient is statistically significant, it suggests that there is a meaningful difference in the outcome variable between that category and the baseline category.
+
+
+## Example: Predicting Wages
+
+- **Scenario**: We want to predict an individual's wage based on their education level, which we have categorized as "High School," "Bachelors," and "Masters" We will use "High School" as our baseline category.
+
+  $$
+    \text{Wage}_i = \beta_0 + \beta_1 \text{Bachelors}_i + \beta_2 \text{Masters}_i + u_i
+  $$
+
+- Let's say we run the regression and get the following results:
+  $$
+    \widehat{\text{Wage}}_i = 35000 + 15000 \cdot \text{Bachelors}_i + 30000 \cdot \text{Masters}_i
+  $$
+
+- **Interpretation**:
+  - $\hat{\beta}_0 = €35000$: The average wage for an individual with a "High School" education (the baseline) is €35,000.
+  - $\hat{\beta}_1 = €15000$: On average, individuals with a "Bachelors" degree earn €15,000 **more** than those with a "High School" education. The predicted average wage for this group is €35,000 + €15,000 = €50,000.
+  - $\hat{\beta}_2 = €30000$: On average, individuals with a "Graduate" degree earn €30,000 **more** than those with a "High School" education. The predicted average wage for this group is €35,000 + €30,000 = €65,000.
+  
+## Changing Baseline
+
+- While your choice of a baseline category changes the *interpretation* of the individual coefficients, it does not change the overall significance of the categorical variable as a whole.
+
+- When you include a set of dummy variables for a single categorical predictor (e.g., "Bachelors" and "Graduate" for the "Education" variable), the F-statistic tests the **joint null hypothesis** that all of these dummy coefficients are equal to zero.
+    -   $H_0: \beta_{\text{Bachelors}} = 0 \text{ AND } \beta_{\text{Graduate}} = 0$
+    -   In words: The F-test checks if the "Education" variable, as a whole, has any explanatory power.
+
+- **Why it is invariant**: The overall fit of the model (e.g., the R-squared) remains identical regardless of which category you choose as the baseline. 
+  - You are using the same information and explaining the same amount of variation in the dependent variable. Since the F-statistic is calculated based on this overall model fit, its value does not change.
+  - The conclusion about whether "Education" is a significant predictor will be the same no matter which level is your reference.
+
+## Interpretation of Parameters
+
+- While the F-test looks at the variable as a whole, the t-test for each individual dummy coefficient examines a more specific comparison.
+
+- Each dummy coefficient ($\beta_j$) represents the estimated average difference in the outcome variable between category *j* and the **baseline category**.
+  -   **The t-test**: The t-test for a specific coefficient tests whether this difference is statistically significant (i.e., different from zero).
+    - **Null Hypothesis ($H_0: \beta_j = 0$)**: The average outcome for category *j* is the **same** as the average outcome for the baseline category.
+    - **Alternative Hypothesis ($H_a: \beta_j \neq 0$)**: There is a statistically significant **difference** in the average outcome between category *j* and the baseline category.
+
+-   **Example**: In our wage regression, the t-test for $\beta_{\text{Bachelors}}$ answers the question: "Is the average wage for people with a Bachelor's degree significantly different from the average wage for people with a High School diploma (the baseline)?"
+  
+## Illustration
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-align: 'center'
+#| fig-width: 15
+#| fig-height: 7
+
+# Install and load necessary libraries
+# install.packages("ggplot2")
+# install.packages("dplyr")
+library(ggplot2)
+library(dplyr)
+
+# For reproducibility
+set.seed(42)
+
+# 1. Simulate the data
+n <- 150
+education_levels <- c("High School", "Bachelors", "Graduate")
+sim_data <- data.frame(
+  education = factor(sample(education_levels, n, replace = TRUE), levels = education_levels)
+)
+
+# Define the "true" model parameters
+beta_0 <- 35000 # Mean wage for High School
+beta_1 <- 15000 # Difference for Bachelors
+beta_2 <- 30000 # Difference for Graduate
+error_sd <- 8000 # Add some random variation
+
+# Create the wage based on education level + random noise
+sim_data <- sim_data %>%
+  mutate(
+    wage = case_when(
+      education == "High School" ~ beta_0 + rnorm(n(), sd = error_sd),
+      education == "Bachelors" ~ beta_0 + beta_1 + rnorm(n(), sd = error_sd),
+      education == "Graduate" ~ beta_0 + beta_2 + rnorm(n(), sd = error_sd)
+    )
+  )
+
+# 2. Run the regression on the simulated data to get estimated coefficients
+model <- lm(wage ~ education, data = sim_data)
+b0_est <- coef(model)[1]
+b1_est <- coef(model)[2]
+b2_est <- coef(model)[3]
+
+# 3. Create the plot
+ggplot(sim_data, aes(x = education, y = wage)) +
+  # Show the raw data points with some jitter
+  geom_jitter(aes(color = education), width = 0.25, alpha = 0.6, show.legend = FALSE, size = 2) +
+  
+  # Add horizontal lines for the predicted mean of each group
+  geom_segment(aes(x = 0.7, xend = 1.3, y = b0_est, yend = b0_est), color = "black", linewidth = 1) +
+  geom_segment(aes(x = 1.7, xend = 2.3, y = b0_est + b1_est, yend = b0_est + b1_est), color = "black", linewidth = 1) +
+  geom_segment(aes(x = 2.7, xend = 3.3, y = b0_est + b2_est, yend = b0_est + b2_est), color = "black", linewidth = 1) +
+
+  # Add a dashed line for the baseline mean to guide the eye
+  geom_hline(yintercept = b0_est, linetype = "dashed", color = "grey40") +
+  
+  # Annotate the baseline (intercept)
+  annotate("text", x = 0.6, y = b0_est, label = paste0("Reference \n(β₀ ≈ €", round(b0_est/1000,1),"k)"), hjust = 1, size = 3.5) +
+  
+  # Annotate the coefficient for Bachelors
+  geom_segment(aes(x = 1.8, xend = 1.8, y = b0_est, yend = b0_est + b1_est), 
+               arrow = arrow(length = unit(0.3, "cm"), ends="both"), color = "blue") +
+  annotate("text", x = 1.7, y = b0_est + b1_est/2, label = paste0("β₁ ≈ €", round(b1_est/1000,1),"k"), 
+           color = "blue", hjust = 1, size = 4) +
+  
+  # Annotate the coefficient for Graduate
+  geom_segment(aes(x = 2.8, xend = 2.8, y = b0_est, yend = b0_est + b2_est), 
+               arrow = arrow(length = unit(0.3, "cm"), ends="both"), color = "darkgreen") +
+  annotate("text", x = 2.7, y = b0_est + b2_est/2, label = paste0("β₂ ≈ €", round(b2_est/1000,1),"k"), 
+           color = "darkgreen", hjust = 1, size = 4) +
+
+  # Formatting and labels
+  labs(
+    title = "Predicted Wages by Education",
+    x = "Education Level",
+    y = "Wage (€)"
+  ) +
+  scale_y_continuous(labels = scales::dollar_format(prefix="€")) +
+  theme_minimal(base_size = 14)
+
+```
 # Understanding Statistical Output
 
 ## Understanding Statistical Output
@@ -562,16 +742,18 @@ reg wage educ expr
 
 ## Interpretation with Controls
 
-- educ: $\hat{\beta}_1 \approx 1.02$: Holding experience constant, one more year of education is associated with a €1.02/hr increase in wages, on average.
-- exper: $\hat{\beta}_2 \approx 0.16$: Holding education constant, one more year of experience is associated with a €0.16/hr increase in wages, on average.
+- Important: we can only interpret the coefficients that are statistically distinguishable from zero. 
+  - The t-statistics tell us whether that is the case.
+- `Educ`: $\hat{\beta}_1 \approx 1.02$: Holding experience constant, one more year of education is associated with a €1.02/hr increase in wages, on average.
+- `Exper`: $\hat{\beta}_2 \approx 0.16$: Holding education constant, one more year of experience is associated with a €0.16/hr increase in wages, on average.
 - The R-squared increased relative to the simple model, suggesting this model explains more variation in wages.
-- The t-statistics tell us whether these coefficients are statistically distinguishable from zero.
+
 
 # Robust Standard Errors
 
 ## OLS Variance
 
-- Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Conditional on the regressors $x_i$, we have:^[Strictly speaking, we are evaluating the _conditional variance_ here, i.e. $Var(\beta_1 | X_i)$. But for brevity and by convention, we use $Var(\beta_1)$. We also focus on the case with 1 regressor in this exposition. The formulae become more complicated with $k$ regressors, but the insights generalize.]
+- Our goal is to find the variance of the OLS estimator, $Var(\hat{\beta}_1)$, which is the basis for all statistical inference. Conditional on the regressors $x_i$, we have:^[Strictly speaking, we are evaluating the _conditional variance_ here, i.e. $Var(\hat{\beta}_1 | X_i)$. But for brevity and by convention, we use $Var(\hat{\beta}_1)$. We also focus on the case with 1 regressor in this exposition. The formulae become more complicated with $k$ regressors, but the insights generalize.]
 
   $$
     Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right)
@@ -605,7 +787,7 @@ reg wage educ expr
 ## The Problem of Heteroskedasticity
 
 - The assumption of homoskedasticity ("same scatter") is often violated in economic data. 
-- **Heteroskedasticity** occurs when the variance of the error term is *not* constant across observations.
+- **Heteroskedasticity** occurs if the variance of the error term is *not* constant across observations.
 
   -  **Formal Definition:** $Var(u_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
   - **Intuitive Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
@@ -630,7 +812,7 @@ reg wage educ expr
   
 - This is the **true variance of the OLS estimator in the presence of heteroskedasticity**.
 
-## Estimation of HC REs
+## Estimation of HC Standard Error
 
 - The challenge is that we cannot compute the true variance because we do not know the individual error variances, $\sigma_i^2$.
 
@@ -641,8 +823,10 @@ reg wage educ expr
   $$
     \widehat{Var}_{HC}(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \hat{u}_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
   $$
-
+  
 - The square root of this value is the **heteroskedasticity-robust standard error** (or HC-robust SE).
+
+- This is a consistent estimator of the standard error. It only works for large $n$. 
 
 ## HC Robust Standard Errors in Software
 
@@ -658,7 +842,7 @@ reg wage educ expr
   - HC-robust standard errors correct for heteroskedasticity. They do **not** correct for serial correlation (which requires clustered SEs) or omitted variable bias.
 - **When to use:**
   - In cross-sectional data analysis, heteroskedasticity is the rule rather than the exception. The modern consensus among econometricians is to use HC-robust standard errors **by default**.
-  - The cost of using them when errors are truly homoskedastic is minimal in large samples, while the cost of failing to use them when heteroskedasticity is present is high (invalid inference).
+  - The cost of using them if errors are truly homoskedastic is minimal in large samples, while the cost of failing to use them if heteroskedasticity is present is high (invalid inference).
 - **Efficiency:** 
   - It's crucial to remember that OLS is still unbiased and consistent under heteroskedasticity. However, it is not efficient. HC-robust standard errors fix the *inference* (t-tests, p-values), but they do not make the OLS *estimator* itself more efficient. For that, you would need a different estimation method like Weighted Least Squares (WLS).
 
@@ -688,6 +872,66 @@ reg wage educ expr
 - If we ignore this structure and use the standard OLS formula, we are incorrectly zeroing out all the covariance terms in the variance calculation. 
   - If these covariance terms are, on average, positive (which is common), we will systematically underestimate the true variance of $\hat{\beta}_1$. This leads to standard errors that are too small. 
   
+## Clustering SE's
+
+- Clustered Standard Errors are approximately calculated as follows:^[For a derivation, see the appendix to these slides (@sec-appendix).]
+
+:::{.callout-tip title="Procedure Clustered Standard Errors" style="font-size: 0.8em;"}
+
+1.  First, run the OLS regression as usual to obtain the coefficient estimates ($\hat{\beta}$) and the residuals ($u_{gi}$).
+2.  Next, group the residuals by cluster.
+3.  For each cluster, calculate a term that incorporates the variance and covariance of the residuals *within that cluster*. This step explicitly captures the $Cov(u_{gi}, u_{gj})$ terms that standard OLS ignores.
+4.  Sum these terms across all the clusters to arrive at an "updated" variance estimate.
+
+:::
+
+- This process effectively treats each cluster as a single, larger observation. 
+  - By summing up the information from each cluster, we are allowing for the errors to be correlated inside the cluster, but maintaining the assumption that they are independent across different clusters. 
+  - If observations within a cluster provide very similar information, the cluster as a whole contributes less "unique" information than if the observations were all independent. This typically results in larger, more conservative standard errors.
+
+
+## When to Cluster
+
+- **When to Cluster:** 
+  - Cluster standard errors if you suspect the error terms are correlated within groups. This is common with panel data, data from multi-stage surveys, or if a policy is applied at a group level (e.g., a state-level law).
+- **What Level to Cluster at:** 
+  - You should cluster at the level at which the unobserved components are shared. If you have students in classrooms within schools, and you suspect shocks at both the classroom and school level, you should cluster at the broader level (school), as this allows for correlation within classrooms *and* between classrooms within the same school.
+- **Consequences of Failure to Cluster:** 
+  - If intra-cluster correlation exists and you use standard OLS standard errors, your standard errors will be biased downwards. This will make you overly confident in your results and lead to spurious findings of statistical significance.
+  
+## Clustering in Software
+
+- Similarly to HC-Robust standard errors, clustered standard errors need to be applied explicitly in statistical software. 
+  - In R: `feols(y ~ x1 + x2, data = df, vcov=~cluster_variable)`
+  - In Python: `pf.feols("y ~ x1 + x2", data = df).vcov({"CRV3": "cluster_variable"}).summary()`
+  - In Stata: `reg y x1 x2, vce(cluster cluster_variable)`
+
+# Summary
+
+## What did we do?
+
+- **Multiple Linear Regression**:
+  - We introduced the method of multiple linear regression and provided ourselves with an interpretation of the estimated coefficients. 
+
+- **Control Variables**: 
+  - For OLS estimates to be unbiased (correct on average), a set of classical assumptions must hold. The most critical is the Zero Conditional Mean assumption, which states that unobserved factors (like innate ability) must not be correlated with the explanatory variable (like education). We discussed the logic of inclusion of control variables to minimize this kind of bias.
+
+- **Hypothesis Testing**: 
+  - After estimating a model, we use hypothesis testing to determine if the results are statistically significant.
+  - The t-test is used to assess the significance of a single variable, while the F-test is used to assess the joint significance of multiple variables or the overall explanatory power of the model.
+
+## What did we do? (Cont.)
+
+- **Dummies and Interactions**:
+  - We discussed the interpretation of dummy variables and interaction terms in a multiple linear regression context. 
+  
+- **Standard errors of estimated regression parameters**:
+  - We discussed the issue of standard errors in regression. We saw that the standard errors statistical software computes by default are almost certainly incorrect. We saw two alternatives, the HC-robust standard error and the Cluster-robust standard error, and focused on their estimation. 
+  
+# The End
+
+# Appendix 1: Cluster-robust SEs {#sec-appendix}
+
 ## Expressing the Variance
 
 - We now express the variance of the OLS estimator, $Var(\hat{\beta}_1)$ in a form recognizing the cluster structure:
@@ -784,44 +1028,5 @@ reg wage educ expr
   - It calculates a total score for each cluster (`sum inside`), squares that total (`square outside`), and then sums these squared cluster-level totals. 
   - This procedure implicitly accounts for all the covariance terms within each cluster without having to estimate each one separately.
 
-## When to Cluster
-
-- **When to Cluster:** 
-  - Cluster standard errors when you suspect the error terms are correlated within groups. This is common with panel data, data from multi-stage surveys, or when a policy is applied at a group level (e.g., a state-level law).
-- **What Level to Cluster at:** 
-  - You should cluster at the level at which the unobserved components are shared. If you have students in classrooms within schools, and you suspect shocks at both the classroom and school level, you should cluster at the broader level (school), as this allows for correlation within classrooms *and* between classrooms within the same school.
-- **Consequences of Failure to Cluster:** 
-  - If intra-cluster correlation exists and you use standard OLS standard errors, your standard errors will be biased downwards. This will make you overly confident in your results and lead to spurious findings of statistical significance.
-  
-## Clustering in Software
-
-- Similarly to HC-Robust standard errors, clustered standard errors need to be applied explicitly in statistical software. 
-  - In R: `feols(y ~ x1 + x2, data = df, vcov=~cluster_variable)`
-  - In Python: `pf.feols("y ~ x1 + x2", data = df).vcov({"CRV3": "cluster_variable"}).summary()`
-  - In Stata: `reg y x1 x2, vce(cluster cluster_variable)`
-
-# Summary
-
-## What did we do?
-
-- **Multiple Linear Regression**:
-  - We introduced the method of multiple linear regression and provided ourselves with an interpretation of the estimated coefficients. 
-
-- **Control Variables**: 
-  - For OLS estimates to be unbiased (correct on average), a set of classical assumptions must hold. The most critical is the Zero Conditional Mean assumption, which states that unobserved factors (like innate ability) must not be correlated with the explanatory variable (like education). We discussed the logic of inclusion of control variables to minimize this kind of bias.
-
-- **Hypothesis Testing**: 
-  - After estimating a model, we use hypothesis testing to determine if the results are statistically significant.
-  - The t-test is used to assess the significance of a single variable, while the F-test is used to assess the joint significance of multiple variables or the overall explanatory power of the model.
-
-## What did we do? (Cont.)
-
-- **Dummies and Interactions**:
-  - We discussed the interpretation of dummy variables and interaction terms in a multiple linear regression context. 
-  
-- **Standard errors**:
-  - We discussed the issue of standard errors. We saw that the standard errors statistical software computes by default are almost certainly incorrect. We saw two alternatives, the HC-robust standard error and the Cluster-robust standard error, and focused on their estimation. 
-  
-# The End
 
 
