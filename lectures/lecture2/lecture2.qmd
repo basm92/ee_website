@@ -512,7 +512,8 @@ ggplot(wage_data, aes(x = education, y = wage_interact, color = gender)) +
 
 ## Example Model
 
-- For example, if you know an observation is not in the North, South, or East, it must be in the West. This redundancy makes it impossible for the model to estimate the individual effect of each category.
+- For example, if you know an observation is not in the North, South, or East, it must be in the West. 
+  - This redundancy makes it impossible for the model to estimate the individual effect of each category.
 
 :::{.callout-tip title="Example: Multiple Dummies with Reference Category"}
 
@@ -533,13 +534,13 @@ Where:
 
 ## Interpretation of the Coefficients
 
--   **The Intercept ($\beta_0$)** now represents the average value of the dependent variable for the **baseline category** (the one you omitted). 
+- **The Intercept ($\beta_0$)** now represents the average value of the dependent variable for the **baseline category** (the one you omitted). 
   - In our example, it would be the average value of $y$ for the "West" region, assuming all other independent variables in the model are zero.
 
--   **The Dummy Coefficients ($\beta_1, \beta_2, \dots$)**: Each dummy variable's coefficient represents the **average difference** in the dependent variable between that category and the baseline category, holding all other variables constant.
-    -   $\beta_1$: Represents the average difference in $y$ between the "North" region and the "West" region.
-    -   $\beta_2$: Represents the average difference in $y$ between the "South" region and the "West" region.
-    -   $\beta_3$: Represents the average difference in $y$ between the "East" region and the "West" region.
+- **The Dummy Coefficients ($\beta_1, \beta_2, \dots$)**: Each dummy variable's coefficient represents the **average difference** in the dependent variable between that category and the baseline category, holding all other variables constant.
+  - $\beta_1$: Represents the average difference in $y$ between the "North" region and the "West" region.
+  - $\beta_2$: Represents the average difference in $y$ between the "South" region and the "West" region.
+  - $\beta_3$: Represents the average difference in $y$ between the "East" region and the "West" region.
 
 - The coefficients do not show the average value of $y$ for that category directly. They show the difference relative to the baseline.
 
@@ -760,51 +761,28 @@ reg wage educ expr
   $$
 
 - To evaluate the variance of the sum, we must make assumptions about the error terms, $u_i$. The standard output in R/Python/Stata imposes two key assumptions on the errors:
-  1.  **No serial correlation:** The errors are uncorrelated across observations. Mathematically, $Cov(u_i, u_j) = 0$ for all $i \neq j$.
+  1.  The errors are uncorrelated across observations. Mathematically, $Cov(u_i, u_j) = 0$ for all $i \neq j$.
   2.  **Homoskedasticity:** The errors have a constant variance. Mathematically, $Var(u_i) = \sigma^2$ for all $i$.
 
-## OLS with Homoskedasticity
+## The Problem of Heteroskedasticity
 
-- Under the no-serial-correlation assumption, the variance of the sum is simply the sum of the variances:
-
-  $$
-    Var\left(\sum_{i=1}^N (x_i - \bar{x})u_i\right) = \sum_{i=1}^N Var\left((x_i - \bar{x})u_i\right) = \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i)
-  $$
-
-- Now, we impose the **homoskedasticity** assumption ($Var(u_i) = \sigma^2$). Since $\sigma^2$ is a constant, we can factor it out of the summation:
-
-  $$
-    = \sum_{i=1}^N (x_i - \bar{x})^2 \sigma^2 = \sigma^2 \sum_{i=1}^N (x_i - \bar{x})^2
-  $$
-
-- Plugging this back into our original expression for $Var(\hat{\beta}_1)$ gives the famous result:
+- Under homoskedasticity, the variance of $\hat{\beta_1}$ equals: 
 
   $$
     Var(\hat{\beta}_1) = \frac{\sigma^2 \sum (x_i - \bar{x})^2}{\left(\sum (x_i - \bar{x})^2\right)^2} = \frac{\sigma^2}{\sum (x_i - \bar{x})^2}
   $$
 
 
-## The Problem of Heteroskedasticity
-
 - The assumption of homoskedasticity ("same scatter") is often violated in economic data. 
 - **Heteroskedasticity** occurs if the variance of the error term is *not* constant across observations.
-
-  -  **Formal Definition:** $Var(u_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
-  - **Intuitive Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
-
 - If we ignore this and use the classical formula, our inference can be severely misleading.
 
-## Derivation of HC SEs
+## HC Robust SE's
 
-- Let's re-derive the variance of $\hat{\beta}_1$ under the more realistic assumption of heteroskedasticity, while still maintaining the no-serial-correlation assumption.
+  -  **Formal Definition:** $Var(u_i) = \sigma_i^2$. The variance is indexed by `i`, meaning it can take on a different value for each observation.
+  - **Example:** Consider a regression of household food expenditure on household income. Low-income households have limited budgets, so their food spending will be tightly clustered around a certain amount (low variance). High-income households have more discretion; some may spend a lot on gourmet food while others spend relatively little, leading to a much wider spread of data points (high variance). The variance of the error term, which captures this deviation from the average, increases with income.
 
-- We return to the step just before we imposed homoskedasticity:
-
-  $$
-    Var(\hat{\beta}_1) = \frac{1}{\left(\sum (x_i - \bar{x})^2\right)^2} \sum_{i=1}^N (x_i - \bar{x})^2 Var(u_i)
-  $$
-
-- Now, we substitute $Var(u_i) = \sigma_i^2$:
+- Under heteroskedasticity, the HC-Robust variance equals:
 
   $$
     Var(\hat{\beta}_1) = \frac{\sum_{i=1}^N (x_i - \bar{x})^2 \sigma_i^2}{\left(\sum_{i=1}^N (x_i - \bar{x})^2\right)^2}
