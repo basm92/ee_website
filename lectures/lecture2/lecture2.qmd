@@ -205,7 +205,7 @@ Model: $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_k x_k + u$
 
 **Alternative Hypothesis ($H_A$)**: $H_0$ not true.
   
-- *At least one* of the coefficients is not zero. The model has some explanatory power. $H_A: \text{At least one } \beta_j \neq 0 \text{ for } j=1, \dots, k$
+- *At least one* of the coefficients is not zero. The model has some explanatory power.
 
 :::
 
@@ -725,6 +725,7 @@ print(model.summary())
 reg wage educ expr
 ```
 
+![](stata.png){width=80%}
 :::
 
 
