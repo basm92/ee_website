@@ -64,7 +64,7 @@ summary(model)
 ```{stata}
 #| echo: true
 #| eval: false
-use "../tutorials/datafiles/SLEEP75.DTA", clear
+use https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/SLEEP75.DTA, clear
 
 // Run the regression and display full results
 reg lhrwage educ exper union male
