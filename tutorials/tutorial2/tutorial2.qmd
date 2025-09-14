@@ -78,6 +78,14 @@ The default standard errors calculated by statistical software rely on strong as
 
 **Practical Takeaway:** In modern empirical work, using HC-robust or cluster-robust standard errors is the default practice to ensure statistical inference is valid.
 
+
+# Wooclap
+
+## Wooclap
+
+- Link to Wooclap quiz: [https://app.wooclap.com/OFZFSD/questionnaires/68c70d19411de4235e9a9d81](https://app.wooclap.com/OFZFSD/questionnaires/68c70d19411de4235e9a9d81)
+- Code for Wooclap.com: OFZFSD (select Tutorial 2)
+
 # Questions
 
 ## Wage Determinants
