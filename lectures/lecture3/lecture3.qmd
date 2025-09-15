@@ -45,10 +45,26 @@ use_python("/home/bas/anaconda3/bin/python")
 - Discuss various univariate processes
 - Switch to bivariate time series and consider the danger of spurious regression
 - Consider more advanced time series models
-- Predictinon in all aforementioned models
+- Prediction in all aforementioned models
 
 - **Material**: Wooldridge Chapters 10 and 11
 
+# Motivation
+
+## Motivation
+
+- Central question: how long does it take before a change of a key economic variable has an influence on economic processes?
+  - For instance, the interest increase by the ECB has influence on the economy. There are several intertemporal transmission mechanisms through increased lending, etc.
+  - Any further examples on transmission mechanisms in your Master's programme?
+  - Other example: effect of interest on inflation.
+  - Thus: A change of inflation in period in period $t$ has an effect on unemployment at $t+1$ (or $t+2$), etc.
+
+- What if a researcher ignores the intertemporal transmission mechanism? She specifies the following regression equation: $\text{Inflation}_t = \beta_0 + \beta_1 \text{InterestRate}_t + u_t$
+  - Result 1: It leads to correlation of the error term over time: autocorrelation.
+  - Result 2: autocorrelation will lead to biased and inconsistent parameter estimates
+  - Result 3: t-statistics and F-statistics are wrong!
+  
+# Nature of Time Series
 
 ## What is Time Series Data?
 
@@ -445,11 +461,56 @@ $$
 Y_t = \alpha + \rho_1 Y_{t-1} + \rho_2 Y_{t-2} + \dots + \rho_p Y_{t-p} + u_t
 $$
 
-- **Choosing p:** The number of lags (p) can be determined using information criteria like the Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
+- **Choosing p:** The number of lags ($p$) can be determined using information criteria like the Adjusted $R^2$, Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
+
+# Model Selection
+
+## Model Selection
+
+- How to pick a model? Recall the standard R-squared: $R^2 = \frac{ESS}{TSS} = 1 - \frac{RSS}{TSS}$
+- **Problem:** The standard $R^2$ is a non-decreasing function of the number of included regressors ($k$).
+  - Adding *any* variable to a model, even an irrelevant one, will almost always increase the $R^2$ (it will never decrease).
+
+- Relying solely on $R^2$ to compare models is dangerous. It incentivizes "kitchen sink" regressions—throwing in as many variables as possible to maximize the fit on the sample data. This often leads to:
+    - **Overfitting:** The model captures random noise in the sample rather than the true underlying relationship.
+    - **Poor out-of-sample prediction:** An overfit model performs poorly on new data.
+    - **Lack of Parsimony:** We prefer simpler, more elegant models (Occam's razor).
+
+
+## The Adjusted R-squared
+
+- The Adjusted R-squared modifies the standard $R^2$ by incorporating a penalty for each additional regressor. It adjusts the RSS and TSS by their respective degrees of freedom.
+
+:::{.callout-note title="Definition: Adjusted $R^2$"}
+
+  $$
+    R^2_{adj} = 1 - \frac{RSS / (n - k - 1)}{TSS / (n - 1)}
+  $$
+
+Where $n$ = number of observations, and $k$ = number of predictors (independent variables)
+
+This can also be expressed in terms of the standard $R^2$:
+
+$$
+R^2_{adj} = 1 - (1 - R^2) \frac{n - 1}{n - k - 1}
+$$
+
+:::
+
+## Intuition Behind the Penalty
+
+- Let's examine the penalty term: $\frac{n-1}{n-k-1}$
+  - As you add a new predictor, $k$ increases by 1.
+  - This causes the denominator $(n-k-1)$ to decrease.
+  - This makes the entire fraction $\frac{n-1}{n-k-1}$ **larger**.
+  - Therefore, the adjustment factor $(1 - R^2) \frac{n-1}{n-k-1}$ becomes larger, which imposes a bigger penalty.
+
+- For $R^2_{adj}$ to increase when adding a new variable, the increase in the standard $R^2$ must be substantial enough to outweigh the penalty from losing a degree of freedom. If you add an irrelevant variable, $R^2$ will increase slightly, but the penalty will dominate, causing $R^2_{adj}$ to **decrease**.
 
 ## Information Criterion
 
-- A key feature of AIC is that it balances the goodness of fit of the model with its simplicity.
+- Another way to evaluate a model is by considering its **information content**. 
+- A key feature of Akaike Information Criterion (AIC) is that it balances the goodness of fit of the model with its simplicity.
   - It penalizes models that have more parameters, which helps to prevent overfitting—a scenario where a model is too complex and captures noise in the data rather than the underlying pattern.
 
 :::{.callout-note title="Definition: AIC"}
@@ -460,6 +521,10 @@ Where:
 
 *   **k** is the number of estimated parameters in the model.
 *   **L** is the maximized value of the likelihood function for the model.
+
+
+*Note: For OLS models assuming normal errors, the AIC can be expressed using the RSS:*
+$AIC = n \cdot \ln(RSS/n) + 2k$
 
 :::
 
@@ -557,6 +622,36 @@ varsoc sunspot, maxlag(20)
 ```
 
 :::
+
+## BIC
+
+- In addition to the AIC, there is also the Bayesian Information Criterion (BIC), which has a different penalty for larger models. 
+
+:::{.callout-note title="Definition: BIC"}
+
+$$
+BIC = -2 \ln(\hat{L}) + k' \ln(n)
+$$
+
+Where:
+
+*   $\ln(\hat{L})$ = The maximized value of the log-likelihood function for the model. This is the **goodness-of-fit term**.
+*   $k'$ = The number of **estimated parameters** in the model. (For a standard linear regression, this is the number of predictors $k$ plus the intercept, so $k' = k+1$).
+*   $n$ = The number of observations.
+*   $k' \ln(n)$ = The **penalty term**.
+
+*Note: For OLS models assuming normal errors, the BIC can be expressed using the RSS:*
+$BIC = n \cdot \ln(RSS/n) + k' \ln(n)$
+
+:::
+
+## AIC vs BIC
+
+- **The Difference:** The penalty in BIC is $k' \ln(n)$, while in AIC it is $2k'$.
+- **Which is stricter?** For any sample size $n \ge 8$, we have $\ln(n) > 2$.
+  - Therefore, **BIC imposes a larger penalty for extra parameters than AIC**.
+  - As a result, BIC has a stronger tendency to select more **parsimonious** (simpler) models than AIC.
+
 
 ## The Moving Average Model
 
