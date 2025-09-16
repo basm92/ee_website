@@ -1,11 +1,13 @@
 ---
 title: "Mock Exam Questions (Midterm)"
-format: html
+format: pdf
 ---
 
 ## Instructions
 
-This midterm contains 20 MC questions and 5 open questions, and will count for 40% of the final grade. All MC questions have equal weight (1pt). The duration of this exam is 2 hours. 
+This midterm contains 20 MC questions and 5 open questions, and will count for 40% of the final grade. All MC questions have equal weight (1pt). All open questions will have a weight of 3 pts each. The duration of this exam is 2 hours. 
+
+# Multiple Choice Questions
 
 ## Question 1
 
@@ -205,62 +207,107 @@ B) The forecast will continue the most recent trend.
 C) The forecast will revert to the mean of the process, $\mu$.
 D) The forecast is impossible to calculate because future error terms are unknown.
 
+## Question 19
 
-***
+The "Within" estimator, used in Fixed Effects models, transforms the data by:
 
-**Question 3:**
-When comparing econometric models, how does the Bayesian Information Criterion (BIC) generally differ from the Akaike Information Criterion (AIC)?
-
-A) AIC imposes a larger penalty for extra parameters, leading to simpler models.
-B) BIC and AIC always select the same model regardless of sample size.
-C) BIC imposes a larger penalty for extra parameters, especially in larger samples, and tends to select more parsimonious (simpler) models.
-D) BIC is a measure of model fit, while AIC is a measure of forecast accuracy.
-
-**Correct Answer: C**
-**Explanation:** The presentation notes that for a sample size n ≥ 8, the penalty in BIC is larger than in AIC. As a result, "BIC has a stronger tendency to select more parsimonious (simpler) models than AIC."
-
-***
-
-**Question 4:**
-What is the primary reason that running an OLS regression on two unrelated, non-stationary time series can lead to a "spurious regression"?
-
-A) The high R-squared and significant t-statistics are driven by the common underlying trends in the variables, not a true relationship.
-B) OLS cannot be used for time series data under any circumstances.
-C) The error terms in a spurious regression are guaranteed to be white noise, which misleads the researcher.
-D) The sample size is too small to establish a meaningful relationship.
-
-**Correct Answer: A**
-**Explanation:** The lecture explains that a spurious regression occurs when two variables appear related because both have strong trends (are non-stationary), leading to high R-squared and significant t-statistics even when they are actually unrelated.
-
-***
+a) Subtracting the value of each variable in the previous period from the current period's value for each individual.
+b) Adding a separate dummy variable for each individual in the regression to capture their unique intercept.
+c) Calculating the time-average of each variable for every individual and then subtracting this average from each of their observations.
+d) Using only the variation between different individuals at a single point in time to estimate the coefficients.
 
 
-***
+## Question 20
+
+A major limitation of the Fixed Effects (FE) model is that it cannot estimate the coefficients of certain variables. Which of the following variables would an FE model be unable to estimate?
+
+a) A firm's annual innovation expenditure.
+b) An individual's age.
+c) The industry sector a firm belongs to, assuming it does not change during the observation period.
+d) The national unemployment rate, which varies over time.
+
+# Open Questions
+
+## Question 1
+
+This question uses a dataset which contains data on wages and other characteristics for 526 working individuals. The key variables are: wage: average hourly earnings in dollars, `educ`: years of education, `exper`: years of potential work experience. Use the provided output to answer the questions in full sentences.
+
+An economist runs a simple linear regression to model an individual's hourly wage based on their years of education. The output from the regression is provided below.
+
+```{r}
+#| echo: false
+library(wooldridge); library(modelsummary); library(tinytable)
+data("wage1")
+
+model_1 <- lm(wage ~ educ, data = wage1)
+modelsummary(model_1,
+             stars=c("*"=0.1, "**"=0.05, "***"=0.01), 
+             gof_map=c("nobs", "r.squared"),
+             title="Regression of Wage on Years of Education",
+             width=0.7) |>
+  theme_latex(placement="h")
+```
+
+a) Write down the estimated Sample Regression Function (SRF) equation.
+
+b) Interpret the estimated coefficient for the educ variable. What does this number tell you?
+
+c) Interpret the estimated intercept ((Intercept)). Does the intercept have a meaningful real-world interpretation in this specific context? Explain why or why not.
+
+## Question 2
+
+The simple model from Question 1 (`wage` on `educ`) is likely biased because it omits other important factors that determine wages. A major omitted variable is a worker's experience (`exper`).
+
+Assume the "true" population model that determines wages is:
+
+$Wage = \beta_0 + \beta_1 \text{Educ} + \beta_2 \text{Exper} + u$. 
+
+a) What is the likely sign of $\beta_2$, the true coefficient on exper? In other words, what is the direct effect of experience on wages, holding education constant? Explain your reasoning.
+
+b) In the real world, what is the likely correlation between years of education and years of work experience?
+
+c) Using your answers from (a) and (b), determine the direction of the bias on the educ coefficient in the simple model. Will the simple model likely overestimate or underestimate the true effect of education on wages? Explain your reasoning by referencing the formula/logic for Omitted Variable Bias.
+
+## Question 3
+
+Consider the following multiple linear regression model designed to understand the relationship between wages, gender, and education:
+
+$$
+Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i) + u_i
+$$
+
+Where:
+
+*   $Wage_i$ is the hourly wage for individual *i*.
+*   $Female_i$ is a dummy variable equal to 1 if individual *i* is female, and 0 if male.
+*   $Educ_i$ is the number of years of education for individual *i*.
+
+a) Write down the specific regression equation for males ($Female_i = 0$) and the specific regression equation for females ($Female_i = 1$).
+
+b) Derive the expression for the marginal effect of an additional year of education on wages ($\frac{\partial E[Wage]}{\partial Educ}$) for females. How does this differ from the marginal effect for males?
+
+c) Derive an expression for the wage gap between a female and a male who have the same level of education ($E[Wage | Female=1, Educ] - E[Wage | Female=0, Educ]$). Explain how and why this wage gap depends on the level of education.
+
+## Question 4
+
+An analyst at a central bank is using a simple AR(2) model to forecast the quarterly inflation rate. After estimating the model using data up to the end of 2024 (Quarter 4), they have the following equation:
+
+$\text{Inflation}_t = 0.2 + 1.2 \cdot \text{Inflation}_{t-1} - 0.4 \cdot \text{Inflation}_{t-2} + u_t$
+
+The known inflation rates for the last two quarters of 2024 are:
+
+*   $Inflation_{2024, Q3} = 2.5\%$
+*   $Inflation_{2024, Q4}` = 3.0\%$
+
+**a)** Using the iterative forecasting method for AR models described in the lecture, calculate the **one-step-ahead forecast** for the first quarter of 2025 (`INFLATION_{2025, Q1}`) and the **two-step-ahead forecast** for the second quarter of 2025 (`INFLATION_{2025, Q2}`). You must show your calculations for both steps.
+
+**b)** After the first half of 2025, the actual inflation rates were recorded as `3.5%` for Q1 and `3.8%` for Q2. Calculate the **Forecast Error** for each of your two predictions and then compute the **Root Mean Squared Error (RMSE)** for the overall two-period forecast. What does this RMSE value tell you about the typical magnitude of your model's prediction errors?
 
 
+## Question 5
 
-***
+An economist is using a panel dataset to investigate the impact of the number of training hours (`Training`) on the productivity (`Productivity`) of employees across various companies over several years. The economist is concerned that unobserved, time-invariant employee characteristics, such as innate ability or motivation, might bias the results of a simple OLS regression. To address this, they are considering either a Fixed Effects (FE) model.
 
-**Question 7:**
-The Breusch-Godfrey test is used to detect a specific problem in a time series regression. What is the null hypothesis ($H_0$) of this test?
+a) Explain precisely why unobserved characteristics like "innate ability" pose a statistical problem in this context. Define this issue using the term "unobserved heterogeneity" and explain how it could lead to biased estimates if not properly addressed.
 
-A) The model's coefficients are jointly equal to zero.
-B) The variance of the error term is constant (homoscedasticity).
-C) The variables in the model are non-stationary.
-D) There is no serial correlation (autocorrelation) in the error terms.
-
-**Correct Answer: D**
-**Explanation:** The lecture defines the Breusch-Godfrey test by stating its null hypothesis is $H_0: \rho_1, \dots, \rho_p=0$, which means there is no serial correlation up to order p in the residuals.
-
-***
-
-**Question 8:**
-What is the key difference between an Autoregressive (AR) model and a Moving Average (MA) model?
-
-A) AR models use past values of the variable itself to explain the current value, while MA models use past random shocks (error terms).
-B) AR models are only suitable for stationary data, while MA models can be used for non-stationary data.
-C) AR models always have a finite memory, while MA models have an infinite memory.
-D) AR models are used for forecasting, while MA models are used for policy analysis.
-
-**Correct Answer: A**
-**Explanation:** The lecture defines the AR model as $Y_t = α + \rho Y_{t-1} + u_t$ (a function of its own past) and the MA model as $Y_t = \mu + u_t + \theta u_{t-1}$ (a function of past shocks).
+b) Describe how both the Fixed Effects (Within) estimator mechanically remove this unobserved heterogeneity from the regression model. What specific data transformation does this method apply?

@@ -1,9 +1,11 @@
 ---
 title: "Answers Mock Midterm"
-format: html
+format: pdf
 ---
 
-## Answer Key
+# Answer Key
+
+## Multiple Choice Questions
 
 1.  **b)** The goal is to forecast a value ($\hat{y}$) as accurately as possible, which is the definition of a prediction task.
 
@@ -72,5 +74,122 @@ The difference is $(\hat{\beta}_0 + \hat{\beta}_2) - (\hat{\beta}_0 + \hat{\beta
 
 18. **c)** For an MA(q) model, any forecast for a horizon h > q will only involve future error terms, whose conditional expectation is zero. Therefore, the forecast reverts to the process mean: $\hat{Y}_{t+h|t} = \mu$.
 
+19. **c)** The "Within" estimator works by performing a "within transformation" or "de-meaning." For each individual, it calculates the average of the dependent and independent variables over time and subtracts these individual-specific averages from the original data. This process removes the time-constant individual effect ($a_i$), as $\alpha_i - \bar{\alpha}_i = 0$.
+
+20. **c)** The Fixed Effects model eliminates all variables that are constant over time for an individual. Since the firm's industry sector does not change, it would be absorbed into the individual-specific fixed effect ($a_i$) and its coefficient cannot be estimated. The other variables (innovation, age, unemployment rate) all vary over time.
+
+## Open Questions
+
+## Question 1
+
+## Question 2
+
+## Question 3
+
+## Question 4
+
+**Part a)**
+
+*   **One-Step-Ahead Forecast (for 2025, Q1):**
+    *   First, recognize that $t-1$ corresponds to $2024, \text{ Q4}$ and $t-2$ corresponds to $2024, \text{ Q3}$.
+    *   Calculation:
+        $\text{Forecast}(\text{Q1}) = 0.2 + 1.2 \times (\text{INFLATION}_{2024, \text{ Q4}}) - 0.4 \times (\text{INFLATION}_{2024, \text{ Q3}})$
+        
+        $\text{Forecast}(\text{Q1}) = 0.2 + 1.2 \times (3.0) - 0.4 \times (2.5)$
+        
+        $\text{Forecast}(\text{Q1}) = 0.2 + 3.6 - 1.0 = 2.8$
+        
+    *   The forecast for 2025 Q1 is **2.8%**.
+
+*   **Two-Step-Ahead Forecast (for 2025, Q2):**
+    *   Crucially, use the **forecasted value** for $t-1$ and the known actual value for $t-2$.
+    *   Calculation:
+        $\text{Forecast}(\text{Q2}) = 0.2 + 1.2 \times (\text{Forecast}(\text{Q1})) - 0.4 \times (\text{INFLATION}_{2024, \text{ Q4}})$
+        
+        $\text{Forecast}(\text{Q2}) = 0.2 + 1.2 \times (2.8) - 0.4 \times (3.0)$
+        
+        $\text{Forecast}(\text{Q2}) = 0.2 + 3.36 - 1.2 = 2.36$
+        
+    *   The forecast for 2025 Q2 is **2.36%**.
+
+**Part b)**
+
+*   **Forecast Errors:** Calculate the difference $e_t = Y_t - \hat{Y}_t$.
+    *   Error for Q1: $e_1 = 3.5\% (\text{Actual}) - 2.8\% (\text{Forecast}) = 0.7$
+    *   Error for Q2: $e_2 = 3.8\% (\text{Actual}) - 2.36\% (\text{Forecast}) = 1.44$
+
+*   **Root Mean Squared Error (RMSE) Calculation:**
+    *   First, calculate the Mean Squared Error (MSE):
+        $\text{MSE} = \frac{e_1^2 + e_2^2}{2} = \frac{0.7^2 + 1.44^2}{2}$
+        $\text{MSE} = \frac{0.49 + 2.0736}{2} = \frac{2.5636}{2} = 1.2818$
+    *   Then, take the square root to get the RMSE:
+        $\text{RMSE} = \sqrt{1.2818} \approx 1.132$
+
+*   **Interpretation:** The RMSE is approximately **1.13**. The student should explain that this value means that, on average, the model's forecasts for inflation over this two-quarter period were off by about **1.13 percentage points**. Since the RMSE is in the same units as the original variable, it provides a direct and interpretable measure of the typical size of a forecast error.
+
+
+## Question 5
+
+This answer model is very extensive, you don't have to be as extensive in your answer.
+
+**Part a)** Let the true relationship between productivity and training be represented by the following linear model:
+
+$$
+\text{Productivity}_{it} = \beta_0 + \beta_1 \text{Training}_{it} + a_i + u_{it}
+$$
+
+Here, $i$ indexes the employee and $t$ indexes the time period. The term $a_i$ represents the **unobserved heterogeneity**, such as an employee's innate ability or motivation. It is specific to each individual but constant over time. The term $u_{it}$ is the idiosyncratic error.
+
+The statistical problem of omitted variable bias arises if this unobserved effect $a_i$ is correlated with an included explanatory variable. In this context, two conditions are likely to hold:
+
+1.  **Correlation with the regressor:** Employees with higher innate ability ($a_i$) may be more likely to receive or seek out training. $\text{Cov}(\text{Training}_{it}, a_i) \neq 0$
+
+2.  **Correlation with the outcome:** Innate ability ($a_i$) directly affects an employee's output. $\text{Cov}(\text{Productivity}_{it}, a_i) \neq 0$
+
+If a simple OLS regression is performed, the model being estimated is $\text{Productivity}_{it} = \beta_0 + \beta_1 \text{Training}_{it} + v_{it}$, where the error term $v_{it} = a_i + u_{it}$ now contains the unobserved heterogeneity. For the OLS estimator of $\beta_1$ to be unbiased and consistent, the explanatory variable must be uncorrelated with the error term, requiring $\text{Cov}(\text{Training}_{it}, v_{it}) = 0$.
+
+However, due to the correlation between training and ability, this condition is violated:
+
+$$
+\text{Cov}(\text{Training}_{it}, v_{it}) = \text{Cov}(\text{Training}_{it}, a_i + u_{it}) = \text{Cov}(\text{Training}_{it}, a_i)
+$$
+
+(assuming $\text{Cov}(\text{Training}_{it}, u_{it})=0$).
+
+Since $\text{Cov}(\text{Training}_{it}, a_i) \neq 0$, the OLS assumption is violated. The resulting estimator for $\beta_1$ will be biased, capturing not only the effect of training but also spuriously attributing the effect of innate ability to the training variable.
+
+**Part b)** The Fixed Effects (FE) estimator mechanically eliminates the time-invariant unobserved heterogeneity $a_i$ from the model by applying the **"within transformation."** This process consists of two steps:
+
+**Step 1: Calculate the time-average for each individual.** For each employee $i$, we average the original equation over all $T$ time periods:
+
+$$
+\frac{1}{T} \sum_{t=1}^{T} \text{Productivity}_{it} = \frac{1}{T} \sum_{t=1}^{T} (\beta_0 + \beta_1 \text{Training}_{it} + a_i + u_{it})
+$$
+
+Using the notation $\bar{x}_i = \frac{1}{T} \sum_{t=1}^{T} x_{it}$ for the time-average, this becomes:
+
+$$
+\overline{\text{Productivity}}_i = \beta_0 + \beta_1 \overline{\text{Training}}_i + \bar{a}_i + \bar{u}_i
+$$
+
+Because $a_i$ is constant over time for each individual, its average is simply itself: $\bar{a}_i = a_i$. The averaged equation is therefore:
+
+$$
+\overline{\text{Productivity}}_i = \beta_0 + \beta_1 \overline{\text{Training}}_i + a_i + \bar{u}_i
+$$
+
+**Step 2: Subtract the time-averaged equation from the original equation (de-meaning).** Subtracting the averaged equation (for individual $i$) from the original equation (for individual $i$ at time $t$) yields:
+
+$$
+(\text{Productivity}_{it} - \overline{\text{Productivity}}_i) = \beta_1(\text{Training}_{it} - \overline{\text{Training}}_i) + (a_i - a_i) + (u_{it} - \bar{u}_i)
+$$
+
+The unobserved effect $a_i$ is perfectly eliminated from the equation. Using the "de-meaned" or "within" notation where $\ddot{x}_{it} = x_{it} - \bar{x}_i$, the transformed model is:
+
+$$
+\ddot{\text{Productivity}}_{it} = \beta_1 \ddot{\text{Training}}_{it} + \ddot{u}_{it}
+$$
+
+By applying OLS to this transformed equation, we obtain the Fixed Effects estimator for $\beta_1$. This estimator is consistent because the source of the endogeneity, $a_i$, has been removed. The coefficient $\beta_1$ is now estimated using only the variation *within* each employee's productivity and training over time.
 
 
