@@ -20,3 +20,57 @@ format: html
 7.  **c)** The omitted variable ("parental involvement") has a positive effect on test scores ($\beta_2 > 0$). It is negatively correlated with the included variable, ClassSize ($\delta_1 < 0$). The bias is the product of these two effects: $(\text{positive}) \times (\text{negative}) = \text{negative bias}$. This negative bias will make the estimated coefficient for class size more negative (i.e., appear larger in magnitude) than the true effect.
 
 8.  **d)** The formula for the variance is $\widehat{Var}(\hat{\beta}_1) = \frac{\hat{\sigma}^2}{SST_x}$. To decrease the variance, one must either decrease the numerator (error variance) or increase the denominator. Increasing the variation in the explanatory variable ($SST_x$) increases the denominator, thus decreasing the overall variance.
+
+9. **c)** The student must start with the formula relating the estimated coefficient to the true coefficient and the bias:
+
+$E[\hat{\alpha}_1] = \beta_1 + \text{Bias}$
+
+Then, use the specific formula for omitted variable bias:
+$\text{Bias} = \beta_2 \cdot \delta_1$
+
+From the problem description:
+
+*   The true effect of the included variable is $\beta_1 = 2.5$.
+*   The true effect of the omitted variable is $\beta_2 = 4.0$.
+*   The coefficient from the auxiliary regression of the omitted variable on the included variable is $\delta_1 = 0.5$.
+
+First, calculate the bias:
+$\text{Bias} = 4.0 \times 0.5 = 2.0$
+
+Next, use this to find the expected value of the estimated coefficient:
+$E[\hat{\alpha}_1] = 2.5 + 2.0 = 4.5$
+
+10. **c)** Use the formula of the estimated model to derive the expected wage for each category and then find the difference.
+
+**Expected wage for a Finance worker:** For this person, `Finance` = 1 and `Retail` = 0.
+    $E[\text{Wage} | \text{Finance}] = 18.50 - 2.10 \times (0) + 5.40 \times (1) = 18.50 + 5.40 = 23.90$
+
+**Expected wage for a Retail worker:** For this person, `Retail` = 1 and `Finance` = 0.
+    $E[\text{Wage} | \text{Retail}] = 18.50 - 2.10 \times (1) + 5.40 \times (0) = 18.50 - 2.10 = 16.40$
+
+**Calculate the difference:**
+    Difference = $E[\text{Wage} | \text{Finance}] - E[\text{Wage} | \text{Retail}]$
+    Difference = $23.90 - 16.40 = 7.50$
+
+*Alternative algebraic derivation:*
+Let $\hat{\beta}_0 = 18.50$, $\hat{\beta}_1 = -2.10$, and $\hat{\beta}_2 = 5.40$.
+The difference is $(\hat{\beta}_0 + \hat{\beta}_2) - (\hat{\beta}_0 + \hat{\beta}_1) = \hat{\beta}_2 - \hat{\beta}_1 = 5.40 - (-2.10) = 5.40 + 2.10 = 7.50$.
+
+11.  **c)** The effect of a one-unit change in $x_1$ on $y$, holding $x_2$ constant.
+
+12.  **c)** A confounder, and failing to control for it will likely lead to omitted variable bias.
+
+13.  **b)** An F-test for the overall significance of the regression.
+
+14.  **c)** The standard errors for the coefficients $\hat{\beta}_1$ and $\hat{\beta}_2$ will be large.
+
+15.  **d)** The difference in the return to an additional year of education for females compared to males.
+
+16.  **c)** The lecture explicitly states that if $|\rho|=1$, the series is non-stationary and is called a random walk, where shocks have a permanent effect.
+
+17.  **b)** The Long-Run Multiplier is defined as the total effect on Y after a permanent change in X has fully worked through the system, and it is calculated as the ratio of the sum of the distributed lag coefficients to one minus the sum of the autoregressive coefficients.
+
+18. **c)** For an MA(q) model, any forecast for a horizon h > q will only involve future error terms, whose conditional expectation is zero. Therefore, the forecast reverts to the process mean: $\hat{Y}_{t+h|t} = \mu$.
+
+
+

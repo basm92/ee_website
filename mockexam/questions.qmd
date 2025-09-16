@@ -97,3 +97,170 @@ b) An increase in the variance of the error term ($\sigma^2$).
 c) A decrease in the variation of marketing expenditure in the sample ($SST_x$).
 d) An increase in the variation of marketing expenditure in the sample ($SST_x$).
 
+## Question 9
+
+An economist wants to estimate the true effect of education on wages. The true population model is:
+$Wage = \beta_0 + \beta_1 \text{Education} + \beta_2 \text{Ability} + u$
+
+The true parameters are known to be $\beta_1 = 2.5$ and $\beta_2 = 4.0$. However, the economist cannot observe "Ability" and estimates a simpler model:
+$Wage = \alpha_0 + \alpha_1 \text{Education} + v$
+
+It is also known that in the population, the relationship between Ability and Education can be described by the linear model: $\text{Ability} = \delta_0 + 0.5 \times \text{Education} + w$.
+
+Given this information, what is the expected value of the OLS estimator $\hat{\alpha}_1$ that the economist will obtain from the simpler model? (Hint: Start with the formula for Omitted Variable Bias).
+
+a) 2.5
+b) 2.0
+c) 4.5
+d) 6.5
+
+
+## Question 10
+
+A researcher estimates a model for an individual's hourly wage based on their industry sector, using the "Manufacturing" sector as the omitted reference category. The estimated model is:
+
+$\widehat{\text{Wage}} = 18.50 - 2.10 \times \text{Retail} + 5.40 \times \text{Finance}$
+
+Where `Retail` and `Finance` are dummy variables equal to 1 if the individual works in that sector, and 0 otherwise.
+
+Based on this model, what is the estimated average wage difference between a worker in the Finance sector and a worker in the Retail sector?
+
+a) €5.40
+b) €3.30
+c) €7.50
+d) €2.10
+
+
+## Question 11
+
+In a multiple linear regression model, $y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + u$, what is the correct interpretation of the coefficient $\beta_1$?
+
+a) The total effect of a one-unit change in $x_1$ on $y$.
+b) The correlation between $x_1$ and $y$.
+c) The effect of a one-unit change in $x_1$ on $y$, holding $x_2$ constant.
+d) The average value of $y$ when $x_1$ is equal to 1.
+
+## Question 12
+
+A researcher is estimating the effect of education on wages and is concerned about a person's innate ability. In this context, innate ability is likely a classic example of what?
+
+a) A collider variable, which will induce a spurious correlation if controlled for.
+b) A mediating variable, which should not be controlled for if one wants to measure the total effect.
+c) A confounder, and failing to control for it will likely lead to omitted variable bias.
+d) An irrelevant variable that will only decrease the model's R-squared.
+
+## Question 13
+
+An analyst wants to test the hypothesis that *none* of the independent variables in their model have any explanatory power. The null hypothesis is $H_0: \beta_1 = \beta_2 = \dots = \beta_k = 0$. Which test is appropriate for this purpose?
+
+a) A series of individual t-tests for each coefficient.
+b) An F-test for the overall significance of the regression.
+c) A test for heteroskedasticity.
+d) A test for the R-squared value.
+
+## Question 14
+
+What is the primary consequence of high (but not perfect) multicollinearity between two independent variables, $x_1$ and $x_2$, in a regression model?
+
+a) The coefficient estimates for $\beta_1$ and $\beta_2$ will be biased.
+b) The R-squared of the model will be artificially low.
+c) The standard errors for the coefficients $\hat{\beta}_1$ and $\hat{\beta}_2$ will be large.
+d) The intercept of the model, $\hat{\beta}_0$, will be biased, but other coefficients will be unaffected.
+
+## Question 15
+
+Consider the regression model: $Wage_i = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i) + u_i$. What does the coefficient $\beta_3$ represent?
+
+a) The average wage for females with zero years of education.
+b) The effect of an additional year of education on wages for females.
+c) The wage difference between females and males for those with zero years of education.
+d) The difference in the return to an additional year of education for females compared to males.
+
+
+## Question 16
+
+An AR(1) model is defined as $Y_t = α + \rho Y_{t-1} + u_t$. What happens if the autoregressive coefficient $|\rho|$ is equal to 1?
+
+A) The series is stationary, and shocks die out quickly.
+B) The series is explosive, and its value grows infinitely.
+C) The series is non-stationary and is called a random walk, where shocks have a permanent effect.
+D) The model becomes a white noise process, as past values have no influence.
+
+## Question 17
+
+In an Autoregressive Distributed Lag ARDL(p,q) model, how is the long-run multiplier for an explanatory variable X interpreted?
+
+A) It is the immediate impact on Y from a one-unit change in X.
+B) It is the total long-run change in Y after a permanent one-unit increase in X has fully worked through the system.
+C) It represents the sum of the autoregressive coefficients, measuring the persistence of the Y variable.
+D) It is the average of all short-run coefficients in the model.
+
+
+## Question 18
+
+Consider forecasting with a Moving Average MA(q) model: $Y_t = \mu + u_t + \theta_1 u_{t-1} + \dots + \theta_q u_{t-q}$. What is the forecast for a time period far in the future (i.e., for a forecast horizon $h > q$)?
+
+A) The forecast will converge to zero.
+B) The forecast will continue the most recent trend.
+C) The forecast will revert to the mean of the process, $\mu$.
+D) The forecast is impossible to calculate because future error terms are unknown.
+
+
+***
+
+**Question 3:**
+When comparing econometric models, how does the Bayesian Information Criterion (BIC) generally differ from the Akaike Information Criterion (AIC)?
+
+A) AIC imposes a larger penalty for extra parameters, leading to simpler models.
+B) BIC and AIC always select the same model regardless of sample size.
+C) BIC imposes a larger penalty for extra parameters, especially in larger samples, and tends to select more parsimonious (simpler) models.
+D) BIC is a measure of model fit, while AIC is a measure of forecast accuracy.
+
+**Correct Answer: C**
+**Explanation:** The presentation notes that for a sample size n ≥ 8, the penalty in BIC is larger than in AIC. As a result, "BIC has a stronger tendency to select more parsimonious (simpler) models than AIC."
+
+***
+
+**Question 4:**
+What is the primary reason that running an OLS regression on two unrelated, non-stationary time series can lead to a "spurious regression"?
+
+A) The high R-squared and significant t-statistics are driven by the common underlying trends in the variables, not a true relationship.
+B) OLS cannot be used for time series data under any circumstances.
+C) The error terms in a spurious regression are guaranteed to be white noise, which misleads the researcher.
+D) The sample size is too small to establish a meaningful relationship.
+
+**Correct Answer: A**
+**Explanation:** The lecture explains that a spurious regression occurs when two variables appear related because both have strong trends (are non-stationary), leading to high R-squared and significant t-statistics even when they are actually unrelated.
+
+***
+
+
+***
+
+
+
+***
+
+**Question 7:**
+The Breusch-Godfrey test is used to detect a specific problem in a time series regression. What is the null hypothesis ($H_0$) of this test?
+
+A) The model's coefficients are jointly equal to zero.
+B) The variance of the error term is constant (homoscedasticity).
+C) The variables in the model are non-stationary.
+D) There is no serial correlation (autocorrelation) in the error terms.
+
+**Correct Answer: D**
+**Explanation:** The lecture defines the Breusch-Godfrey test by stating its null hypothesis is $H_0: \rho_1, \dots, \rho_p=0$, which means there is no serial correlation up to order p in the residuals.
+
+***
+
+**Question 8:**
+What is the key difference between an Autoregressive (AR) model and a Moving Average (MA) model?
+
+A) AR models use past values of the variable itself to explain the current value, while MA models use past random shocks (error terms).
+B) AR models are only suitable for stationary data, while MA models can be used for non-stationary data.
+C) AR models always have a finite memory, while MA models have an infinite memory.
+D) AR models are used for forecasting, while MA models are used for policy analysis.
+
+**Correct Answer: A**
+**Explanation:** The lecture defines the AR model as $Y_t = α + \rho Y_{t-1} + u_t$ (a function of its own past) and the MA model as $Y_t = \mu + u_t + \theta u_{t-1}$ (a function of past shocks).
