@@ -1,0 +1,22 @@
+---
+title: "Answers Mock Midterm"
+format: html
+---
+
+## Answer Key
+
+1.  **b)** The goal is to forecast a value ($\hat{y}$) as accurately as possible, which is the definition of a prediction task.
+
+2.  **d)** The data tracks the same cross-sectional units (individuals) over multiple time periods, which defines panel data.
+
+3.  **c)** One of the OLS First Order Conditions directly implies that the sum of the explanatory variable multiplied by the residual is zero ($\sum x_i \hat{u}_i = 0$), which means their sample covariance is zero.
+
+4.  **b)** In a log-log model, the slope coefficient is an elasticity, representing the percentage change in the dependent variable for a 1% change in the independent variable.
+
+5.  **b)** For males, the dummy variable `Female` is 0. Therefore, the predicted wage is $\widehat{\text{Wage}} = 22.50 - 3.75 \times (0) = 22.50$. The intercept represents the average value for the reference group.
+
+6.  **c)** R-squared measures the proportion of the sample variation in the dependent variable that is explained by the independent variable(s).
+
+7.  **c)** The omitted variable ("parental involvement") has a positive effect on test scores ($\beta_2 > 0$). It is negatively correlated with the included variable, ClassSize ($\delta_1 < 0$). The bias is the product of these two effects: $(\text{positive}) \times (\text{negative}) = \text{negative bias}$. This negative bias will make the estimated coefficient for class size more negative (i.e., appear larger in magnitude) than the true effect.
+
+8.  **d)** The formula for the variance is $\widehat{Var}(\hat{\beta}_1) = \frac{\hat{\sigma}^2}{SST_x}$. To decrease the variance, one must either decrease the numerator (error variance) or increase the denominator. Increasing the variation in the explanatory variable ($SST_x$) increases the denominator, thus decreasing the overall variance.

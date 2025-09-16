@@ -1,0 +1,99 @@
+---
+title: "Mock Exam Questions (Midterm)"
+format: html
+---
+
+## Instructions
+
+This midterm contains 20 MC questions and 5 open questions, and will count for 40% of the final grade. All MC questions have equal weight (1pt). The duration of this exam is 2 hours. 
+
+## Question 1
+
+A financial analyst builds a model to forecast next month's stock price for a specific company using historical price data, trading volume, and market sentiment indicators. The analyst's primary objective is to make the forecast as accurate as possible. Which of the following best describes the main goal of this econometric exercise?
+
+a) Causal inference, focusing on the estimated coefficient ($\hat{\beta}$) for trading volume.
+b) Prediction, focusing on the accuracy of the predicted value ($\hat{y}$).
+c) Evaluating the goodness-of-fit using the Sum of Squared Residuals (SSR).
+d) Testing the hypothesis that market sentiment has a non-zero effect on the stock price.
+
+## Question 2
+
+A researcher is studying the economic impact of a new public transit line. They collect data on income, employment status, and commute times for the *same* 5,000 individuals every year, starting two years before the line opened and continuing for five years after. What type of data does this represent?
+
+a) Cross-sectional data
+b) Time series data
+c) Pooled cross-sections
+d) Panel (or longitudinal) data
+
+
+## Question 3
+
+A researcher estimates the following simple linear regression model using Ordinary Least Squares (OLS):
+$Wage_i = \hat{\beta}_0 + \hat{\beta}_1 Educ_i + \hat{u}_i$
+
+Based on the first-order conditions used to derive the OLS estimators, which of the following statements about the residuals ($\hat{u}_i$) and the explanatory variable ($Educ_i$) is mathematically guaranteed to be true in the sample?
+
+a) The sample correlation between the residuals and the dependent variable ($Wage_i$) is zero.
+b) The sum of the squared residuals is equal to the total sum of squares ($\sum \hat{u}_i^2 = SST$).
+c) The sample covariance between the residuals and the explanatory variable ($Educ_i$) is zero.
+d) The residuals ($\hat{u}_i$) are all equal to zero.
+
+
+## Question 4
+
+A marketing analyst estimates the relationship between monthly product sales and advertising spending using a log-log model:
+
+$\widehat{\log(\text{Sales})} = 3.8 + 0.45 \times \log(\text{AdSpend})$
+
+Where `Sales` is the number of units sold and `AdSpend` is the advertising expenditure in euros. How should the coefficient on $\log(\text{AdSpend})$ (0.45) be interpreted?
+
+a) A €1 increase in advertising spending is associated with a 0.45% increase in sales.
+b) A 1% increase in advertising spending is associated with a 0.45% increase in sales.
+c) A 1% increase in advertising spending is associated with an increase in sales of 0.45 units.
+d) A €1 increase in advertising spending is associated with an increase in sales of 0.45 units.
+
+## Question 5
+
+Consider the regression of individual hourly wage on a single dummy variable, `Female`, which equals 1 for females and 0 for males. The estimated equation is:
+$\widehat{\text{Wage}} = 22.50 - 3.75 \times \text{Female}$
+
+Based on this output, what is the predicted average hourly wage for males in the sample?
+
+a) €26.25
+b) €22.50
+c) €18.75
+d) €3.75
+
+
+## Question 6
+
+An economist is investigating the factors that determine CEO salary. The simple regression of salary on firm profits yields an R-squared of 0.09. Which of the following is the correct interpretation of this R-squared value?
+
+a) There is a 9% chance that the relationship between profits and salary is causal.
+b) For every €1 increase in profits, CEO salary increases by 9%.
+c) 9% of the variation in CEO salary in the sample can be explained by the variation in firm profits.
+d) The estimated coefficient for profits is biased by 9%.
+
+
+## Question 7
+
+A researcher wants to estimate the causal effect of class size on student test scores. They run the following regression:
+$\text{TestScore} = \beta_0 + \beta_1 \text{ClassSize} + u$
+
+However, they fail to include a variable for the average "parental involvement" at the school. It is likely that schools with higher parental involvement have better resources and thus smaller class sizes (a negative correlation). It is also likely that higher parental involvement directly leads to better test scores (a positive effect). What is the likely direction of the omitted variable bias on the estimated coefficient $\hat{\beta}_1$?
+
+a) There will be no bias because OLS is always unbiased.
+b) The bias will be positive, making the negative effect of class size appear smaller than it truly is.
+c) The bias will be negative, making the negative effect of class size appear larger than it truly is.
+d) The direction of the bias cannot be determined without knowing the R-squared of the model.
+
+
+## Question 8
+
+An analyst is trying to get a more precise estimate of the relationship between marketing expenditure and sales. The variance of the OLS slope estimator, $\widehat{Var}(\hat{\beta}_1)$, depends on several factors. Which of the following changes would *decrease* the variance of the estimated coefficient on marketing expenditure, leading to a more precise estimate?
+
+a) A decrease in the sample size ($n$).
+b) An increase in the variance of the error term ($\sigma^2$).
+c) A decrease in the variation of marketing expenditure in the sample ($SST_x$).
+d) An increase in the variation of marketing expenditure in the sample ($SST_x$).
+
