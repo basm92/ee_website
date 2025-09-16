@@ -82,9 +82,131 @@ The difference is $(\hat{\beta}_0 + \hat{\beta}_2) - (\hat{\beta}_0 + \hat{\beta
 
 ## Question 1
 
+**a) Estimated Sample Regression Function (SRF)**. The estimated Sample Regression Function is:
+$$
+\widehat{\text{wage}} = -0.905 + 0.541 \cdot \text{educ}
+$$
+
+**b) Interpretation of the `educ` Coefficient**.The estimated coefficient for `educ`, 0.541, indicates that for each additional year of education, an individual's average hourly wage is predicted to increase by $0.541, or approximately 54 cents, holding other factors constant.
+
+**c) Interpretation of the Intercept**. The intercept, -0.905, represents the predicted average hourly wage for an individual with zero years of education. In this context, the intercept does not have a meaningful real-world interpretation because it is impossible to earn a negative wage, and having zero years of education is a significant extrapolation beyond the range of data for a sample of working individuals.
+
 ## Question 2
 
+**a) Sign of the Coefficient on Experience ($\beta_2$)**. The likely sign of $\beta_2$ is **positive**. Holding education constant, additional years of work experience typically increase a worker's skills and productivity, leading to higher wages.
+
+**b) Correlation Between Education and Experience**. The likely correlation between `Educ` and `Exper` is **negative**. For a given age, time spent acquiring more education is time not spent in the labor force gaining experience. Therefore, individuals with more years of schooling tend to have fewer years of work experience.
+
+**c) Direction of the Omitted Variable Bias** The simple model will likely **underestimate** the true effect of education on wages.
+
+The bias in the estimated coefficient of `Educ` is determined by the product of two factors:
+
+1.  The effect of the omitted variable (`Exper`) on the dependent variable (`Wage`). (From part a, this is **positive**).
+2.  The correlation between the omitted variable (`Exper`) and the included variable (`Educ`). (From part b, this is **negative**).
+
+Bias = (Effect of `Exper` on `Wage`) $\times$ (Correlation of `Exper` and `Educ`)
+Bias = ($+$) $\times$ ($-$) = **Negative Bias**
+
+A negative bias means the estimated coefficient for education in the simple model will be smaller than its true value, thus underestimating the return to education.
+
 ## Question 3
+
+This answer model is very extensive, you don't have to be as extensive in your answer.
+
+**a) Specific Regression Equations for Males and Females**. To find the specific regression equation for each group, we substitute the value of the `Female_i` dummy variable into the general model.
+
+**For males ($Female_i = 0$):** We set $Female_i = 0$ in the original equation:
+
+$$
+Wage_i = \beta_0 + \beta_1 (0) + \beta_2 Educ_i + \beta_3 (0 \cdot Educ_i) + u_i
+$$
+
+The terms involving $\beta_1$ and $\beta_3$ drop out, simplifying the equation to:
+
+$$
+Wage_i = \beta_0 + \beta_2 Educ_i + u_i
+$$
+
+For males, the intercept (the wage at zero years of education) is $\beta_0$, and the slope (the return to an additional year of education) is $\beta_2$.
+
+**For females ($Female_i = 1$):** We set $Female_i = 1$ in the original equation:
+
+$$
+Wage_i = \beta_0 + \beta_1 (1) + \beta_2 Educ_i + \beta_3 (1 \cdot Educ_i) + u_i
+$$
+
+This simplifies to:
+
+$$
+Wage_i = \beta_0 + \beta_1 + \beta_2 Educ_i + \beta_3 Educ_i + u_i
+$$
+
+To make the structure clear, we can group the intercept and slope terms:
+
+$$
+Wage_i = (\beta_0 + \beta_1) + (\beta_2 + \beta_3) Educ_i + u_i
+$$
+For females, the intercept is $(\beta_0 + \beta_1)$, and the slope is $(\beta_2 + \beta_3)$.
+
+**b) Marginal Effect of Education on Wages**. The marginal effect of education is the partial derivative of the expected wage with respect to education. The expected wage equation is:
+
+$$
+E[Wage_i] = \beta_0 + \beta_1 Female_i + \beta_2 Educ_i + \beta_3 (Female_i \cdot Educ_i)
+$$
+Taking the partial derivative with respect to $Educ_i$:
+
+$$
+\frac{\partial E[Wage]}{\partial Educ_i} = \beta_2 + \beta_3 Female_i
+$$
+
+This shows that the marginal effect of education depends on the value of the $Female_i$ dummy.
+
+**For females ($Female_i = 1$):** The marginal effect of an additional year of education on wages is:
+$$
+\frac{\partial E[Wage]}{\partial Educ_i} = \beta_2 + \beta_3 (1) = \beta_2 + \beta_3
+$$
+
+**Difference from the marginal effect for males:** For males ($Female_i = 0$), the marginal effect of education is:
+$$
+\frac{\partial E[Wage]}{\partial Educ_i} = \beta_2 + \beta_3 (0) = \beta_2
+$$
+
+The marginal effect for females differs from that of males by the value of the interaction coefficient, $\beta_3$. If $\beta_3$ is statistically different from zero, it means that the economic return to an additional year of schooling is different for females and males.
+
+*   If $\beta_3 > 0$, females have a higher marginal return to education than males.
+*   If $\beta_3 < 0$, females have a lower marginal return to education than males.
+
+**c) Derivation and Interpretation of the Wage Gap**.  The wage gap is the difference in the expected wage between a female and a male who have the same level of education, $Educ$. We can derive this by subtracting the expected wage equation for males from the expected wage equation for females.
+
+$$
+\text{Wage Gap} = E[Wage | Female=1, Educ] - E[Wage | Female=0, Educ]
+$$
+
+Using the equations from part (a):
+
+$$
+\text{Wage Gap} = [(\beta_0 + \beta_1) + (\beta_2 + \beta_3) Educ] - [\beta_0 + \beta_2 Educ]
+$$
+
+Distributing the negative sign and simplifying:
+
+$$
+\text{Wage Gap} = \beta_0 + \beta_1 + \beta_2 Educ + \beta_3 Educ - \beta_0 - \beta_2 Educ
+$$
+
+The $\beta_0$ and $\beta_2 Educ$ terms cancel out, leaving:
+
+$$
+\text{Wage Gap} = \beta_1 + \beta_3 Educ
+$$
+
+**Explanation of how the wage gap depends on education:** The presence of the interaction term makes the wage gap a function of the level of education, rather than a constant value. The two coefficients in the gap equation have distinct interpretations:
+
+*   **$\beta_1$**: This is the "baseline" wage gap at zero years of education ($Educ = 0$). It represents the difference in the starting wage between females and males, holding education constant at zero. A negative $\beta_1$ would indicate that females start at a lower wage.
+*   **$\beta_3$**: This coefficient determines how the wage gap **changes** for each additional year of education.
+    *   If $\beta_3 > 0$, the wage gap becomes less negative (or more positive) as education increases. This means that with more education, the female wage "catches up" to or surpasses the male wage.
+    *   If $\beta_3 < 0$, the wage gap widens (becomes more negative) as education increases. This implies that the wage penalty for being female is larger at higher levels of education.
+    *   If $\beta_3 = 0$, the interaction term is irrelevant, and the wage gap is constant across all education levels, equal to $\beta_1$.
 
 ## Question 4
 
