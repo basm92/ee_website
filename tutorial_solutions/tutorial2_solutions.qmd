@@ -277,8 +277,8 @@ reg lhrwage educ exper union male, robust
     The coefficient on the interaction term ($\hat{\beta}_3 = 3$) represents the **difference in the slopes** between the two groups. It means that the positive effect of an additional year of age on charitable donations is **€3 higher** for homeowners than it is for non-homeowners.
 
 4.  **Predicted Difference at Age 50:**
-    *   Predicted donations for a 50-year-old homeowner: $200 + 8(50) = 200 + 400 = €600$.
-    *   Predicted donations for a 50-year-old non-homeowner: $50 + 5(50) = 50 + 250 = €300$.
+    *   Predicted donations for a 50-year-old homeowner: $200 + 8(50) = 200 + 400 = 600$.
+    *   Predicted donations for a 50-year-old non-homeowner: $50 + 5(50) = 50 + 250 = 300$.
     *   The predicted difference is $600 - 300 = \text{€}300$.
 
 ## Good vs. Bad Controls
