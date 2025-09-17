@@ -266,7 +266,7 @@ a) What is the likely sign of $\beta_2$, the true coefficient on exper? In other
 
 b) In the real world, what is the likely correlation between years of education and years of work experience?
 
-c) Using your answers from (a) and (b), determine the direction of the bias on the educ coefficient in the simple model. Will the simple model likely overestimate or underestimate the true effect of education on wages? Explain your reasoning by referencing the formula/logic for Omitted Variable Bias.
+c) Using your answers from (a) and (b), determine the direction of the bias on the educ coefficient in the simple model. Will the simple model likely overestimate or underestimate the true effect of education on wages? 
 
 ## Question 3
 

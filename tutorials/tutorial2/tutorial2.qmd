@@ -88,6 +88,44 @@ The default standard errors calculated by statistical software rely on strong as
 
 # Questions
 
+## Interpreting Formatted Regression Output
+
+:::{style="font-size:0.6em;"}
+
+The results of two regression models analyzing housing prices are reported. The first model estimates the house price based on the `sqrft` (square footage of the house), `bdrms` (number of bedrooms), and `lotsize` (size of the parcel of land). The second model predicts the price based on `sqrft, bdrms`, and whether the house is of `colonial` style.
+
+In model (1), the coefficient for `lotsize` is 0.002 and is statistically significant (p < 0.01). What is the practical interpretation of this coefficient in the context of predicting housing prices?
+
+In model (2), the coefficient for the `colonial` variable is 13.078, but it is not statistically significant. What does this suggest about the relationship between a house being of colonial style and its price, according to this model?
+
+:::
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(wooldridge); library(modelsummary); library(tinytable)
+
+# Load the hprice1 dataset
+data("hprice1")
+
+# Model 1: Estimating price with sqrft, bdrms, and lotsize
+model1 <- lm(price ~ sqrft + bdrms + lotsize, data = hprice1)
+
+# Model 2: Estimating price with sqrft, bdrms, and colonial style
+model2 <- lm(price ~ sqrft + bdrms + colonial, data = hprice1)
+
+modelsummary(list(model1, model2),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.01), 
+             gof_map=c("nobs", "r.squared"),
+             title="Regression of Housing Price on Characteristics",
+             width=0.3,
+             notes="Standard Errors in parentheses.") |>
+  theme_revealjs(css='light', fontsize=0.8)
+
+```
+
 ## Wage Determinants
 
 :::{style="font-size: 0.7em;"}

@@ -14,6 +14,12 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
+## Interpreting Formatted Regression Output
+
+1. The practical interpretation of this coefficient is as follows: holding the square footage (`sqrft`) and the number of bedrooms (`bdrms`) constant, for every one-unit increase in the size of the land plot (in square feet), the predicted price of the house is expected to increase by 0.002 units. Since the price is likely measured in thousands of dollars (a common practice in such datasets), this would mean an increase of 2 dollars for every additional square foot of lot size. For example, an increase of 1,000 square feet in lot size is associated with a 2,000 dollar increase in the predicted price of the house, all else being equal.
+
+2. In model (2), the coefficient for the colonial variable is 13.078. However, the p-value associated with this coefficient is greater than 0.1, indicating that it is not statistically significant at conventional levels. The interpretation of this is that, while the model estimates that a colonial-style house is associated with a 13,078 dollars higher price than a non-colonial style house (holding sqrft and bdrms constant), this effect is not statistically significant. This means that we cannot confidently conclude that there is a real relationship between a house being colonial style and its price in the population from which this data was sampled. The observed difference in price could very well be due to random chance or sampling variability. Therefore, based on this model, there is insufficient evidence to claim that the colonial style of a house has a meaningful impact on its sale price.
+
 ## Wage Determinants
 
 
