@@ -40,9 +40,10 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## What do we do today?
 
-- First look at time series data
+- Have a first look at time series data
 - Discuss statistics measuring the persistence of univariate time series (autocovariance, autocorrelation)
-- Discuss various univariate processes
+- Discuss various particular univariate processes
+- A key property: stationarity
 - Switch to bivariate time series and consider the danger of spurious regression
 - Consider more advanced time series models
 - Prediction in all aforementioned models
@@ -103,6 +104,95 @@ Time series data consists of observations of a variable or several variables ove
 - $Y_{t-s}$: The value of Y s periods ago (the s-th lag).
 - $\Delta Y_t = Y_t - Y_{t-1}$: The first difference of $Y$, which represents the change in $Y$ from the previous period to the current period.
 
+# Interpretation of Dynamic Models
+
+## Interpreting Dynamic Econometric Models
+
+- **What Makes a Model "Dynamic"?**
+  - A model is considered **dynamic** if it explicitly includes lagged values of the dependent variable, the independent variables, or both. This structure allows us to move beyond simple static relationships and analyze how variables evolve and interact over time.
+
+- A common dynamic specification is the **Autoregressive** model:
+
+  $$
+    y_t = \alpha + \sum_{i=1}^{p} \beta_i y_{t-i} + \epsilon_t
+  $$
+
+- Interpreting the coefficients ($\beta_i$) directly is often not the primary goal. Instead, we focus on key dynamic characteristics derived from them.
+
+## Key Questions
+
+:::{.callout-note title="Key Questions to Answer When Interpreting Dynamic Models"}
+1.  **What is the immediate impact of a change?**
+    *   **Short-Run or Impact Multiplier:** This measures the instantaneous effect of a one-unit change in an independent variable ($x$) on the dependent variable ($y$). 
+
+2.  **What is the total, long-run effect?**
+    *   **Long-Run Multiplier (or Long-Run Propensity):** This captures the total cumulative effect on $y$ after a permanent one-unit change in $x$, once the system has fully adjusted to its new equilibrium. It is calculated from the estimated coefficients. 
+    
+3.  **How quickly does the system adjust?**
+    *   **Speed of Adjustment:** This indicates how fast the dependent variable responds to deviations from its long-run equilibrium. It is determined by the coefficients on the lagged dependent variable ($\beta_i$).
+
+:::
+
+- By analyzing these dynamic properties, we gain a much richer understanding of the underlying economic relationships than a static model could ever provide. We can distinguish between temporary shocks and permanent changes and understand the full adjustment path of the system over time.
+
+## Time Trends
+
+- A time trend is a variable, denoted as $t$, that increases by one unit for each period ($t = 1, 2, 3, \dots, T$). It is included as an independent variable to capture sustained, long-term movements in the dependent variable.
+
+- A model with a linear time trend takes the form:
+  
+  $$
+    y_t = \alpha + \beta t + \delta x_t + \epsilon_t
+  $$
+
+- The coefficient $\beta$ measures the average change in the dependent variable ($y_t$) per time period (e.g., per year or per quarter), holding all other included variables constant (*ceteris paribus*).
+  - If $\beta > 0$, $y_t$ exhibits an underlying positive trend (growth).
+  - If $\beta < 0$, $y_t$ exhibits an underlying negative trend (decline).
+
+- The trend term acts as a proxy for unobserved, slowly evolving factors like technological progress, population growth, or gradual shifts in consumer preferences.
+
+## Time Trend Example
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
+
+# Load the ggplot2 library for plotting
+library(ggplot2)
+
+# Set a seed for reproducibility of the random noise
+set.seed(42)
+
+# 1. Create sample time series data
+n_periods <- 80
+time_data <- data.frame(
+  Time = 1:n_periods,
+  # Generate a value with a clear underlying trend + random fluctuations
+  # y = intercept + trend_coefficient * t + error
+  Value = 20 + 1.5 * (1:n_periods) + rnorm(n_periods, mean = 0, sd = 15)
+)
+
+# 2. Create the plot
+ggplot(time_data, aes(x = Time, y = Value)) +
+  # Add points for the actual data
+  geom_point(color = "gray50", alpha = 0.8) +
+  # Add a line connecting the data points to show the time series
+  geom_line(color = "skyblue", linewidth = 1) +
+  # Add the estimated linear trend line (the key part)
+  geom_smooth(method = "lm", se = FALSE, color = "firebrick", linewidth = 1.2) +
+  # Add labels and a title for clarity
+  labs(
+    title = "Illustration of a Deterministic Time Trend",
+    subtitle = "The data fluctuates around a consistent, predictable growth path.",
+    x = "Time Period (t)",
+    y = "Value (y)"
+  ) +
+  # Use a clean theme
+  theme_minimal(base_size = 14)
+```
+
+
 # Introduction to Dynamic Processes
 
 ## A Time Series as a Stochastic Process
@@ -143,18 +233,6 @@ The $k$-th Order Autocovariance ($\gamma_k$):
 :::
 
 - This measures the covariance between the series at time t and time t-k.
-
-## Stationarity: A Key Simplifying Assumption
-
-- For analysis to be tractable, we often assume the series is covariance stationary (or weakly stationary).
-
-- This means the three aforementioned statistical properties do not change over time. Three conditions must hold:
-
-:::{.callout-note title="Definition: Stationarity"}
-- Constant Mean: $E(Y_t) = \mu$ for all t. The series fluctuates around a constant level.
-- Constant Variance: $Var(Y_t) = \sigma^2$ for all t. The volatility of the series is constant.
-- Constant Autocovariance: $Cov(Y_t, Y_{t-k}) = \gamma_k$ for all t. The covariance between two points depends only on the lag $k$ (how far apart they are), not on their position in time.
-:::
 
 ## Autocorrelation Function (ACF)
 
@@ -263,7 +341,6 @@ correlogram_plot <- ggplot(data = acf_df, aes(x = Lag, y = ACF)) +
 print(correlogram_plot)
 ```
 
-
 # Modeling a Single Time Series
 
 ## Why Model a Single Series?
@@ -370,6 +447,148 @@ plt.legend()
 plt.show()
 ```
 
+## Stationarity
+
+- For analysis to be tractable, we often assume a time series is covariance stationary (or weakly stationary).
+
+- This means the three aforementioned statistical properties do not change over time. Three conditions must hold:
+
+:::{.callout-note title="Definition: Stationarity"}
+- Constant Mean: $E(Y_t) = \mu$ for all t. The series fluctuates around a constant level.
+- Constant Variance: $Var(Y_t) = \sigma^2$ for all t. The volatility of the series is constant.
+- Constant Autocovariance: $Cov(Y_t, Y_{t-k}) = \gamma_k$ for all t. The covariance between two points depends only on the lag $k$ (how far apart they are), not on their position in time.
+:::
+
+
+## Testing for Stationarity
+
+- We start with an AR(1) model, which is the building block for understanding persistence:
+
+$$
+y_t = \rho y_{t-1} + \epsilon_t
+$$
+
+- The entire dynamic behavior of this series is governed by the value of $\rho$.
+  - If $|\rho| < 1$, the process is **stationary**. Shocks ($\epsilon_t$) are temporary and their effects decay over time. The series will always revert to its mean.
+  - If $\rho = 1$, the process has a **unit root** and is **non-stationary**. Shocks are permanent, fundamentally altering the future path of the series. This is a "random walk".
+
+
+## Dickey-Fuller Test
+
+- Directly testing $\rho=1$ is problematic. Instead, Dickey and Fuller proposed a clever transformation. We subtract $y_{t-1}$ from both sides of the AR(1) equation:
+
+  $$
+    y_t - y_{t-1} = \rho y_{t-1} - y_{t-1} + \epsilon_t
+  $$
+
+- This simplifies to the classic Dickey-Fuller regression form:
+
+  $$
+    \Delta y_t = (\rho - 1) y_{t-1} + \epsilon_t \quad \implies \quad \Delta y_t = \gamma y_{t-1} + \epsilon_t
+  $$
+
+- The test is now focused on the coefficient $\gamma = (\rho - 1)$:
+  - **Null Hypothesis ($H_0$):** $\gamma = 0$ (This is equivalent to $\rho = 1$, meaning a unit root exists).
+  - **Alternative Hypothesis ($H_A$):** $\gamma < 0$ (This is equivalent to $\rho < 1$, meaning the series is stationary).
+  
+## Dickey-Fuller Distribution 
+
+- We cannot simply perform a standard t-test on $\gamma$.
+  - **Under the null hypothesis**, the regressor $y_{t-1}$ is non-stationary.
+  - This violates the standard assumptions required for the t-statistic to follow a t-distribution.
+  
+- Instead, the test statistic follows a unique **Dickey-Fuller distribution**, which has its own set of critical values.
+  - These critical values are larger (more negative) than the standard t-distribution values, making it harder to reject the null hypothesis of a unit root. 
+  
+## Augmented Dickey-Fuller (ADF) Test
+
+- The simple DF test assumes the error term $\epsilon_t$ is white noise. What if the true underlying process is more complex, like an AR(2), causing the errors in the simple DF regression to be serially correlated?
+
+- The **Augmented Dickey-Fuller (ADF) Test** adds as many lagged difference terms as necessary to eliminate serial correlation in the residuals of the test equation:
+
+$$
+\Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \sum_{i=1}^{p} \delta_i \Delta y_{t-i} + \epsilon_t
+$$
+
+- The test for the unit root remains the **t-test on the $\gamma$ coefficient** using the Dickey-Fuller critical values.
+  - The lagged difference terms are only included to ensure the validity of the test; their coefficients are not part of the unit root test itself.
+  - The terms $\alpha$ (constant) and $\beta t$ (time trend) are included to capture a potential drift or deterministic trend in the series.
+
+## Dickey-Fuller Test in Software 
+
+- The most common specification (including a constant) is shown. The decision is always the same: **If p-value < 0.05, reject the null and conclude the series is stationary.**
+
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| eval: false
+
+# Import the function
+from statsmodels.tsa.stattools import adfuller
+
+# Assume 'y' is a pandas Series or NumPy array
+# The most common test includes a constant ('c')
+result = adfuller(y, regression='c', autolag='AIC')
+
+# Print the key results
+print(f'ADF Statistic: {result[0]}')
+print(f'p-value: {result[1]}')
+
+# result[1] is the p-value.
+# To test with a constant and trend, use regression='ct'
+```
+
+### R
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| eval: false
+
+# Using the simpler 'tseries' package
+# Install if needed: install.packages("tseries")
+library(tseries)
+
+# Assume 'y' is a time series object
+# The default test includes a constant
+result <- adf.test(y)
+
+# Print the result
+print(result)
+
+# The p-value is directly reported.
+# For a test with constant and trend using the more robust 'urca' package:
+# library(urca)
+# summary(ur.df(y, type = "trend", lags = ...))
+```
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+
+/* Assume the time series variable is named 'y' and you have tsset your data */
+
+/* Test with a constant (the default) */
+/* The 'lags(k)' option can be used to specify the number of lags */
+dfuller y
+
+/* Test with a constant and a trend */
+dfuller y, trend
+
+/* Stata reports the test statistic and critical values for 1%, 5%, and 10%.
+   You must compare the Test Statistic to the critical values.
+   To get a p-value, use the user-written command 'dfgls'. */
+```
+
+:::
+
 
 ## Stationarity of an AR(1) Process
 
@@ -383,7 +602,7 @@ plt.show()
 
 ## The Random Walk Model
 
-- A special case of the AR(1) model where $\rho=1$:
+- The special case of non-stationarity in the AR(1) model  occurs when $\rho=1$:
 
   $$
     Y_t = Y_{t-1} + u_t
@@ -461,197 +680,7 @@ $$
 Y_t = \alpha + \rho_1 Y_{t-1} + \rho_2 Y_{t-2} + \dots + \rho_p Y_{t-p} + u_t
 $$
 
-- **Choosing p:** The number of lags ($p$) can be determined using information criteria like the Adjusted $R^2$, Akaike Information Criterion (AIC) or the Schwarz Information Criterion (SIC).
-
-# Model Selection
-
-## Model Selection
-
-- How to pick a model? Recall the standard R-squared: $R^2 = \frac{ESS}{TSS} = 1 - \frac{RSS}{TSS}$
-- **Problem:** The standard $R^2$ is a non-decreasing function of the number of included regressors ($k$).
-  - Adding *any* variable to a model, even an irrelevant one, will almost always increase the $R^2$ (it will never decrease).
-
-- Relying solely on $R^2$ to compare models is dangerous. It incentivizes "kitchen sink" regressions—throwing in as many variables as possible to maximize the fit on the sample data. This often leads to:
-    - **Overfitting:** The model captures random noise in the sample rather than the true underlying relationship.
-    - **Poor out-of-sample prediction:** An overfit model performs poorly on new data.
-    - **Lack of Parsimony:** We prefer simpler, more elegant models (Occam's razor).
-
-
-## The Adjusted R-squared
-
-- The Adjusted R-squared modifies the standard $R^2$ by incorporating a penalty for each additional regressor. It adjusts the RSS and TSS by their respective degrees of freedom.
-
-:::{.callout-note title="Definition: Adjusted $R^2$"}
-
-  $$
-    R^2_{adj} = 1 - \frac{RSS / (n - k - 1)}{TSS / (n - 1)}
-  $$
-
-Where $n$ = number of observations, and $k$ = number of predictors (independent variables)
-
-This can also be expressed in terms of the standard $R^2$:
-
-$$
-R^2_{adj} = 1 - (1 - R^2) \frac{n - 1}{n - k - 1}
-$$
-
-:::
-
-## Intuition Behind the Penalty
-
-- Let's examine the penalty term: $\frac{n-1}{n-k-1}$
-  - As you add a new predictor, $k$ increases by 1.
-  - This causes the denominator $(n-k-1)$ to decrease.
-  - This makes the entire fraction $\frac{n-1}{n-k-1}$ **larger**.
-  - Therefore, the adjustment factor $(1 - R^2) \frac{n-1}{n-k-1}$ becomes larger, which imposes a bigger penalty.
-
-- For $R^2_{adj}$ to increase when adding a new variable, the increase in the standard $R^2$ must be substantial enough to outweigh the penalty from losing a degree of freedom. If you add an irrelevant variable, $R^2$ will increase slightly, but the penalty will dominate, causing $R^2_{adj}$ to **decrease**.
-
-## Information Criterion
-
-- Another way to evaluate a model is by considering its **information content**. 
-- A key feature of Akaike Information Criterion (AIC) is that it balances the goodness of fit of the model with its simplicity.
-  - It penalizes models that have more parameters, which helps to prevent overfitting—a scenario where a model is too complex and captures noise in the data rather than the underlying pattern.
-
-:::{.callout-note title="Definition: AIC"}
-
-$$AIC = 2k - 2ln(L)$$
-
-Where:
-
-*   **k** is the number of estimated parameters in the model.
-*   **L** is the maximized value of the likelihood function for the model.
-
-
-*Note: For OLS models assuming normal errors, the AIC can be expressed using the RSS:*
-$AIC = n \cdot \ln(RSS/n) + 2k$
-
-:::
-
-- When comparing multiple models, the one with the minimum AIC value is preferred.
-
-## Optimal Lags
-
-
-- The AIC provides a systematic way to select the optimal number of lags. The general procedure is as follows:
-
-  1.  **Define a maximum number of lags to consider.** This is an upper limit to prevent the model from becoming overly complex.
-  2.  **Fit a series of AR models.** Starting from a model with one lag, fit successive AR models, increasing the number of lags by one up to the defined maximum.
-  3.  **Calculate the AIC for each model.** For each fitted model, compute the AIC value.
-  4.  **Select the model with the lowest AIC.** The number of lags corresponding to the model with the minimum AIC is considered the optimal lag order.
-
-:::{.panel-tabset}
-
-### R
-
-::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
-
-```{r}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-# Load a sample time series dataset
-data(sunspot.year)
-
-# Fit an AR model and let the function select the best lag order based on AIC
-ar_model <- ar(sunspot.year)
-
-# The optimal number of lags is stored in the 'order' component of the model object
-optimal_lags <- ar_model$order
-
-# Print the optimal number of lags
-print(paste("Optimal number of lags based on AIC:", optimal_lags))
-
-# You can also view the AIC values for different lag orders
-print(ar_model$aic)
-```
-
-:::
-
-### Python
-
-::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
-
-```{python}
-#| echo: true
-#| code-fold: true
-#| collapse: true
-
-import pandas as pd
-from statsmodels.tsa.ar_model import ar_select_order
-import statsmodels.api as sm
-
-# Load a sample time series dataset (e.g., Sunspots data)
-# This data is available in statsmodels
-data = sm.datasets.sunspots.load_pandas().data
-series = data['SUNACTIVITY']
-
-# Use ar_select_order to find the optimal lag
-# We specify a maximum lag to consider and the information criterion to use ('aic')
-selection = ar_select_order(series, maxlag=20, ic='aic')
-
-# The selected lags are stored in the 'ar_lags' attribute
-optimal_lags = selection.ar_lags
-
-# Print the optimal number of lags
-print(f"Optimal number of lags based on AIC: {optimal_lags}")
-```
-
-:::
-
-### Stata
-
-```{stata}
-#| echo: true
-#| eval: false
-#| code-fold: true
-#| collapse: true
-
-* Load a sample time series dataset (Sunspot data)
-* webuse is Stata's command to load data from the internet
-webuse sunspot
-
-* Declare the data as a time series
-* The 'year' variable indicates the time period
-tsset year
-
-* Use varsoc to get the selection criteria for lags 1 through 20
-* Stata will automatically mark the optimal lag for each criterion with a '*'
-varsoc sunspot, maxlag(20)
-
-```
-
-:::
-
-## BIC
-
-- In addition to the AIC, there is also the Bayesian Information Criterion (BIC), which has a different penalty for larger models. 
-
-:::{.callout-note title="Definition: BIC"}
-
-$$
-BIC = -2 \ln(\hat{L}) + k' \ln(n)
-$$
-
-Where:
-
-*   $\ln(\hat{L})$ = The maximized value of the log-likelihood function for the model. This is the **goodness-of-fit term**.
-*   $k'$ = The number of **estimated parameters** in the model. (For a standard linear regression, this is the number of predictors $k$ plus the intercept, so $k' = k+1$).
-*   $n$ = The number of observations.
-*   $k' \ln(n)$ = The **penalty term**.
-
-*Note: For OLS models assuming normal errors, the BIC can be expressed using the RSS:*
-$BIC = n \cdot \ln(RSS/n) + k' \ln(n)$
-
-:::
-
-## AIC vs BIC
-
-- **The Difference:** The penalty in BIC is $k' \ln(n)$, while in AIC it is $2k'$.
-- **Which is stricter?** For any sample size $n \ge 8$, we have $\ln(n) > 2$.
-  - Therefore, **BIC imposes a larger penalty for extra parameters than AIC**.
-  - As a result, BIC has a stronger tendency to select more **parsimonious** (simpler) models than AIC.
-
+- **Choosing p:** The number of lags ($p$) can be determined using information criteria like the Adjusted $R^2$, Akaike Information Criterion (AIC) or the Bayesian Information Criterion (BIC). More about this later in the lecture.
 
 ## The Moving Average Model
 
@@ -674,6 +703,7 @@ $BIC = n \cdot \ln(RSS/n) + k' \ln(n)$
   
 - Unlike an AR(1) model, a shock in an MA(1) model only persists for one period. $Y_t$ is affected by $u_t$ and $u_{t-1}$, but $Y_{t+1}$ will not be affected by $u_t$.
 - The coefficient $\theta$ determines the extent to which a past shock affects the current observation.
+- The MA model is always stationary. 
 
 [^1]: More about this in Lecture 6. 
 
@@ -746,127 +776,117 @@ estimates table
 
 :::
 
-# Relationship Between Time Series
+## How to pick a model? 
 
-## Linear Model in Time Series
+- To build a **dynamically complete** model, we need a model whose residuals are white noise (i.e., free from autocorrelation), ensuring that we have captured all the systematic, predictable information in the data.
 
-- The starting point for a relationship between time series is often the linear model. 
-
-- The model form is identical to its cross-sectional counterpart:
-
-  $$
-    Y_t = \alpha + \beta X_t + \epsilon_t
-  $$
-
-- This model posits a contemporaneous relationship between X and Y.
-- Question: Can we estimate this with OLS and trust the results?
-- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of finite variance:
-  
-  $$
-    \text{Var}(X_t) = \sigma^2
-  $$
+- Step 1: Analyze the Variables (Pre-Modeling)
+  - **Tool:** Augmented Dickey-Fuller (ADF) Test.
+  - Test each variable (dependent and independent) for unit roots.
+    - If a variable is stationary (I(0)), use it in its **level** form ($y_t, x_t$).
+    - If a variable is non-stationary (I(1)), use it in its **first-differenced** form ($\Delta y_t, \Delta x_t$) to induce stationarity.
     
-## When does OLS work?
+- This step determines the correct form of the variables to include in our initial regression.
 
-- If $X$ is stationary, e.g. $X \sim AR(1)$ with $|\rho|<1$, this is a valid approach. 
+## Example Stationarity
 
-:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
-Let $X_t = \rho X_{t-1} + u_t$. Using the definition for $X_{t-1}$, we find that $X_t = \rho (\rho X_{t-2} + u_t$). 
+- First differences can induce stationarity. 
 
-After recursively substituting, past values of $X_t$, we can express $X_t$ as:
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 8
 
-$$
-X_t = \rho^k X_{t-k} + \sum_{j=0}^{k-1} u_{t-j}
-$$
-As $k \rightarrow \infty$, we end up with $X_t = \sum_{j=0}^{\infty} \rho^j u_j$. 
+# Load necessary libraries
+library(ggplot2)
+library(dplyr) # For data manipulation
 
-Taking the expected value of this, we immediately see that $E[X_t]=0$.
+# --- 1. Generate the Data ---
 
-:::
+# Set a seed for reproducible results
+set.seed(123)
 
-## When does OLS work? (Cont.)
+# Number of time periods
+n_periods <- 200
 
-- As for the variance:
+# Create a non-stationary series (a random walk with drift)
+# A random walk is the cumulative sum of random shocks
+non_stationary_series <- cumsum(rnorm(n_periods, mean = 0.2, sd = 1.5))
 
-:::{style="font-size: 0.7em;"}
+# Create its stationary first difference
+stationary_series <- diff(non_stationary_series)
 
-:::{.callout-tip title="Example: Finite Expectation and Variance of $X$ when $X \sim AR(1)$"}
+# --- 2. Prepare Data for Plotting ---
 
-  $$
-    \begin{align}
-    \text{Var}(X_t) &= \text{Var}(\sum_{j=0}^\infty \rho^j u_{t-j}) \\
-    &= \sum_{j=0}^\infty \text{Var}(\rho^j u_{t-j}) \quad \text{ Uncorrelated $u_t$} \\
-    &= \sum_{j=0}^\infty \rho^{2j} \text{Var}(u_{t-j}) \quad \text{Constant term in Var} \\
-    &= \sigma^2_u \sum_{j=0}^\infty \rho^{2j} \quad \quad \text{Constant variance of $u_t$} \\
-    \end{align}
-  $$
+# Create a data frame for the original, non-stationary series
+df_level <- data.frame(
+  Time = 1:n_periods,
+  Value = non_stationary_series,
+  Type = "Level (Non-Stationary, I(1))"
+)
 
-Since $\sum_{j=0}^\infty \rho^{2j}=\frac{1}{1-\rho^2}$ if $|\rho|<1$, the variance is equal to $\frac{\sigma^2_u}{1-\rho^2}$.  
+# Create a data frame for the differenced, stationary series
+df_diff <- data.frame(
+  Time = 2:n_periods,
+  Value = stationary_series,
+  Type = "First Difference (Stationary, I(0))"
+)
 
-:::
+# Combine the two data frames into one for faceting
+combined_df <- bind_rows(df_level, df_diff)
 
-:::
-
-## The Problem of Spurious Regression
-
-- OLS might also work in other cases where $X_t$ is stationary, or when $X_t$ and $Y_t$ are cointegrated.[^2]
-- However, in most situations, OLS may give a **deceptive relationship:**
-  - A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.
-- This often happens when both variables have a strong trend (are non-stationary), and especially, when $X$ is non-stationary. 
-  - The trend can be deterministic (predictable) or stochastic (random).
-
-[^2]: This means roughly that $X_t$ and $Y_t$ follow a common trend, but it is outside the scope of this lecture. 
-
-## Spurious Regression is Non-Stationarity
-
-- Let's look at the most common non-stationary process: the random walk.
-
-  $$
-    X_t = X_{t-1} + u_t
-  $$
-
-:::{.callout-note title="Theorem: Variance of a Random Walk"}
-Suppose $X_0=0$. Let us find the variance of $X_t$. 
-
-We know that $X_1 = u_i$. $X_2 = X_1 + u_2 = u_1 + u_2$, etc. 
-
-Hence, $X_t = \sum u_i$, and $Var(X_t) = Var(u_1 + u_2 + \dots + u_t)$. 
-
-Since the $u_i$ are uncorrelated (white noise), the variance of the sum is the sum of the variances:
-  $$
-    \begin{align}
-    Var(X_t) &= \sigma^2_u + \dots + \sigma^2_u \text{ ( t times)} \\
-            &= t \times \sigma^2_u
-    \end{align}
-  $$
-
-The variance depends on time $t$ and grows without bound. This is a clear violation of stationarity.
-
-:::
-
-## Failure of Reliable Estimation
-
-- Imagine two independent and unrelated random walks, $Y_t = Y_{t-1} + u_t$ and $X_t = X_{t-1} + v_t$, where $u_t$ and $v_t$ are independent white noise processes.
-
-- By construction, the true $\beta$ in a regression of $Y_t$ on $X_t$ is zero.
-
-- When we run $Y_t= \alpha + \beta X_t + u_t$,  we know $Var(Y_t)=Var(X_t)=t\times \sigma^2_u$. 
-  - $\hat{\beta}=\frac{\text{Cov}(X,Y)}{\text{Var}(X)}$. 
-
-- Since both $Y_t$ and $X_t$ are non-stationary, both the numerator and the denominator converge to a random variable, not to a particular number. 
-  - Hence, the OLS coefficient is **inconsistent**. 
+# --- 3. Explicitly Set the Order of Facets ---
+# This is the key change. We convert 'Type' to a factor and specify
+# the exact order for the plot panels.
+combined_df <- combined_df %>%
+  mutate(Type = factor(Type, levels = c(
+    "Level (Non-Stationary, I(1))",
+    "First Difference (Stationary, I(0))"
+  )))
 
 
-## Consequences of Spurious Regression
+# --- 4. Create the Plot ---
 
-- Since the OLS estimator converges to a random variable with variance tending to infinity, if you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
-  - You will likely find a **high R-squared**.
-  - The **t-statistics** for the estimated coefficients will likely be **significant**.
-  - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
+ggplot(combined_df, aes(x = Time, y = Value)) +
+  geom_line(aes(color = Type), linewidth = 0.8) +
+  # Create the two separate plots based on the 'Type' column
+  # "free_y" is crucial as the scales of the two series are very different
+  facet_wrap(~ Type, scales = "free_y") +
+  # Add a horizontal line at y=0 for the stationary plot for reference
+  geom_hline(
+    data = subset(combined_df, Type == "First Difference (Stationary, I(0))"),
+    aes(yintercept = 0),
+    linetype = "dashed",
+    color = "black"
+  ) +
+  # Assign specific colors for better visual distinction
+  scale_color_manual(values = c(
+    "Level (Non-Stationary, I(1))" = "firebrick",
+    "First Difference (Stationary, I(0))" = "royalblue"
+  )) +
+  labs(
+    title = "Transforming a Non-Stationary Series to a Stationary One",
+    subtitle = "A random walk (left) and its stationary first difference (right).",
+    x = "Time",
+    y = "Value"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none") # The facet titles make a legend redundant
+```
 
-## Detecting Spurious Regression
 
-- **Rejection of the BG Test:** A key indicator of spurious regression is a rejection of the Breusch-Godfrey test.
+## How to pick a model? (Cont.)
+
+- Step 2: Run a regression and perform diagnostics:
+  - When you run a spurious regression, the resulting OLS model appears to fit well, but the relationship is nonsensical. 
+  - The "error" in this model is not a random, white-noise process. Instead, the residuals themselves are highly persistent and non-stationary.
+  - Run an initial OLS regression based on economic theory, using the variable forms decided in Step 1.
+
+- Step 3: Diagnose the Model
+  - Breusch-Godfrey (BG) Test for serial correlation in the error terms?
+  - Are the residuals, $\hat{u}_t$, white noise? Or is there still predictable information left in them that our model has failed to capture?
+  
+## Breusch-Godfrey Test
 
 :::{.callout-note title="Definition: Breusch-Godfrey Test"}
 The BG test assesses whether the error term, $\epsilon_t$, follows an AR(p) process. You, the researcher, choose the number of lags (p) to test for. The assumed model for the error is:
@@ -875,7 +895,7 @@ $$\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + \dots + \rho_p \e
 where $v_t$ is a white noise term. $H_0: \rho_1, \dots, \rho_p=0$, and $H_A$ is that at least one $\rho$ coefficient is non-zero: there is serial correlation up to some order $p$. 
 :::
 
-## Breusch-Godfrey Test
+## Breusch-Godfrey Test Steps
 
 :::{.callout-note title="Breusch-Godfrey Test: Procedure"}
 The BG test is performed in three simple steps:
@@ -1136,6 +1156,85 @@ estat bgodfrey, lags(3)
 
 :::
 
+
+## How to pick a model? (Cont.) 
+
+- **Case 1: The BG Test Fails to Reject $H_0$ (No Autocorrelation)**
+  - **Interpretation:** Your simple model may be dynamically complete. No further dynamic terms are needed. You can proceed with interpreting the coefficients (cautiously, pending other diagnostic tests).
+
+- **Case 2: The BG Test Rejects $H_0$ (Autocorrelation is Present)**
+  - **Interpretation:** **Your model is dynamically misspecified and incomplete.** The significant autocorrelation in the residuals is a clear signal that there is persistence in the system that your current model is ignoring.
+  - Solution: the information "trapped" in the autocorrelated errors must be brought into the model explicitly. We do this by considering more extensive models.
+  - Potentially by incorporating independent variables, lagged dependent variables and lagged independent variables. 
+
+
+# Relationship Between Time Series
+
+## Linear Model in Time Series
+
+- The starting point for a relationship between time series is often the linear model. 
+
+- The model form is identical to its cross-sectional counterpart:
+
+  $$
+    Y_t = \alpha + \beta X_t + \epsilon_t
+  $$
+
+- This model posits a contemporaneous relationship between X and Y.
+- Question: Can we estimate this with OLS and trust the results?
+- For OLS to be a good estimator, the standard assumptions must hold. The most problematic one for time series data is the assumption of finite variance:
+  
+  $$
+    \text{Var}(X_t) = \sigma^2
+  $$
+
+## The Problem of Spurious Regression
+
+- OLS might also work in other cases where $X_t$ is stationary, or when $X_t$ and $Y_t$ are cointegrated.
+- However, in most situations, OLS may give a **deceptive relationship:**
+  - A spurious regression occurs when we find a statistically significant relationship between two time series variables that are actually unrelated.
+- This often happens when both variables have a strong trend (are non-stationary), and especially, when $X$ is non-stationary. 
+  - The trend can be deterministic (predictable) or stochastic (random).
+
+## Spurious Regression is Non-Stationarity
+
+- Let's look at the most common non-stationary process: the random walk.
+
+  $$
+    X_t = X_{t-1} + u_t
+  $$
+
+:::{.callout-note title="Theorem: Variance of a Random Walk"}
+Suppose $X_0=0$. Let us find the variance of $X_t$. 
+
+We know that $X_1 = u_i$. $X_2 = X_1 + u_2 = u_1 + u_2$, etc. 
+
+Hence, $X_t = \sum u_i$, and $Var(X_t) = Var(u_1 + u_2 + \dots + u_t)$. 
+
+Since the $u_i$ are uncorrelated (white noise), the variance of the sum is the sum of the variances:
+  $$
+    \begin{align}
+    Var(X_t) &= \sigma^2_u + \dots + \sigma^2_u \text{ ( t times)} \\
+            &= t \times \sigma^2_u
+    \end{align}
+  $$
+
+The variance depends on time $t$ and grows without bound. This is a clear violation of stationarity.
+
+:::
+
+
+## Consequences of Spurious Regression
+
+- If you run a regression of $Y_t$ on $X_t$, where both are trending but unrelated:
+  - You will likely find a **high R-squared**.
+  - The **t-statistics** for the estimated coefficients will likely be **significant**.
+  - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
+  
+- Detecting spurious regression: **Breusch-Godfrey** or **Dickey-Fuller** tests
+  - Ex ante: if both series $Y_t$ and $X_t$ have a unit root (i.e., you fail to reject $H_0$ for both), then running a simple OLS regression of Y on X is at high risk of being spurious.
+  - Ex-post: the "error" in this model is not a random, white-noise process. Instead, the residuals themselves are highly persistent and non-stationary. Detectable via Breusch-Godfrey.
+
 ## Avoiding Spurious Regression
 
 - If the static model $Y_t = \alpha + \beta X_t + \epsilon_t$ is so dangerous, what is the alternative?
@@ -1338,7 +1437,7 @@ estat ec
 
 :::
 
-# Prediction
+# Model Selection and Forecasting
 
 ## What is Forecasting?
 
@@ -1358,12 +1457,200 @@ To predict future values of a time series based on its own past and potentially 
   $$
     \text{Forecast} = E[Y_{t+h} | I_t]
   $$
+  
+## Which Model Should I Pick?
+
+- How to pick a model for forecasting? Recall the standard R-squared: $R^2 = \frac{ESS}{TSS} = 1 - \frac{RSS}{TSS}$
+- **Problem:** The standard $R^2$ is a non-decreasing function of the number of included regressors ($k$).
+  - Adding *any* variable to a model, even an irrelevant one, will almost always increase the $R^2$ (it will never decrease).
+
+- Relying solely on $R^2$ to compare models is dangerous. It incentivizes "kitchen sink" regressions—throwing in as many variables as possible to maximize the fit on the sample data. This often leads to:
+    - **Overfitting:** The model captures random noise in the sample rather than the true underlying relationship.
+    - **Poor out-of-sample prediction:** An overfit model performs poorly on new data.
+    - **Lack of Parsimony:** We prefer simpler, more elegant models (Occam's razor).
+
+## The Adjusted R-squared
+
+- The Adjusted R-squared modifies the standard $R^2$ by incorporating a penalty for each additional regressor. It adjusts the RSS and TSS by their respective degrees of freedom.
+
+:::{.callout-note title="Definition: Adjusted $R^2$"}
+
+  $$
+    R^2_{adj} = 1 - \frac{RSS / (n - k - 1)}{TSS / (n - 1)}
+  $$
+
+Where $n$ = number of observations, and $k$ = number of predictors (independent variables)
+
+This can also be expressed in terms of the standard $R^2$:
+
+$$
+R^2_{adj} = 1 - (1 - R^2) \frac{n - 1}{n - k - 1}
+$$
+
+:::
+
+## Intuition Behind the Penalty
+
+- Let's examine the penalty term: $\frac{n-1}{n-k-1}$
+  - As you add a new predictor, $k$ increases by 1.
+  - This causes the denominator $(n-k-1)$ to decrease.
+  - This makes the entire fraction $\frac{n-1}{n-k-1}$ **larger**.
+  - Therefore, the adjustment factor $(1 - R^2) \frac{n-1}{n-k-1}$ becomes larger, which imposes a bigger penalty.
+
+- For $R^2_{adj}$ to increase when adding a new variable, the increase in the standard $R^2$ must be substantial enough to outweigh the penalty from losing a degree of freedom.
+- If you add an irrelevant variable, $R^2$ will increase slightly, but the penalty will dominate, causing $R^2_{adj}$ to **decrease**.
+
+## Information Criterion
+
+- Another way to evaluate a model is by considering its **information content**. 
+- A key feature of Akaike Information Criterion (AIC) is that it balances the goodness of fit of the model with its simplicity.
+  - It penalizes models that have more parameters, which helps to prevent overfitting—a scenario where a model is too complex and captures noise in the data rather than the underlying pattern.
+
+:::{.callout-note title="Definition: AIC"}
+
+$$AIC = 2k - 2ln(L)$$
+
+Where:
+
+*   **k** is the number of estimated parameters in the model.
+*   **L** is the maximized value of the likelihood function for the model.
 
 
+*Note: For OLS models assuming normal errors, the AIC can be expressed using the RSS:*
+$AIC = n \cdot \ln(RSS/n) + 2k$
+
+:::
+
+- When comparing multiple models, the one with the minimum AIC value is preferred.
+
+## Optimal Lags
+
+
+- The AIC provides a systematic way to select the optimal number of lags. The general procedure is as follows:
+
+  1.  **Define a maximum number of lags to consider.** This is an upper limit to prevent the model from becoming overly complex.
+  2.  **Fit a series of AR models.** Starting from a model with one lag, fit successive AR models, increasing the number of lags by one up to the defined maximum.
+  3.  **Calculate the AIC for each model.** For each fitted model, compute the AIC value.
+  4.  **Select the model with the lowest AIC.** The number of lags corresponding to the model with the minimum AIC is considered the optimal lag order.
+
+:::{.panel-tabset}
+
+### R
+
+::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
+
+```{r}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+# Load a sample time series dataset
+data(sunspot.year)
+
+# Fit an AR model and let the function select the best lag order based on AIC
+ar_model <- ar(sunspot.year)
+
+# The optimal number of lags is stored in the 'order' component of the model object
+optimal_lags <- ar_model$order
+
+# Print the optimal number of lags
+print(paste("Optimal number of lags based on AIC:", optimal_lags))
+
+# You can also view the AIC values for different lag orders
+print(ar_model$aic)
+```
+
+:::
+
+### Python
+
+::: {.scroll-container style="overflow-y: scroll; height: 250px; font-size: 0.8em;"}
+
+```{python}
+#| echo: true
+#| code-fold: true
+#| collapse: true
+
+import pandas as pd
+from statsmodels.tsa.ar_model import ar_select_order
+import statsmodels.api as sm
+
+# Load a sample time series dataset (e.g., Sunspots data)
+# This data is available in statsmodels
+data = sm.datasets.sunspots.load_pandas().data
+series = data['SUNACTIVITY']
+
+# Use ar_select_order to find the optimal lag
+# We specify a maximum lag to consider and the information criterion to use ('aic')
+selection = ar_select_order(series, maxlag=20, ic='aic')
+
+# The selected lags are stored in the 'ar_lags' attribute
+optimal_lags = selection.ar_lags
+
+# Print the optimal number of lags
+print(f"Optimal number of lags based on AIC: {optimal_lags}")
+```
+
+:::
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+#| code-fold: true
+#| collapse: true
+
+* Load a sample time series dataset (Sunspot data)
+* webuse is Stata's command to load data from the internet
+webuse sunspot
+
+* Declare the data as a time series
+* The 'year' variable indicates the time period
+tsset year
+
+* Use varsoc to get the selection criteria for lags 1 through 20
+* Stata will automatically mark the optimal lag for each criterion with a '*'
+varsoc sunspot, maxlag(20)
+
+```
+
+:::
+
+## BIC
+
+- In addition to the AIC, there is also the Bayesian Information Criterion (BIC), which has a different penalty for larger models. 
+
+:::{.callout-note title="Definition: BIC"}
+
+$$
+BIC = -2 \ln(\hat{L}) + k' \ln(n)
+$$
+
+Where:
+
+*   $\ln(\hat{L})$ = The maximized value of the log-likelihood function for the model. This is the **goodness-of-fit term**.
+*   $k'$ = The number of **estimated parameters** in the model. (For a standard linear regression, this is the number of predictors $k$ plus the intercept, so $k' = k+1$).
+*   $n$ = The number of observations.
+*   $k' \ln(n)$ = The **penalty term**.
+
+*Note: For OLS models assuming normal errors, the BIC can be expressed using the RSS:*
+$BIC = n \cdot \ln(RSS/n) + k' \ln(n)$
+
+:::
+
+## AIC vs BIC
+
+- **The Difference:** The penalty in BIC is $k' \ln(n)$, while in AIC it is $2k'$.
+- **Which is stricter?** For any sample size $n \ge 8$, we have $\ln(n) > 2$.
+  - Therefore, **BIC imposes a larger penalty for extra parameters than AIC**.
+  - As a result, BIC has a stronger tendency to select more **parsimonious** (simpler) models than AIC.
+
+
+# Evaluation
 
 ## Evaluating Forecasts
 
-- Before we make forecasts, we need to know how to measure their accuracy.
+- After we've picked a model, we need to know how well it predicts. 
 - We do this by comparing the actual, observed values ($Y_t$) with our forecasted values ($\hat{Y}_t$).
 
 :::{.callout-note title="Definition: Forecast Error"}
@@ -1375,7 +1662,7 @@ The forecast error is the difference between an actual observation and a forecas
   $$
 :::
 
-## Common Evaluation Metrics:
+## Common Evaluation Metrics
 
 - **Mean Absolute Error (MAE):** $\text{MAE} = \frac{1}{n} \sum_{t=1}^{n} |Y_t - \hat{Y}_t|$
   - **Interpretation:** The average absolute size of the errors. Easy to understand and robust to outliers.
@@ -1519,7 +1806,6 @@ The AR component gives the forecast a persistent, decaying memory, while the MA 
 
 - This lecture has been an introduction. More advanced topics include:
 
-  - **Testing for Stationarity:** Formal tests (like the Dickey-Fuller test) to determine if a series has a unit root.
   - **Cointegration:** A method for analyzing the long-run relationships between non-stationary variables (the proper way to handle trending variables that are truly related).
   - **Volatility Modeling (ARCH/GARCH):** Modeling the changing variance of a time series, which is crucial in finance.
 
