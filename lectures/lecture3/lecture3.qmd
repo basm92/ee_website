@@ -1716,6 +1716,159 @@ The forecast error is the difference between an actual observation and a forecas
 
 - For stationary AR processes, the long-run forecast (as $h \to \infty$) will converge to the unconditional mean of the process: $E[Y] = \frac{c}{1 - \sum \phi_i}$.
 
+## Example: AR Forecast
+
+:::{.callout-tip title="Example: GDP Growth"}
+
+Let's assume we are modeling a country's quarterly GDP growth rate, $g_t$. After analyzing the data, we have estimated the following AR(1) model:
+
+$$
+g_t = 0.20 + 0.70 g_{t-1} + \epsilon_t
+$$
+
+Where:
+
+*   $g_t$ is the GDP growth in quarter $t$.
+*   The intercept $c = 0.20$.
+*   The autoregressive coefficient $\phi_1 = 0.70$.
+*   $\epsilon_t$ is a white noise error term, for which our best forecast is its expected value, $E[\epsilon_t]=0$.
+
+We are at the end of **Quarter 4, 2024** (let's call this period **T**). The last observed GDP growth rate was **1.5%**.
+
+Our goal is to forecast GDP growth for Q1 2025 (period T+1) and Q2 2025 (period T+2).
+
+:::
+
+## Example: AR Forecast (Cont.)
+
+- The core principle of AR forecasting is to use the model iteratively. For any future period, our best guess for the unknown error term ($\epsilon_{T+h}$) is always zero.
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+**A. Forecast for Q1 2025 (1-Step-Ahead Forecast)**
+
+To forecast for period T+1, we use the actual, known data from period T. The forecast, denoted with a "hat", is:
+
+$$
+\hat{g}_{T+1} = c + \phi_1 g_T
+$$
+
+Plugging in our known values:
+
+$$
+\hat{g}_{T+1} = 0.20 + 0.70 \times (1.5)
+$$
+
+$$
+\hat{g}_{T+1} = 0.20 + 1.05 = 1.25
+$$
+
+**Our forecast for Q1 2025 growth is 1.25%.**
+
+:::
+
+## Example: AR Forecast (Cont.)
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+**B. Forecast for Q2 2025 (2-Step-Ahead Forecast)**
+
+To forecast for period T+2, we need the value from the previous period (T+1). Since we are at time T, we do not know the *actual* value of $g_{T+1}$. Therefore, we must **use our own forecast**, $\hat{g}_{T+1}$, as the input.
+
+$$
+\hat{g}_{T+2} = c + \phi_1 \hat{g}_{T+1}
+$$
+
+Plugging in the forecast we just calculated:
+
+$$
+\hat{g}_{T+2} = 0.20 + 0.70 \times (1.25)
+$$
+
+$$
+\hat{g}_{T+2} = 0.20 + 0.875 = 1.075
+$$
+
+**Our forecast for Q2 2025 growth is 1.075%.**
+
+:::
+
+
+## Example: AR Forecast (Cont.)
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+- Now, time passes. We observe the **actual** GDP growth rates for the two quarters we forecasted.
+
+| Period | Forecast ($\hat{g}$) | Actual ($g$) |
+| :--- | :---: | :---: |
+| Q1 2025 | 1.25% | 1.40% |
+| Q2 2025 | 1.075% | 1.10% |
+
+
+- We can now calculate the **Root Mean Squared Error (RMSE)** to measure the accuracy of our forecast.
+
+**Step 1: Calculate the Forecast Errors ($e_t = g_t - \hat{g}_t$)**
+
+*   **Error for Q1 2025:** $e_1 = 1.40 - 1.25 = 0.15$
+*   **Error for Q2 2025:** $e_2 = 1.10 - 1.075 = 0.025$
+
+:::
+
+## Example: AR Forecast (Cont.)
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+**Step 2: Square the Errors and Calculate the Mean (MSE)**
+
+The Mean Squared Error (MSE) is the average of the squared errors.
+
+$$
+MSE = \frac{1}{n} \sum_{i=1}^{n} e_i^2
+$$
+
+$$
+MSE = \frac{1}{2} \left( (0.15)^2 + (0.025)^2 \right)
+$$
+
+$$
+MSE = \frac{1}{2} \left( 0.0225 + 0.000625 \right) = \frac{0.023125}{2} = 0.0115625
+$$
+
+:::
+
+## Example: AR Forecast (Cont.)
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+**Step 3: Take the Square Root of the MSE (RMSE)**
+
+The Root Mean Squared Error (RMSE) brings the metric back into the original units of the data (in this case, percentage points).
+
+$$
+RMSE = \sqrt{MSE}
+$$
+
+$$
+RMSE = \sqrt{0.0115625} \approx 0.1075
+$$
+
+:::
+
+## Example: AR Forecast (Cont.)
+
+:::{.callout-tip title="Example: GDP Growth (Continued)"}
+
+The **RMSE for our two-period forecast is 0.1075%**.
+
+This value can be interpreted as the typical, or average, magnitude of our forecast error.
+
+It means that, over this forecast horizon, our AR(1) model's predictions were, on average, off by about **0.11 percentage points**. 
+
+This single number provides a concise summary of the overall predictive accuracy of the model for this specific forecast period.
+
+:::
+
 ## Forecasting with MA Models
 
 - Now for an MA(q) model. The "memory" of these models is very different.
