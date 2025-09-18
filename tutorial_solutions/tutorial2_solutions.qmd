@@ -83,7 +83,7 @@ reg lhrwage educ exper union male
 
 1. After estimating the OLS model, obtain the residuals.^[In R, you can use the `model$residuals`. In Python, it's `model.resid()`. In Stata, it's `predict res, residuals`. ]
 
-2. Create a scatter plot with the values of `educ` on the x-axis and the squared residuals on the y-axis.
+2. Create a scatter plot with the values of `exper` on the x-axis and the squared residuals on the y-axis.
 
 3. Examine the plot. Does the spread of the squared residuals appear to change as the fitted values decrease? Describe the pattern you see and explain why it might suggest the presence of heteroskedasticity.
 
