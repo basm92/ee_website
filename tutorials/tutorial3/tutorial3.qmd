@@ -20,68 +20,88 @@ resources:
 
 # Recapitulation of the Lecture
 
-## Univariate Time Series 
 
-Time series data consists of observations of a variable or several variables over time, where the chronological ordering is crucial. Its key characteristics include:
+## Fundamentals of Time Series
 
-*   **Serial Correlation:** Observations are often correlated with their past values.
-*   **Trends:** A long-term upward or downward movement.
-*   **Seasonality:** Regular patterns at certain times of the year.
+Time series data consists of observations of a variable or several variables over a specific chronological order.
+**Key Characteristics:**
 
-For a time series to be analyzable, we often assume it is **covariance stationary**, which means its statistical properties are constant over time:
+- **Temporal Ordering:** The order of observations matters; the past can influence the future.
+- **Serial Correlation (Autocorrelation):** Observations are often correlated with their past values. The Autocorrelation Function (ACF) measures this "memory" or persistence.
+- **Trends & Seasonality:** Data may exhibit long-term movements (trends) or regular periodic patterns (seasonality).
 
-1.  **Constant Mean:** $E(Y_t) = \mu$
-2.  **Constant Variance:** $Var(Y_t) = \sigma^2$
-3.  **Constant Autocovariance:** $Cov(Y_t, Y_{t-k})$ depends only on the lag $k$, not on time $t$.
+A time series is **covariance stationary** if its statistical properties are constant over time. This is a crucial assumption for many models.
+  
+  1.  **Constant Mean:** $E(Y_t) = \mu$
+  2.  **Constant Variance:** $Var(Y_t) = \sigma^2$
+  3.  **Constant Autocovariance:** $Cov(Y_t, Y_{t-k}) = \gamma_k$ (depends only on the lag $k$, not on time $t$).
 
-## Spurious Regression
+Non-stationary data can lead to unreliable and misleading results.
 
-Regressing two unrelated, non-stationary time series on each other, such as:
-$$ Y_t = \alpha + \beta X_t + \epsilon_t $$
-can lead to a **spurious regression**. This occurs when both variables have a trend (e.g., they are random walks), causing the OLS estimator to fail.
+## Modeling a Single Time Series & Testing for Stationarity
 
-**Consequences:**
-*   You find a high R-squared and statistically significant coefficients, even if the true relationship is zero.
-*   The results are misleading and economically meaningless.
+- Univariate models describe the behavior of a single time series using its own past.
+- **Autoregressive (AR) Model:** The current value is a function of past values. An AR(1) model is:
+  $$ Y_t = \alpha + \rho Y_{t-1} + u_t $$
+  Here, $\rho$ measures the persistence of shocks.
+- **Moving Average (MA) Model:** The current value is a function of past random shocks ($u_t$). An MA(1) model is:
+  $$ Y_t = \mu + u_t + \theta u_{t-1} $$
+  This model has a finite memory of past shocks.
 
-A key warning sign of spurious regression is highly autocorrelated residuals, which can be detected using the **Breusch-Godfrey test**.
+- If $|\rho| \ge 1$ in an AR(1) model, the series is **non-stationary**.
+- A special case where $\rho=1$ is called a **random walk** or a **unit root process**. In this case, shocks have permanent effects.
 
-## Dynamic Models
+## Testing for Unit Roots
 
-To model relationships correctly and avoid spurious results, we use dynamic models that explicitly account for the time-dependent structure of the data.
+**Testing for Unit Roots: The Dickey-Fuller (DF) Test**
 
-*   **Distributed Lag (DL) Model:** Models how a change in $X$ affects $Y$ over several periods.
-    $$ Y_t = \alpha + \beta_0 X_t + \beta_1 X_{t-1} + \dots + \beta_q X_{t-q} + u_t $$
-  - **$\beta_0$** is the immediate **impact multiplier**.
-  - The **long-run multiplier** is the total effect, calculated as $\sum_{s=0}^{q} \beta_s$.
+This test is used to determine if a series is stationary.
 
-*   **Autoregressive Distributed Lag (ARDL) Model:** A more flexible model that includes lags of both the dependent variable ($Y$) and the explanatory variable ($X$).
-    $$ Y_t = \alpha + \sum_{i=1}^{p} \rho_i Y_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + u_t $$
-  - This model separates the short-run dynamics from the long-run relationship. The **long-run multiplier** for a permanent change in X is:
-    $$ \theta = \frac{\sum_{j=0}^{q} \beta_j}{1 - \sum_{i=1}^{p} \rho_i} $$
+**Model:** $\Delta y_t = \gamma y_{t-1} + \epsilon_t$, where $\gamma = \rho - 1$.
 
+**Hypotheses:**
 
-## Forecasting
+- **Null Hypothesis ($H_0$):** $\gamma = 0$ (The series has a unit root and is non-stationary).
+- **Alternative Hypothesis ($H_A$):** $\gamma < 0$ (The series is stationary).
+- The **Augmented Dickey-Fuller (ADF) Test** is an extension that accounts for more complex dynamics.
 
-Forecasting involves predicting future values of a time series based on its past. The primary goal is to calculate the **conditional expectation** of a future value, given the information set ($I_t$) available up to time $t$:
+## Relationships Between Time Series & Dynamic Models
 
-$$ \text{Forecast} = E[Y_{t+h} | I_t] $$
-where $h$ is the forecast horizon. The accuracy of forecasts is evaluated on **out-of-sample** data using metrics like **Mean Absolute Error (MAE)** or **Root Mean Squared Error (RMSE)**.
+**The Danger of Spurious Regression:**
 
-## Forecasting with Different Models
+- Regressing two unrelated non-stationary time series on each other can produce statistically significant results (high $R^2$, significant t-statistics) purely because both series share a common trend.
 
-The structure of a model dictates its forecast behavior:
+- This creates a misleading and nonsensical relationship.
+- **Solution:** Ensure variables are stationary (often by taking first differences) or use models designed for non-stationary data.
 
-*   **AR(p) Models:** Forecasting is an iterative process. To predict $Y_{t+2}$, you first need the forecast for $Y_{t+1}$. This gives the forecast a long, decaying memory that slowly converges to the series' mean.
-    $$ \hat{Y}_{t+2|t} = c + \rho_1 \mathbf{\hat{Y}_{t+1|t}} + \rho_2 Y_t + \dots $$
+**Autoregressive Distributed Lag (ARDL) Models**
 
-*   **MA(q) Models:** These models have a **short memory**. The effect of past random shocks disappears after $q$ periods. For any forecast horizon $h > q$, the forecast reverts to the mean of the series.
-    $$ \hat{Y}_{t+h|t} = \mu \quad \text{for all } h > q $$
+- ARDL models are flexible tools that capture complex dynamics by including lags of both the dependent variable (AR part) and independent variable(s) (DL part). An ARDL(p,q) model has the form:$Y_t = \alpha + \sum_{i=1}^{p} \rho_i Y_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + u_t$
 
-*   **ARMA(p,q) Models:** This hybrid approach combines the long-memory persistence of the AR component with the short-term shock effects of the MA component.
+- **Interpreting ARDL Coefficients**
+- **Short-Run (Impact) Multiplier:** The immediate effect of a one-unit change in $X_t$ on $Y_t$ is given by $\beta_0$.
+- **Long-Run Multiplier (LRM):** The total, cumulative effect on $Y$ after a permanent change in $X$ has fully worked through the system. It is calculated as:
+  $$ \theta_{LRM} = \frac{\sum_{j=0}^{q} \beta_j}{1 - \sum_{i=1}^{p} \rho_i} $$
 
-*   **ARDL(p,q) Models:** These models use external variables ($X$) to improve forecasts. However, this introduces a new challenge: to forecast $Y$ for a future period, you also need the future values of $X$. This requires either building a separate forecast model for $X$ or creating specific scenarios.
+## Model Selection & Forecasting
 
+**How to Choose the Right Model?**
+
+- Adding more variables or lags increases $R^2$ but risks **overfitting** (modeling noise instead of the true relationship).
+- We need criteria that balance model fit with model simplicity (parsimony).
+- **Information Criteria:**
+- **Akaike Information Criterion (AIC):** $AIC = 2k - 2\ln(L)$
+- **Bayesian Information Criterion (BIC):** $BIC = k \ln(n) - 2\ln(L)$
+- For both, $k$ is the number of parameters and $L$ is the maximized likelihood. We choose the model with the **lowest** AIC or BIC value. BIC tends to select simpler models than AIC.
+
+**Forecasting:** 
+
+  - To predict future values based on all available information up to the present, i.e., calculate the conditional expectation $E[Y_{t+h} | I_t]$.
+- **Procedure:** Forecasting is an iterative process where unknown future values are replaced by their forecasts.
+  - **AR Models:** Forecasts have a long memory and converge slowly to the series mean.
+  - **MA Models:** Forecasts have a short memory, reverting to the mean after $q$ periods.
+- **Evaluation:** Forecast accuracy is tested on **out-of-sample** data using metrics like Mean Squared Error (MSE) or Root Mean Squared Error (RMSE): $RMSE = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (Y_t - \hat{Y}_t)^2}$. 
+  
 # Questions
 
 ## Forecasting US Economic Growth
@@ -97,7 +117,7 @@ This question focuses on **univariate modeling and prediction**. You will model 
 3. What happens to the forecast after a certain number of periods?
 
 
-## Investigating Stationarity and Spurious Regression
+## Investigating Autocorrelation
 
 This question tests your ability to identify **non-stationary data and avoid spurious regression**. You will investigate the relationship between housing inventory (the dependent variable) and population size (the independent variable) from the `HSEINV.DTA` dataset available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA). 
 
@@ -157,11 +177,14 @@ The lecture defines a random walk as an AR(1) model with $\rho=1$. If the daily 
 
 Explain why a shock (e.g., unexpected good news) on a given day has a "permanent" effect on the future price path of the stock.
 
-## The Role of the Breusch-Godfrey Test
+## The Role of the Dickey-Fuller Test
 
-You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and suspect the relationship might be spurious. You run a Breusch-Godfrey test with an order of p=2 and get a very small p-value (e.g., 0.001). 
+You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and find a high R-squared and a statistically significant $\beta$ coefficient. However, you suspect the relationship might be spurious because plots of both $Y_t$ and $X_t$ show strong trends.
 
-What is the null hypothesis of this test, and what does this result tell you about the error term $\epsilon_t$? How does this finding support the concern about a spurious regression?
+To investigate this, you use the Dickey-Fuller (or ADF) test.
+1.  What is the null hypothesis of this test?
+2.  You run the ADF test on both $Y_t$ and $X_t$ individually and, in both cases, the p-value is large (e.g., > 0.10). What does this failure to reject the null hypothesis tell you about the nature of these two time series?
+3.  Finally, you run the ADF test on the residuals, $\hat{\epsilon}_t$, from your initial regression. The p-value for this test is also large. Why is this final step crucial, and what does this result strongly suggest about your initial regression model?
 
 ## ARDL Model Interpretation
 

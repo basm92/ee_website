@@ -58,7 +58,7 @@ predict(ar_model, n.ahead = 10)$pred
 
 The forecast starts to convert towards the mean of the AR process. 
 
-## Investigating Stationarity and Spurious Regression
+## Investigating Autocorrelation
 
 1. Run a simple OLS regression with the Housing Inventory (`inv`) as the dependent variable and Population (`pop`) as the independent variable.
 
@@ -324,16 +324,15 @@ $$
 Since the initial shock $u_t$ is part of the term $Y_t$, its value is carried forward indefinitely in all future values of the series. Unlike a stationary process where shocks eventually dissipate, in a random walk, a shock permanently shifts the entire future path of the series up or down.
 
 
-## The Role of the Breusch-Godfrey Test
+## The Role of the Dickey-Fuller Test
 
-**1. Null Hypothesis:**
-The null hypothesis ($H_0$) of the Breusch-Godfrey test is that there is **no serial correlation** in the error term, $\epsilon_t$, up to the specified lag order $p$. For $p=2$, the null is explicitly $H_0: \rho_1 = 0 \text{ and } \rho_2 = 0$ in the auxiliary regression of residuals: $\epsilon_t = \rho_1 \epsilon_{t-1} + \rho_2 \epsilon_{t-2} + v_t$.
+1.  **Null Hypothesis:** The null hypothesis ($H_0$) of the Dickey-Fuller test is that the time series has a **unit root**. In simpler terms, this means the series is **non-stationary**. The alternative hypothesis ($H_A$) is that the series is stationary.
 
-**2. Interpretation of the Result:**
-A very small p-value (e.g., 0.001) is less than conventional significance levels (like 0.05 or 0.01). Therefore, you **reject the null hypothesis**. This result provides strong statistical evidence that the error term $\epsilon_t$ is serially correlated.
+2.  **Interpretation of Tests on Y and X:** Failing to reject the null hypothesis for both $Y_t$ and $X_t$ indicates that both series are likely **non-stationary** (specifically, integrated of order 1, or I(1)). This finding confirms the initial suspicion based on the plots and is the classic prerequisite for a spurious regression. When two non-stationary series are regressed on each other, their common underlying trends can create the statistical illusion of a meaningful relationship, even if they are completely unrelated.
 
-**3. Support for Spurious Regression Concern:**
-This finding strongly supports the concern that the regression is spurious. A key symptom of a spurious regression—where two unrelated, non-stationary variables are regressed on each other—is that the residuals are also highly persistent and autocorrelated. By confirming the presence of significant serial correlation in the errors, the Breusch-Godfrey test indicates that a critical assumption for valid OLS inference (uncorrelated errors) is violated. This suggests that the model is misspecified and that the apparently significant relationship between X and Y is likely a statistical artifact of them sharing a common trend, not a true economic connection.
+3.  **Interpretation of the Test on Residuals:** This final step is the most critical diagnostic for spurious regression.
+    - **Why it's crucial:** If $Y_t$ and $X_t$ shared a true, long-run economic relationship, we would expect the residuals ($\hat{\epsilon}_t$) of the regression to be stationary. This special case is called **cointegration**, where the deviations from the long-run equilibrium are temporary and mean-reverting.
+    - **What the result means:** By finding that the residuals are also **non-stationary** (failing to reject the null of a unit root), you have strong evidence that the regression is **spurious**. This result implies that the error term does not revert to a mean of zero; the deviations from the estimated regression line are themselves persistent and follow a random walk. This confirms that the model has not captured a stable economic equilibrium but has simply fitted one non-stationary trend onto another.
 
 
 ## ARDL Model Interpretation
