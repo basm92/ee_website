@@ -25,6 +25,22 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
+# ECU Message
+
+## ECU Message [1]
+
+<iframe src="committee_recruitment.pdf" width="100%" height="500"></iframe>
+
+## ECU Message [2]
+
+<iframe src="committee_recruitment.pdf#page=2" width="100%" height="500"></iframe>
+
+
+## ECU Message [3]
+
+<iframe src="committee_recruitment.pdf#page=3" width="100%" height="500"></iframe>
+
+
 # Introduction
 
 ## Course Overview
@@ -48,7 +64,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Consider more advanced time series models
 - Prediction in all aforementioned models
 
-- **Material**: Wooldridge Chapters 10 and 11
+- **Material**: Wooldridge Chapters 10, 11, 12, 18.5
 
 # Motivation
 
@@ -897,22 +913,24 @@ where $v_t$ is a white noise term. $H_0: \rho_1, \dots, \rho_p=0$, and $H_A$ is 
 
 ## Breusch-Godfrey Test Steps
 
-:::{.callout-note title="Breusch-Godfrey Test: Procedure"}
+:::{.callout-note title="Breusch-Godfrey Test: Procedure" style="font-size:0.9em;"}
 The BG test is performed in three simple steps:
 
-- Run the Main Regression: First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals,
-- Run an Auxiliary Regression. Run a new regression where the residual $e_t$ is the dependent variable. The independent variables are:
+- First, estimate your original model using OLS, regardless of what it is. Obtain the series of residuals.
+- Run a new regression where the residual $e_t$ is the dependent variable. The independent variables are:
   - All the original regressors from the main model. 
   - The lagged residuals up to order $p$: $e_{t-1}, \dots, e_{t-p}$. 
-- Obtain the R-squared: Calculate the R-squared from this auxiliary regression. 
 
 ---
 
-- The Breusch-Godfrey test uses a Lagrange Multiplier (LM) statistic: $LM = T \times R^2_{aux}$, where $T$ is the number of observations used in the auxiliary regression and $R^2_{aux}$ is the $R^2$ from the auxiliary regression in Step 2.
+- When testing for first-order serial correlation (p=1), a t-test can be used to determine the significance of the coefficient on the single lagged residual in the auxiliary regression.
+  - Under the null hypothesis of no serial correlation, this t-statistic follows a t-distribution. 
+  - If the absolute value of the calculated t-statistic exceeds the critical value from the t-distribution, the null hypothesis is rejected, indicating the presence of serial correlation.
 
-- Under the null hypothesis of no serial correlation, the LM statistic follows a $\chi^2$ distribution with p degrees of freedom (where p is the number of lagged residuals included).
-
-- If $LM > \chi^2_{crit}$, you reject the null hypothesis. You conclude there is significant evidence of serial correlation.
+- When testing for higher orders of serial correlation (p > 1), multiple lagged residuals are included in the auxiliary regression.
+  - In this situation, an F-test is employed to test the joint significance of all the coefficients on the lagged residuals. 
+  - A significant F-statistic suggests the presence of serial correlation.
+  - For the case of a single lagged residual (p=1), the F-statistic is equal to the square of the t-statistic, yielding the same conclusion.
   
 :::
 
@@ -1231,9 +1249,8 @@ The variance depends on time $t$ and grows without bound. This is a clear violat
   - The **t-statistics** for the estimated coefficients will likely be **significant**.
   - You might conclude that X causes Y, but this conclusion would be **meaningless and misleading**.
   
-- Detecting spurious regression: **Breusch-Godfrey** or **Dickey-Fuller** tests
-  - Ex ante: if both series $Y_t$ and $X_t$ have a unit root (i.e., you fail to reject $H_0$ for both), then running a simple OLS regression of Y on X is at high risk of being spurious.
-  - Ex-post: the "error" in this model is not a random, white-noise process. Instead, the residuals themselves are highly persistent and non-stationary. Detectable via Breusch-Godfrey.
+- Detecting spurious regression: **Dickey-Fuller** tests
+  - If both series $Y_t$ and $X_t$ have a unit root (i.e., you fail to reject $H_0$ for both), then running a simple OLS regression of Y on X is at high risk of being spurious.
 
 ## Avoiding Spurious Regression
 
