@@ -3,15 +3,33 @@ title: "Solutions Tutorial 3"
 format: html
 ---
 
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
 
-## Forecasting US Economic Growth
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+
+## Forecasting Fertility
 
 This question focuses on **univariate modeling and prediction**. You will model the fertility rate using the `FERTIL3.DTA` dataset. Import it into R/Python/Stata and 
 
 1. Fit an Autoregressive, AR(p), model. Use the Akaike information criterion to select the optimal number of lags, `p`.
 
+:::{.panel-tabset}
+
+### R
+
+The output from R is a bit different from the Python/Stata output due to implementational differences.
+
+
 ```{r}
-#| echo: True
+#| echo: true
 library(haven)
 url <- 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA'
 fertil <- read_dta(url)
@@ -21,9 +39,59 @@ ar_model <- ar(fertil$gfr, aic=TRUE, order.max=10)
 ar_model$order  # Optimal order based on AIC
 ```
 
-2. Using the autoregressive specification you've found, compute (by hand) a forcast of two periods into the future. 
+### Python
 
-Since the optimal order is 8, we need 8 observations to make our prediction for the next period: 
+The output from Python is a bit different from the R output due to implementational differences.
+
+```{python}
+#| echo: True
+
+import pandas as pd
+from statsmodels.tsa.ar_model import ar_select_order
+
+# URL for the Stata data file
+url = 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA'
+
+# Read the data using pandas (equivalent to haven::read_dta)
+fertil = pd.read_stata(url)
+
+# Select the optimal AR model order using AIC
+# This is equivalent to R's ar(fertil$gfr, aic=TRUE, order.max=10)
+selection_result = ar_select_order(fertil['gfr'], maxlag=10, ic='aic')
+
+# Print the optimal order (equivalent to ar_model$order)
+print(selection_result.model._k_ar)
+```
+
+### Stata
+
+The output from Stata is a bit different from the R/Python output due to implementational differences.
+
+
+```{stata}
+#| echo: true
+#| eval: false
+* 1. Clear any existing data and load the .dta file from the URL
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA", clear
+
+* 2. Declare the data as a time series, using the 'year' variable as the time index
+tsset year
+
+* 3. Run the lag-order selection command for the 'gfr' variable
+* This command calculates various criteria (including AIC) for models with 1 up to 10 lags.
+* The asterisk (*) in the output table marks the optimal lag for each criterion.
+varsoc gfr, maxlag(10)
+```
+
+:::
+
+2. Using an autoregressive specification with 2 lags, compute (by hand) a forcast of two periods into the future. 
+
+:::{.panel-tabset}
+
+### R
+
+Since the optimal order is 2, we need 2 observations to make our prediction for the next period: 
 
 ```{r}
 #| echo: true
@@ -45,7 +113,102 @@ forecast_2 <- intercept + sum(coeffs * new_values)
 forecast_2
 ```
 
+### Python
+
+```{python}
+#| echo: true
+#| collapse: true
+from statsmodels.tsa.ar_model import AutoReg
+import pandas as pd
+
+# Step 1: Estimate a model with lag 2
+model = AutoReg(fertil['gfr'], lags = 2).fit()
+
+# Step 2: Get the last two observed values required for the forecast ---
+y_T = fertil.iloc[-1]['gfr']      # The last value in the series, Y(t)
+y_T_minus_1 = fertil.iloc[-2]['gfr'] # The second to last value, Y(t-1)
+
+# Step 3: Extract the estimated parameters from the fitted model ---
+params = model.params
+intercept = params['const']
+phi_1 = params['gfr.L1']
+phi_2 = params['gfr.L2']
+
+# Step 4: Prediction
+# Forecast 1: Prediction for period T+1
+forecast_1 = intercept + (phi_1 * y_T) + (phi_2 * y_T_minus_1)
+# Forecast 2: Prediction for period T+2
+# For this step, the predicted value 'forecast_1' becomes the new Y(t),
+# and the previous Y(t) becomes the new Y(t-1).
+forecast_2 = intercept + (phi_1 * forecast_1) + (phi_2 * y_T)
+
+print("Manual 'By Hand' Forecasts:")
+print(f"  Forecast for T+1: {forecast_1:.4f}")
+print(f"  Forecast for T+2: {forecast_2:.4f}")
+print("-" * 40)
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+* --- Setup: Load data and set as time series ---
+clear
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA", clear
+tsset year
+
+* --- Step 1: Estimate the AR(2) model ---
+* We regress gfr on its first and second lags (L.gfr and L2.gfr)
+regress gfr L.gfr L2.gfr
+
+* --- Step 2: Extract the estimated parameters into local macros ---
+* Stata stores the coefficients in _b[varname] after a regression
+local intercept = _b[_cons]
+local phi1 = _b[L.gfr]
+local phi2 = _b[L2.gfr]
+
+* Display the captured parameters to verify
+display ""
+display as text "Fitted AR(2) Model Parameters:"
+display as result "  Intercept (c):    " `intercept'
+display as result "  Lag 1 Coeff (phi1): " `phi1'
+display as result "  Lag 2 Coeff (phi2): " `phi2'
+display "----------------------------------------"
+
+* --- Step 3: Get the last two observed values required for the forecast ---
+* _N refers to the last observation in the dataset
+local y_T = gfr[_N]
+local y_T_minus_1 = gfr[_N-1]
+
+display as text "Last two observed values used for prediction:"
+display as result "  Y(t)   = " `y_T'
+display as result "  Y(t-1) = " `y_T_minus_1'
+display "----------------------------------------"
+
+* --- Step 4: "By Hand" prediction of 2 periods in the future ---
+* Use the 'display' command as a calculator with our stored macros
+
+* Forecast 1: Prediction for period T+1
+local forecast_1 = `intercept' + (`phi1' * `y_T') + (`phi2' * `y_T_minus_1')
+
+* Forecast 2: Prediction for period T+2
+* Note: We use the calculated `forecast_1` as the new Y(t)
+local forecast_2 = `intercept' + (`phi1' * `forecast_1') + (`phi2' * `y_T')
+
+display as text "Manual 'By Hand' Forecasts:"
+display as result "  Forecast for T+1: " `forecast_1'
+display as result "  Forecast for T+2: " `forecast_2'
+```
+
+:::
+
 2. Generate a forecast from your fitted model for 10 periods after the end of the dataset. 
+
+:::{.panel-tabset}
+
+### R
 
 This can also be done using the `predict()` function in R:
 
@@ -53,6 +216,40 @@ This can also be done using the `predict()` function in R:
 #| echo: true
 predict(ar_model, n.ahead = 10)$pred
 ```
+
+### Python
+
+```{python}
+#| echo: true
+predictions = model.forecast(steps=10)
+print(predictions)
+```
+
+
+### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+* Step 1: Create a forecast model and add the AR(2) estimation ---
+* Initialize a new forecast model named 'mymodel'
+forecast create mymodel, replace
+
+* Tell the model which equation to estimate (our AR(2) model)
+forecast estimates myar2: regress gfr L.gfr L2.gfr
+
+* Step 2: Solve the forecast ---
+* This command automatically extends the time series and calculates the dynamic forecast.
+* By default, it uses the end of the sample as the starting point.
+forecast solve, step(10)
+
+* --- Step 3: View the results ---
+* The results are stored in new variables, typically with an _f suffix.
+* Let's list them to see the predictions.
+list year gfr_f if year > 72
+```
+
+:::
 
 3. What happens to the forecast after a certain number of periods?
 

@@ -104,13 +104,13 @@ This test is used to determine if a series is stationary.
   
 # Questions
 
-## Forecasting US Economic Growth
+## Forecasting Fertility
 
 This question focuses on **univariate modeling and prediction**. You will model the fertility rate using the `FERTIL3.DTA` dataset available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/FERTIL3.DTA). Import it into R/Python/Stata and 
 
 1. Fit an Autoregressive, AR(p), model. Use an information criterion (like the AIC or BIC/SIC) to select the optimal number of lags, `p`.
 
-2. Using the autoregressive specification you've found, compute (by hand) a forcast of two periods into the future. 
+2. Using the autoregressive specification of 2 lags, compute (by hand) a forcast of two periods into the future. 
 
 2. Generate a forecast from your fitted model for 10 periods after the end of the dataset. 
 
