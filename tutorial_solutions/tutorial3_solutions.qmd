@@ -259,6 +259,10 @@ The forecast starts to convert towards the mean of the AR process.
 
 1. Run a simple OLS regression with the Housing Inventory (`inv`) as the dependent variable and Population (`pop`) as the independent variable.
 
+:::{.panel-tabset}
+
+### R
+
 ```{r}
 #| echo: true
 library(haven)
@@ -267,32 +271,103 @@ housing <- haven::read_dta(url)
 model <- lm(inv ~ pop, data = housing)
 ```
 
+### Python
+
+```{python}
+#| echo: true
+import pandas as pd
+import statsmodels.formula.api as smf
+url = 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA'
+housing = pd.read_stata(url)
+model = smf.ols("inv ~ pop", data = housing)
+```
+
+### Stata
+
+
+:::
+
 2. Report the R-squared value and the t-statistic (or p-value) for the `inv` coefficient. What would a naive interpretation of these results suggest about the relationship between these two variables?
+
+:::{.panel-tabset}
+
+### R
 
 ```{r}
 #| echo: true
 summary(model)
 ```
 
+### Python
+
+```{python}
+#| echo: true
+model.fit().summary()
+```
+
+### Stata
+
+:::
+
 3. Run the Breusch-Godfrey test with `order=1` and report the $p$-value. What does this suggest? 
+
+:::{.panel-tabset}
+
+### R
 
 ```{r}
 #| echo: true
 #| warning: false
 #| message: false
-#| 
 library(lmtest, quietly=T)
 bgtest(inv ~ pop, order=1, data=housing)
 ```
+
+### Python
+
+```{python}
+#| echo: true
+from statsmodels.stats.diagnostic import acorr_breusch_godfrey
+bg_test = acorr_breusch_godfrey(model.fit(), nlags=1)
+f_statistic = bg_test[2]
+f_p_value = bg_test[3]
+
+print(f"F Stat.: {f_statistic}")
+print(f"p-val.: {f_p_value}")
+```
+
+### Stata
+
+:::
 
 This suggest that there is serial autocorrelation. The model is likely misspecified. 
 
 4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
 
+:::{.panel-tabset}
+
+### R
+
 ```{r}
+#| echo: true
 model2 <- lm(inv ~ pop + lpop + linv, data=housing)
 bgtest(inv ~ pop + lpop + linv, order=1, data=housing)
 ```
+
+### Python
+
+```{python}
+#| echo: true
+model_ext = smf.ols("inv ~ pop + lpop + linv", data = housing).fit()
+bg_test = acorr_breusch_godfrey(model_ext, nlags=1)
+print("F-statistic:", bg_test[2])
+print("p-value:", bg_test[3])
+```
+
+### Stata
+
+
+:::
 
 After controlling for the lagged housing inventory and lagged population, there seems to be no autocorrelation in the errors. The `inv` series thus seems to follow an ARDL(1,1) model. 
 
