@@ -284,6 +284,17 @@ model = smf.ols("inv ~ pop", data = housing)
 
 ### Stata
 
+```{stata}
+#| echo: true
+#| eval: false
+* 1. Load the Stata dataset directly from the URL
+* The 'clear' option removes any data currently in memory before loading the new file.
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA", clear
+
+* 2. Run the OLS regression
+regress inv pop
+```
+
 
 :::
 
@@ -306,6 +317,8 @@ model.fit().summary()
 ```
 
 ### Stata
+
+The former command already shows the result.
 
 :::
 
@@ -338,6 +351,12 @@ print(f"p-val.: {f_p_value}")
 
 ### Stata
 
+```{stata}
+#| echo: true
+#| eval: false
+estat bgodfrey, lags(1)
+```
+
 :::
 
 This suggest that there is serial autocorrelation. The model is likely misspecified. 
@@ -366,6 +385,17 @@ print("p-value:", bg_test[3])
 
 ### Stata
 
+```{stata}
+#| eval: false
+#| echo: true
+* Load the data
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA", clear
+
+* Run the OLS regression
+regress inv pop lpop linv
+* Perform the Breusch-Godfrey test for autocorrelation up to 1 lag
+estat bgodfrey, lags(1)
+```
 
 :::
 
