@@ -361,7 +361,7 @@ estat bgodfrey, lags(1)
 
 This suggest that there is serial autocorrelation. The model is likely misspecified. 
 
-4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
+4. Repeat step 1 and 3, but include the lagged housing inventory, the lagged population, and both two-period lags of housing and population as independent variables. What do you conclude? 
 
 :::{.panel-tabset}
 
@@ -369,15 +369,24 @@ This suggest that there is serial autocorrelation. The model is likely misspecif
 
 ```{r}
 #| echo: true
-model2 <- lm(inv ~ pop + lpop + linv, data=housing)
-bgtest(inv ~ pop + lpop + linv, order=1, data=housing)
+#| message: false
+#| warning: false
+
+library(dplyr)
+model2 <- lm(inv ~ pop + lag(pop) + lag(inv) + lag(pop, 2) + lag(inv, 2), data=housing)
+bgtest(model2, order=1, data=housing)
 ```
 
 ### Python
 
 ```{python}
 #| echo: true
-model_ext = smf.ols("inv ~ pop + lpop + linv", data = housing).fit()
+housing['lag1pop'] = housing['pop'].shift(1)
+housing['lag2pop'] = housing['pop'].shift(2)
+housing['lag1inv'] = housing['inv'].shift(1)
+housing['lag2inv'] = housing['inv'].shift(2)
+
+model_ext = smf.ols("inv ~ pop + lag1pop + lag2pop + lag1inv + lag2inv", data = housing).fit()
 bg_test = acorr_breusch_godfrey(model_ext, nlags=1)
 print("F-statistic:", bg_test[2])
 print("p-value:", bg_test[3])
@@ -392,14 +401,14 @@ print("p-value:", bg_test[3])
 use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/HSEINV.DTA", clear
 
 * Run the OLS regression
-regress inv pop lpop linv
+regress inv pop L.pop L.inv L2.pop L2.inv
 * Perform the Breusch-Godfrey test for autocorrelation up to 1 lag
 estat bgodfrey, lags(1)
 ```
 
 :::
 
-After controlling for the lagged housing inventory and lagged population, there seems to be no autocorrelation in the errors. The `inv` series thus seems to follow an ARDL(1,1) model. 
+After controlling for the lagged housing inventory and lagged population, there seems to be no autocorrelation in the errors. The `inv` series thus seems to follow an ARDL(2,2) model. 
 
 ## Derivation of the Unconditional Mean of an AR(1) Process
 

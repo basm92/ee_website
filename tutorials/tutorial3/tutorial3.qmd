@@ -101,6 +101,14 @@ This test is used to determine if a series is stationary.
   - **AR Models:** Forecasts have a long memory and converge slowly to the series mean.
   - **MA Models:** Forecasts have a short memory, reverting to the mean after $q$ periods.
 - **Evaluation:** Forecast accuracy is tested on **out-of-sample** data using metrics like Mean Squared Error (MSE) or Root Mean Squared Error (RMSE): $RMSE = \sqrt{\frac{1}{n} \sum_{t=1}^{n} (Y_t - \hat{Y}_t)^2}$. 
+
+# Wooclap
+
+## Wooclap
+
+[Wooclap Link](https://app.wooclap.com/OFZFSD/questionnaires/68d2e8c4cdf3b1e602b2fcd9)
+Wooclap Code: OFZFSD (Tutorial 3)
+
   
 # Questions
 
@@ -127,7 +135,7 @@ This question tests your ability to identify **non-stationary data and avoid spu
 
 3. Run the Breusch-Godfrey test with `order=1` and report the $p$-value. What does this suggest? 
 
-4. Repeat step 1 and 3, but include the lagged housing inventory, `linv`, and the lagged population `lpop` as independent variables. What do you conclude? 
+4. Repeat step 1 and 3, but include the lagged housing inventory, the lagged population, and both two-period lags of housing and population as independent variables. What do you conclude? 
 
 ## Derivation of the Unconditional Mean of an AR(1) Process
 
