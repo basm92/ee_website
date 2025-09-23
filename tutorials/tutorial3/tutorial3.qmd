@@ -187,9 +187,8 @@ Explain why a shock (e.g., unexpected good news) on a given day has a "permanent
 
 ## The Role of the Dickey-Fuller Test
 
-You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and find a high R-squared and a statistically significant $\beta$ coefficient. However, you suspect the relationship might be spurious because plots of both $Y_t$ and $X_t$ show strong trends.
+You estimate a linear model $Y_t = \alpha + \beta X_t + \epsilon_t$ and find a high R-squared and a statistically significant $\beta$ coefficient. However, you suspect the relationship might be spurious because plots of both $Y_t$ and $X_t$ show strong trends. To investigate this, you use the Dickey-Fuller (or ADF) test.
 
-To investigate this, you use the Dickey-Fuller (or ADF) test.
 1.  What is the null hypothesis of this test?
 2.  You run the ADF test on both $Y_t$ and $X_t$ individually and, in both cases, the p-value is large (e.g., > 0.10). What does this failure to reject the null hypothesis tell you about the nature of these two time series?
 3.  Finally, you run the ADF test on the residuals, $\hat{\epsilon}_t$, from your initial regression. The p-value for this test is also large. Why is this final step crucial, and what does this result strongly suggest about your initial regression model?
