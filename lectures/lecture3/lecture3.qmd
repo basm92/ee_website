@@ -775,6 +775,7 @@ print(arma_results.summary())
 
 ```{stata}
 #| eval: false
+#| echo: true
 #| code-fold: true
 
 * Generate sample data  

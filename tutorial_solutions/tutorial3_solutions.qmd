@@ -85,7 +85,7 @@ varsoc gfr, maxlag(10)
 
 :::
 
-2. Using an autoregressive specification with 2 lags, compute (by hand) a forcast of two periods into the future. 
+2. Using an autoregressive specification with 2 lags, compute (by hand) a forecast of two periods into the future. 
 
 :::{.panel-tabset}
 
@@ -235,18 +235,25 @@ print(predictions)
 * Initialize a new forecast model named 'mymodel'
 forecast create mymodel, replace
 
-* Tell the model which equation to estimate (our AR(2) model)
-forecast estimates myar2: regress gfr L.gfr L2.gfr
+*Step 2: regress the model
+regress gfr L.gfr L2.gfr
 
-* Step 2: Solve the forecast ---
-* This command automatically extends the time series and calculates the dynamic forecast.
-* By default, it uses the end of the sample as the starting point.
-forecast solve, step(10)
+*Step 3: create the estimates of model
+estimates store myar2
 
-* --- Step 3: View the results ---
+*Step 4: use the estimates to forecast
+forecast estimates myar2
+
+*Step 5: extend the dataset with the number of T you would like to forecast
+tsappend, add(10)
+
+* Step 6: Solve the forecast --- you need to specify the starting year from where you would like to use the model to forecast as well as the number of periods 
+forecast solve, begin(1985) periods(10)
+
+*Step 7: View the results
 * The results are stored in new variables, typically with an _f suffix.
 * Let's list them to see the predictions.
-list year gfr_f if year > 72
+list year f_gfr if year > 72
 ```
 
 :::

@@ -153,6 +153,8 @@ reg lhrwage educ exper union male, robust
 
 ## Omitted Variable Bias
 
+[See here for an extensive, more mathemetically correct, but more technical derivation of the same question.](/tutorial_solutions/OmittedVariableBiasDerivation.pdf)
+
 **Show that the expected value of the estimator from the incorrect short regression is** $E(\hat{\gamma}_1) = \beta_1 + \beta_2 \cdot \delta_1$.
 
 1.  The estimated coefficient from the incorrect (short) regression of $y$ on $x_1$ is: $$ \hat{\gamma}_1 = \frac{\sum(x_{1i}-\bar{x}_1)y_i}{\sum(x_{1i}-\bar{x}_1)^2} $$
