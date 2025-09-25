@@ -45,14 +45,6 @@ While the Fixed Effects (FE) model is robust to correlation between unobserved e
 3.  Perform a **Hausman test** to formally compare the two models.
 4.  **Conclude:** Based on the p-value of the test, which model should you choose? Clearly state the null hypothesis of the Hausman test and explain what your result implies about the relationship between the unobserved individual effects ($\alpha_i$) and the explanatory variables in your model.
 
-## Visualizing Unobserved Heterogeneity
-
-The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.
-
-1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
-2.  Extract the individual fixed effects from your estimated model.
-3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
-4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
 
 ## Time-Invariant Variables
 
@@ -63,13 +55,6 @@ A critical drawback of the Fixed Effects model is that it cannot estimate the co
 3.  Now, estimate a **Random Effects** model using the exact same set of predictors.
 4.  **Explain the difference:** Why can the RE model provide estimates for `black` and `hisp` while the FE model cannot? Relate your answer directly to the underlying mathematical transformation of each estimator.
 
-## Efficiency of FD vs. FE Estimators
-
-The lecture notes that the First Difference (FD) estimator can be more efficient than the Fixed Effects (FE) estimator if the idiosyncratic error term, $\epsilon_{it}$, follows a random walk. 
-
-Let the error term be defined as $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, where $\nu_{it}$ is a white noise error. 
-
-Show mathematically how the error term in the transformed FD model ($\Delta \epsilon_{it}$) becomes non-serially correlated, while the error term in the transformed FE model ($\epsilon_{it} - \bar{\epsilon}_i$) remains serially correlated.
 
 ## Interpreting the Hausman Test Statistic
 

@@ -18,5 +18,107 @@ resources:
 
 # Tutorial 4
 
+# Recapitulation of the Lecture
 
+## Panel Data
+
+- Data that follows the same individuals (e.g., firms, countries, people) over multiple time periods.
+- It combines a **cross-sectional dimension** ($i=1, ..., N$) and a **time-series dimension** ($t=1, ..., T$).
+
+- The primary reason to use panel data is to control for **unobserved heterogeneity**—time-invariant factors that are difficult or impossible to measure (e.g., a firm's management quality, an individual's innate ability).
+- These unobserved factors are captured in an individual-specific effect, $\alpha_i$.
+- By accounting for $\alpha_i$, we can get a better estimate of the causal effect of our variables of interest.
+
+- **Between Variation:** Variation *across* individuals at a given point in time.
+- **Within Variation:** Variation *over time* for a single individual.
+- Panel methods like Fixed Effects primarily use **within variation** to estimate coefficients.
+
+## The FE Model
+
+- The Fixed Effects model explicitly includes an individual-specific intercept, $\alpha_i$, for each entity:
+  $y_{it} = \alpha_i + \beta_1 X_{it} + u_{it}$
+- **Key Idea:** It allows the unobserved effect $\alpha_i$ to be **correlated** with the explanatory variables $X_{it}$. This is crucial for controlling for selection bias.
+
+- Two equivalent methods eliminate $\alpha_i$ to estimate $\beta$:
+  
+  1. **Within Estimator (De-meaning):**
+    - Subtract the time-mean from each variable for each individual.
+    - $(y_{it} - \bar{y}_i) = \beta_1(X_{it} - \bar{X}_i) + (u_{it} - \bar{u}_i)$
+    - Or: $\ddot{y}_{it} = \beta_1 \ddot{X}_{it} + \ddot{u}_{it}$
+    - Run OLS on the "de-meaned" data.
+  
+  2. **Least Squares Dummy Variable (LSDV):**
+    - Include a dummy variable for each individual (minus one) in a pooled OLS regression.
+    - $y_{it} = \beta_1 X_{it} + \delta_1 D_{1i} + \delta_2 D_{2i} + ... + \delta_{N-1} D_{N-1,i} + u_{it}$
+
+- The coefficient $\beta$ measures the average change in $y$ for a one-unit change in $X$ **within** an individual over time.
+- **Limitation:** Cannot estimate the effect of time-invariant variables (e.g., gender, race), as they are absorbed by $\alpha_i$.
+
+## The FD Model
+
+- The First Differences (FD) model is an alternative way to eliminate the fixed effect $\alpha_i$.
+- We subtract the previous period's equation from the current period's equation:
+  $(y_{it} - y_{i,t-1}) = \beta(X_{it} - X_{i,t-1}) + (u_{it} - u_{i,t-1})$
+- This simplifies to:
+  $\Delta y_{it} = \beta \Delta X_{it} + \Delta u_{it}$
+- An OLS regression on these differenced variables yields the FD estimate of $\beta$.
+
+- Key Features:
+- Like the FE model, FD allows the unobserved effect $\alpha_i$ to be correlated with the regressors.
+- It provides a consistent estimate of $\beta$ by removing the time-invariant heterogeneity.
+
+
+## FE vs. FD
+
+- For both FE and FD estimators to be unbiased, we need the **strict exogeneity** assumption.
+- The idiosyncratic error $u_{it}$ must be uncorrelated with the explanatory variables in **all time periods** (past, present, and future) for each individual.
+  $E(u_{it} | X_{i1}, X_{i2}, ..., X_{iT}) = 0$
+- This is a stronger assumption than contemporaneous exogeneity and rules out models with lagged dependent variables or feedback effects.
+
+- The choice depends on the properties of the error term $u_{it}$:
+
+- **If $u_{it}$ is serially uncorrelated (i.i.d.):**
+- The Fixed Effects (FE) estimator is more efficient (has smaller standard errors).
+- In this case, the differenced error $\Delta u_{it}$ will have an autocorrelation of -0.5.
+
+- **If $u_{it}$ follows a random walk (i.e., $u_{it} = u_{i,t-1} + e_{it}$ where $e_{it}$ is i.i.d.):**
+- The First Differences (FD) estimator is more efficient.
+
+- **Practical Rule:** If FE and FD estimates are very different, it may signal a violation of the strict exogeneity assumption or model misspecification.
+
+
+# Wooclap
+
+## Wooclap
+
+[Wooclap Link](https://app.wooclap.com/OFZFSD/questionnaires/68d2e8c4cdf3b1e602b2fcd9)
+Wooclap Code: OFZFSD (Tutorial 4)
+
+# Questions
+
+## Estimating an FE Model
+
+
+
+
+## Estimating a FD Model
+
+
+## Visualizing Unobserved Heterogeneity
+
+The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.
+
+1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
+2.  Extract the individual fixed effects from your estimated model.
+3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
+4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
+
+
+## Efficiency of FD vs. FE Estimators
+
+The lecture notes that the First Difference (FD) estimator can be more efficient than the Fixed Effects (FE) estimator if the idiosyncratic error term, $\epsilon_{it}$, follows a random walk. 
+
+Let the error term be defined as $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, where $\nu_{it}$ is a white noise error. 
+
+Show mathematically how the error term in the transformed FD model ($\Delta \epsilon_{it}$) becomes non-serially correlated, while the error term in the transformed FE model ($\epsilon_{it} - \bar{\epsilon}_i$) remains serially correlated.
 

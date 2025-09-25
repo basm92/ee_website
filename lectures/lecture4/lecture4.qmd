@@ -904,14 +904,13 @@ xtreg invest mvalue kstock, fd
 
 ## What did we do?
 
-- **Issues:**
+- **We discussed several issues:**
+- Motivation for and structure of panel data
 - Within variation versus between variation.
 - Within effects versus between effects.
 - Estimators for within effects: the fixed effects and the first-difference estimator.
 - Advantage: we correct for unobserved effects, which are allowed to correlate with the explanatory variables.
-- Estimator for between effects: Pooled OLS estimator; Random effects (next lecture) 
-
-
+- Estimators for between effects: Pooled OLS estimator; Random effects (next lecture) 
 
 
 # The End
