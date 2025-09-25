@@ -17,7 +17,80 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Estimating a FE Model
 
+a) Estimation
 
+:::{.panel-tabset}
+
+### R
+
+To estimate the fixed effects model in R, you use the `plm` function from the `plm` package. You need to specify the formula, the dataset, the individual and time identifiers in the `index` argument, and set `model = "within"` for the fixed effects estimator.
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+# Load the required libraries and data
+library(wooldridge)
+library(tidyverse, quietly=TRUE)
+library(plm)
+url <- "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
+jtrain <- read_csv2(url)
+
+# Estimate the firm-level fixed effects model
+# index = c("fcode", "year") tells plm that 'fcode' is the individual (firm) ID
+# and 'year' is the time variable.
+fe_model <- plm(scrap ~ grant, data = jtrain,
+                index = c("fcode", "year"), model = "within")
+
+# Print the summary to see the results
+summary(fe_model)
+```
+
+### Python
+
+
+To estimate the fixed effects model in Python, you use the `feols` function from the `pyfixest` package. You need to specify the formula and the individual fixed effects in the formula for the fixed effects estimator.
+
+```{python}
+#| echo: true
+import pandas as pd
+import pyfixest as pf
+
+url <- "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
+jtrain = pd.read_csv(url, sep=";", decimal=',')
+
+fit = pf.feols(fml="scrap ~ grant | fcode", data=jtrain)
+# fixed effects separated from the ind. vars. by | 
+fit.summary()
+```
+
+### Stata
+
+:::
+
+b) Interpreting the Coefficient
+
+The estimated coefficient on the `grant` variable is **-0.75**.
+
+**Interpretation:** This coefficient must be interpreted using the "within-firm" logic of the fixed effects model.
+
+The interpretation is: **"For a given firm, in a year when it received a training grant, its scrap rate was, on average, 0.75 items per 100 lower than in a year when it did not receive a grant."**
+
+This result controls for all stable, unobserved differences between firms. For example, if Firm A has consistently better management than Firm B, that difference is captured by the firm-specific fixed effect and does not bias the `grant` coefficient. The estimate is derived purely from observing how a firm's *own* scrap rate changes when its grant status changes, effectively comparing each firm to itself over time. The negative sign suggests the grants are effective at improving productivity.
+
+c) Interpreting the Fixed Effect
+
+**Conceptual Meaning:** The firm-specific fixed effect, $\hat{\alpha}_i$, represents the estimated baseline scrap rate for firm $i$ after accounting for the effect of the job training grant. It is a single number that captures the combined influence of all **time-invariant characteristics** of that firm that affect its productivity. These are factors that do not change from 1987 to 1989, such as:
+
+*   Inherent management quality
+*   The baseline skill level of its workforce
+*   The quality of its capital equipment
+*   Corporate culture
+*   A favorable location
+
+**Interpretation of the Example:** Given the estimated fixed effects of **-2.5 for Firm A** and **+1.8 for Firm B**, we can interpret the difference as follows:
+
+Firm A's fixed effect is much lower than Firm B's. Since a lower scrap rate is better, this means that Firm A is inherently more productive than Firm B, even after we control for the effect of the training grants. The fixed effect suggests that Firm A's combination of unobserved, stable factors (its management, technology, culture, etc.) results in an average scrap rate that is **4.3 units lower** ($1.8 - (-2.5) = 4.3$) than Firm B's, holding grant status constant. In short, Firm A is a "low-scrap firm" on average, while Firm B is a "high-scrap firm" on average, due to characteristics unique to each of them.
 
 ## Estimating a FD Model
 

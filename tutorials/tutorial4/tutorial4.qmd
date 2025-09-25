@@ -98,9 +98,13 @@ Wooclap Code: OFZFSD (Tutorial 4)
 
 ## Estimating an FE Model
 
-The `JTRAIN` dataset contains panel data for 157 manufacturing firms in Michigan from 1987 to 1989. The state of Michigan awarded grants to some firms to train their workers. We want to investigate whether receiving a training grant (`grant`) reduces a firm's scrap rate (`scrap`), which is a measure of worker productivity (a lower scrap rate is better).^[The dataset is available [here]()]
+:::{style="font-size: 0.7em;"}
 
-A key concern is that firms with unobserved, time-invariant characteristics (like better management or a more motivated workforce) might be both more likely to receive a grant and have lower scrap rates to begin with.
+The `JTRAIN` dataset contains panel data for 157 manufacturing firms in Michigan from 1987 to 1989. The state of Michigan awarded grants to some firms to train their workers. We want to investigate whether receiving a training grant (`grant`) reduces a firm's scrap rate (`scrap`), which is a measure of worker productivity (a lower scrap rate is better).^[The dataset is available [here](https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv)] A key concern is that firms with unobserved, time-invariant characteristics (like better management or a more motivated workforce) might be both more likely to receive a grant and have lower scrap rates to begin with.
+
+:::
+
+:::{style="font-size: 0.7em;"}
 
 a) Write R/Python/Stata code to estimate a **firm-level fixed effects model** where you regress the scrap rate (`scrap`) on the grant indicator (`grant`). Include the code and the key output (the coefficient table) in your answer.
 
@@ -108,8 +112,11 @@ b) Interpret the estimated coefficient on the `grant` variable. What does its si
 
 c) After running the model, you could (in principle) retrieve the estimated fixed effect, $\hat{\alpha}_i$, for each firm. For example, suppose the estimated fixed effect for "Firm A" is -2.5 and for "Firm B" is +1.8. What do these fixed effects conceptually represent? What does it mean that Firm A's fixed effect is lower than Firm B's?
 
+:::
 
 ## Estimating a FD Model
+
+
 
 
 ## Visualizing Unobserved Heterogeneity
