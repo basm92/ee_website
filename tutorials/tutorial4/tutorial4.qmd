@@ -98,7 +98,15 @@ Wooclap Code: OFZFSD (Tutorial 4)
 
 ## Estimating an FE Model
 
+The `JTRAIN` dataset contains panel data for 157 manufacturing firms in Michigan from 1987 to 1989. The state of Michigan awarded grants to some firms to train their workers. We want to investigate whether receiving a training grant (`grant`) reduces a firm's scrap rate (`scrap`), which is a measure of worker productivity (a lower scrap rate is better).^[The dataset is available [here]()]
 
+A key concern is that firms with unobserved, time-invariant characteristics (like better management or a more motivated workforce) might be both more likely to receive a grant and have lower scrap rates to begin with.
+
+a) Write R/Python/Stata code to estimate a **firm-level fixed effects model** where you regress the scrap rate (`scrap`) on the grant indicator (`grant`). Include the code and the key output (the coefficient table) in your answer.
+
+b) Interpret the estimated coefficient on the `grant` variable. What does its sign and magnitude tell you about the effectiveness of the training grants? Be specific about the "within-firm" nature of this interpretation.
+
+c) After running the model, you could (in principle) retrieve the estimated fixed effect, $\hat{\alpha}_i$, for each firm. For example, suppose the estimated fixed effect for "Firm A" is -2.5 and for "Firm B" is +1.8. What do these fixed effects conceptually represent? What does it mean that Firm A's fixed effect is lower than Firm B's?
 
 
 ## Estimating a FD Model
@@ -121,4 +129,42 @@ The lecture notes that the First Difference (FD) estimator can be more efficient
 Let the error term be defined as $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, where $\nu_{it}$ is a white noise error. 
 
 Show mathematically how the error term in the transformed FD model ($\Delta \epsilon_{it}$) becomes non-serially correlated, while the error term in the transformed FE model ($\epsilon_{it} - \bar{\epsilon}_i$) remains serially correlated.
+
+
+## The Mechanics of Transformation
+
+Consider the following small panel dataset for two firms ($i=A, B$) over three years ($t=1, 2, 3$). The model is $Y_{it} = \alpha_i + \beta X_{it} + u_{it}$.
+
+| Firm (i) | Year (t) | Y | X |
+|:--------:|:--------:|:-:|:-:|
+|     A    |     1    | 5 | 2 |
+|     A    |     2    | 7 | 3 |
+|     A    |     3    | 6 | 4 |
+|     B    |     1    | 12| 6 |
+|     B    |     2    | 10| 5 |
+|     B    |     3    | 14| 7 |
+
+:::{style="font-size:0.7em;"}
+
+  a) Calculate the firm-specific means ($\bar{y}_A, \bar{x}_A, \bar{y}_B, \bar{x}_B$). Then, construct the "de-meaned" variables $\ddot{y}_{it} = y_{it} - \bar{y}_i$ and $\ddot{x}_{it} = x_{it} - \bar{x}_i$ for all six observations.
+  
+  b) Construct the first-differenced variables $\Delta y_{it} = y_{it} - y_{i,t-1}$ and $\Delta x_{it} = x_{it} - x_{i,t-1}$. How many observations do you have in your differenced dataset?
+  
+  c) Suppose that a firm's investment in the current year ($X_{it}$) is partly determined by an unexpectedly high profit shock from the previous year (which is part of $u_{i,t-1}$). Explain why this "feedback effect" violates the strict exogeneity assumption required for both the FE and FD estimators to be unbiased.
+
+:::
+
+## Choosing Between FE and FD
+
+You are estimating the impact of a country's R&D spending ($X_{it}$) on its GDP growth ($y_{it}$) using a panel dataset. They are concerned about unobserved, time-invariant country characteristics like "innovation culture" ($\alpha_i$). They estimate the model using both the Fixed Effects (FE) and First Differences (FD) estimators.
+
+:::{style="font-size:0.7em;"}
+
+  a) The FE estimate for the effect of R&D is 0.15, and the FD estimate is 0.18. Both are statistically significant. According to the lecture, what does the similarity of these results suggest about the model and its underlying assumptions?
+  
+  b) To decide which estimator is more efficient, the researcher follows the procedure from the lecture. They run the FD regression and test for serial correlation in the residuals, $\Delta \hat{u}_{it}$. They find that the correlation between $\Delta \hat{u}_{it}$ and $\Delta \hat{u}_{i,t-1}$ is **-0.48**. Based on this result, which model (FE or FD) is preferable, and why? Explain the theory behind your choice.
+  
+  c) Now, suppose a different researcher ran a similar analysis and found the correlation between $\Delta \hat{u}_{it}$ and $\Delta \hat{u}_{i,t-1}$ was **-0.05**. In this case, which model would be preferable, and why? What does this result imply about the time-series properties of the original error term $u_{it}$?
+  
+:::
 

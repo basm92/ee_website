@@ -3,7 +3,21 @@ title: "Solutions Tutorial 4"
 format: html
 ---
 
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(reticulate)
+use_python("/home/bas/anaconda3/bin/python")
+```
+
+
 ## Estimating a FE Model
+
+
 
 ## Estimating a FD Model
 
@@ -136,3 +150,76 @@ histogram fe, bin(30) frequency normal ///
   
   As a result, the covariance between the de-meaned errors, $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1})$, will be non-zero. The transformed error term in the FE model **remains serially correlated**.
   
+## The Mechanics of Transformation
+
+**(a) The Within Estimator (De-meaning)**
+
+**Step 1: Calculate Firm-Specific Means**
+*   **For Firm A:**
+    *   $\bar{y}_A = (5 + 7 + 6) / 3 = 18 / 3 = 6$
+    *   $\bar{x}_A = (2 + 3 + 4) / 3 = 9 / 3 = 3$
+*   **For Firm B:**
+    *   $\bar{y}_B = (12 + 10 + 14) / 3 = 36 / 3 = 12$
+    *   $\bar{x}_B = (6 + 5 + 7) / 3 = 18 / 3 = 6$
+
+**Step 2: Construct De-meaned Variables**
+Using the formula $\ddot{y}_{it} = y_{it} - \bar{y}_i$ and $\ddot{x}_{it} = x_{it} - \bar{x}_i$:
+
+| Firm (i) | Year (t) | $\ddot{y}_{it}$ | $\ddot{x}_{it}$ |
+|:--------:|:--------:|:---------------:|:---------------:|
+|     A    |     1    | $5 - 6 = -1$    | $2 - 3 = -1$    |
+|     A    |     2    | $7 - 6 = 1$     | $3 - 3 = 0$     |
+|     A    |     3    | $6 - 6 = 0$     | $4 - 3 = 1$     |
+|     B    |     1    | $12 - 12 = 0$   | $6 - 6 = 0$     |
+|     B    |     2    | $10 - 12 = -2$  | $5 - 6 = -1$    |
+|     B    |     3    | $14 - 12 = 2$   | $7 - 6 = 1$     |
+
+**(b) The First Differences Estimator**
+
+Using the formulas $\Delta y_{it} = y_{it} - y_{i,t-1}$ and $\Delta x_{it} = x_{it} - x_{i,t-1}$. Note that the first observation for each firm ($t=1$) is lost.
+
+| Firm (i) | Year (t) | $\Delta y_{it}$ | $\Delta x_{it}$ |
+|:--------:|:--------:|:---------------:|:---------------:|
+|     A    |     2    | $7 - 5 = 2$     | $3 - 2 = 1$     |
+|     A    |     3    | $6 - 7 = -1$    | $4 - 3 = 1$     |
+|     B    |     2    | $10 - 12 = -2$  | $5 - 6 = -1$    |
+|     B    |     3    | $14 - 10 = 4$   | $7 - 5 = 2$     |
+
+You are left with **4 observations** in the differenced dataset. The general formula is $N(T-1)$, where $N$ is the number of individuals and $T$ is the number of time periods. Here, $2(3-1) = 4$.
+
+**(c) Violation of Strict Exogeneity**
+
+The **Strict Exogeneity** assumption states that the error term in any period $t$ must be uncorrelated with the explanatory variables in *all* periods (past, present, and future) for a given individual $i$. Formally, $E(u_{it} | X_{i1}, ..., X_{iT}) = 0$.
+
+The scenario describes a "feedback effect": a past error term ($u_{i,t-1}$) influences a current explanatory variable ($X_{it}$). This means $Cov(X_{it}, u_{i,t-1}) \neq 0$.
+
+This violates strict exogeneity and causes bias in both estimators:
+
+*   **First Differences (FD):** The FD model regresses $\Delta X_{it}$ on $\Delta u_{it}$. The covariance between the regressor and the new error term is:
+    $Cov(\Delta X_{it}, \Delta u_{it}) = Cov(X_{it} - X_{i,t-1}, u_{it} - u_{i,t-1})$
+    Expanding this covariance gives four terms, one of which is $-Cov(X_{it}, u_{i,t-1})$. Since this term is non-zero by our scenario, the total covariance will be non-zero, and the FD estimator will be biased.
+    
+*   **Fixed Effects (FE):** The de-meaning process involves subtracting the mean $\bar{x}_i$, which is a function of all $X$'s for that individual, including $X_{it}$. Since $X_{it}$ is correlated with $u_{i,t-1}$, the de-meaned regressor $\ddot{x}_{it}$ will also be correlated with the error term $u_{i,t-1}$, violating the necessary conditions for consistency.
+
+## Choosing Between FE and FD
+
+**(a) Interpretation of Similar Results**
+
+The fact that the FE and FD estimators produce very similar results (0.15 and 0.18) is reassuring. Both methods are designed to control for unobserved time-invariant heterogeneity ($\alpha_i$). Their similarity suggests that the estimate of $\beta$ is robust to the specific transformation method used. It provides confidence that the unobserved heterogeneity has been adequately addressed. It also gives suggestive (though not definitive) evidence that the strict exogeneity assumption holds, as a violation of this assumption could affect the two estimators differently and lead to divergent results.
+
+**(b) Correlation of -0.48**
+
+The choice between FE and FD depends on the time-series properties of the error term, $u_{it}$. As shown in the lecture:
+*   **Theory:** If the original errors $u_{it}$ are serially uncorrelated (i.i.d.), then the first-differenced errors $\Delta u_{it}$ will have a serial correlation of exactly -0.5.
+
+A correlation of **-0.48** is extremely close to -0.5. This is strong evidence that the underlying assumption of the FE model—that the idiosyncratic errors $u_{it}$ are serially uncorrelated—is correct.
+
+*   **Conclusion:** In this case, the **Fixed Effects (FE) model is preferable**. When its underlying assumptions hold, the FE estimator is more efficient (i.e., it has a smaller variance and produces smaller standard errors) than the FD estimator.
+
+**(c) Correlation of -0.05**
+
+A correlation of **-0.05** is very close to zero and far from -0.5. This implies that the assumption of serially uncorrelated $u_{it}$ is violated.
+
+*   **Theory:** If the first-differenced errors $\Delta u_{it}$ are serially uncorrelated (correlation near zero), it implies that the original error term $u_{it}$ likely follows a **random walk**. A random walk process is defined as $u_{it} = u_{i,t-1} + e_{it}$, where $e_{it}$ is an i.i.d. shock. In this case, the first difference is $\Delta u_{it} = e_{it}$, which is serially uncorrelated by definition.
+
+*   **Conclusion:** In this scenario, the underlying assumptions of the FD model are met. The **First Differences (FD) model is preferable** because it is more efficient when the original errors follow a random walk.
