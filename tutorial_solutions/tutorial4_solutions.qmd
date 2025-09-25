@@ -56,15 +56,34 @@ To estimate the fixed effects model in Python, you use the `feols` function from
 import pandas as pd
 import pyfixest as pf
 
-url <- "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
+url = "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
 jtrain = pd.read_csv(url, sep=";", decimal=',')
 
 fit = pf.feols(fml="scrap ~ grant | fcode", data=jtrain)
 # fixed effects separated from the ind. vars. by | 
-fit.summary()
+fit.vcov('iid').summary()
 ```
 
 ### Stata
+
+```{stata}
+#| echo: true
+#| eval: false
+* 1. Clear any existing data in memory
+clear
+
+* 2. Import the data directly from the URL
+* We specify the delimiter as a semicolon (;) and the decimal as a comma (,)
+import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv", delimiter(";") decimalseparator(,) clear
+
+* 3. Declare the data as a panel dataset, with 'fcode' as the individual identifier
+xtset fcode
+
+* 4. Estimate the fixed effects model
+* 'scrap' is the dependent variable, 'grant' is the independent variable
+* The ', fe' option specifies a fixed effects (within) estimator.
+xtreg scrap grant, fe
+```
 
 :::
 
@@ -93,6 +112,103 @@ c) Interpreting the Fixed Effect
 Firm A's fixed effect is much lower than Firm B's. Since a lower scrap rate is better, this means that Firm A is inherently more productive than Firm B, even after we control for the effect of the training grants. The fixed effect suggests that Firm A's combination of unobserved, stable factors (its management, technology, culture, etc.) results in an average scrap rate that is **4.3 units lower** ($1.8 - (-2.5) = 4.3$) than Firm B's, holding grant status constant. In short, Firm A is a "low-scrap firm" on average, while Firm B is a "high-scrap firm" on average, due to characteristics unique to each of them.
 
 ## Estimating a FD Model
+
+a) Estimation
+
+:::{.panel-tabset}
+
+### R
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+# Load the required libraries and data
+library(wooldridge)
+library(tidyverse, quietly=TRUE)
+library(plm)
+url <- "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
+jtrain <- read_csv2(url)
+# Estimate the firm-level First Differences (FD) model
+# The only change from the FE model is setting model = "fd"
+fd_model <- plm(scrap ~ grant, data = jtrain,
+                index = c("fcode", "year"), model = "fd")
+
+# Print the summary to see the results
+summary(fd_model)
+```
+
+### Python
+
+```{python}
+#| echo: true
+import pandas as pd
+import pyfixest as pf
+
+url = "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv"
+jtrain = pd.read_csv(url, sep=";", decimal=',')
+# Sort data by firm and year to ensure correct differencing
+jtrain = jtrain.sort_values(by=['fcode', 'year'])
+# Manually compute first differences within each firm ('fcode')
+jtrain_diff = jtrain[['scrap', 'grant', 'fcode']].groupby('fcode').diff().dropna()
+
+# Estimate OLS on the differenced data
+fd_model_py = pf.feols("scrap ~ grant", data=jtrain_diff)
+
+# Print the summary
+print(fd_model_py.summary())
+```
+
+
+### Stata
+
+
+```{stata}
+#| echo: true
+#| eval: false
+* 1. Clear any existing data in memory
+clear
+
+* 2. Import the data directly from the URL
+* We specify the delimiter as a semicolon (;) and the decimal as a comma (,)
+import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv", delimiter(";") decimalseparator(,) clear
+
+* 3. Declare the data as a panel dataset, with 'fcode' as the individual identifier AND 'year' as the time variable
+xtset fcode year
+
+* 4. Estimate the First Differences model
+* 'scrap' is the dependent variable, 'grant' is the independent variable
+* The ', fd' option specifies the first-differences estimator.
+xtreg scrap grant, fd
+```
+
+:::
+
+b) The estimated coefficient on the `grant` variable from the FD model is **-0.45**.
+
+**Interpretation:** The FD model estimates the effect of a *change* in the independent variable on the *change* in the dependent variable. Since `grant` is a 0/1 indicator, a change in `grant` means a firm either gained a grant ($\Delta\text{grant} = 1$) or lost one ($\Delta\text{grant} = -1$).
+
+The interpretation is: **"When a firm's grant status changes from 0 to 1 (i.e., it receives a grant in a year when it did not have one the previous year), its scrap rate is expected to decrease by 0.45 items per 100 in that year, on average."**
+
+**Difference from FE Interpretation:** The FE interpretation focuses on a comparison of *levels* ("in a year *with* a grant vs. a year *without* one"). The FD interpretation focuses on the effect of the *transition* ("when a firm *gets* a grant"). While closely related, the FD interpretation is explicitly about the effect of the change itself.
+
+c) Comparing FE and FD estimates
+
+*   **Comparison of Estimates:**
+
+    *   **FE Estimate:** -0.75 (p-value ≈ 0.121)
+    *   **FD Estimate:** -0.45 (p-value ≈ 0.159)
+    *   **Sign:** Both coefficients are negative, providing consistent evidence that training grants are associated with a reduction in scrap rates.
+    *   **Magnitude:** The FE estimate suggests a substantially larger effect than the FD estimate. The effect size is about 64% larger in the FE model (-0.75 vs -0.45).
+    *   **Significance:** The FE estimate is marginally statistically significant ($p=0.12$), providing weak evidence of an effect. The FD estimate is also statistically significant at conventional levels (e.g., 5% or 10%), meaning we cannot confidently reject the null hypothesis of no effect based on this model alone.
+
+*   **Evidence for Strict Exogeneity:**
+
+    The lecture notes state that FE and FD estimates should be similar if the underlying assumptions—most notably, strict exogeneity—hold. Here, the estimates are somewhat different in magnitude but lead to the same conclusions about statistical significance. This divergence **could cast some doubt** on the validity of the strict exogeneity assumption. It's possible that a firm's scrap rate in a previous year might influence its likelihood of getting a grant this year (a feedback effect), which would violate strict exogeneity and could affect the two estimators differently. However, the difference is not so extreme as to definitively reject the model.
+
+*   **Conditions for Preferring FE over FD:**
+
+    The choice between the two estimators depends on the time-series properties of the idiosyncratic error term, $u_{it}$. The **Fixed Effects (FE) estimator is more efficient** (and therefore preferable) if the error terms $u_{it}$ are **serially uncorrelated** (i.e., they are independent and identically distributed, or i.i.d.). If this assumption holds, the differenced errors, $\Delta u_{it}$, will be serially correlated (with a correlation of -0.5), making the FD estimator less efficient. 
 
 
 ## Visualizing Unobserved Heterogeneity

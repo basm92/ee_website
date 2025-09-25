@@ -116,7 +116,26 @@ c) After running the model, you could (in principle) retrieve the estimated fixe
 
 ## Estimating a FD Model
 
+:::{style="font-size: 0.7em;"}
 
+In the previous exercise, you estimated a Fixed Effects (FE) model. Now, we will use an alternative method, the First Differences (FD) model, to address the same problem of unobserved, time-invariant firm characteristics.
+
+:::
+
+:::{style="font-size: 0.8em;"}
+
+
+a) Write the R/Python/Stata code to estimate a **firm-level First Differences (FD) model** where you regress the change in the scrap rate ($\Delta\text{scrap}$) on the change in the grant indicator ($\Delta\text{grant}$). Include the code and the key output (the coefficient table) in your answer.
+
+b) Interpret the estimated coefficient on the `grant` variable from your FD model. How does this interpretation differ slightly from the FE interpretation? Be specific about what the change in the `grant` variable represents.
+
+c) The Fixed Effects (FE) model from the previous question yielded an estimated coefficient for `grant` of **-0.75**. Your FD model will likely produce a different estimate.
+
+*   Compare the sign, magnitude, and statistical significance of your FD estimate to the FE estimate.
+*   The lecture notes state that if the strict exogeneity assumption holds, the FE and FD estimates should be similar. Based on your comparison, do you find evidence to support this assumption?
+*   Under what theoretical conditions regarding the error term ($u_{it}$) would the FE estimator be considered more efficient (and therefore preferable) than the FD estimator?
+
+:::
 
 
 ## Visualizing Unobserved Heterogeneity
