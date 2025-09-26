@@ -50,7 +50,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Least Squares Dummy Variable estimator
 - Within estimator (or fixed effect estimator)
 
-- **Material:** Wooldridge Chapter 14: 14.1, 14.2, 14.3
+- **Material:** Wooldridge Chapters 13 and 14.1, 14.2, 14.3
 
 # Motivation
 
@@ -336,8 +336,26 @@ grid.arrange(fig1_plot, fig2_plot, fig3_plot, ncol = 3)
 
 :::
 
-- Here, $N=3$ and $T=4$.
+- Here, $N=3$ and $T=4$. In this course, we take $N$ large and $T$ relative small.
 - The data has both a **cross-sectional** dimension (comparing USA, Germany, Japan in one year) and a **time-series** dimension (tracking the USA from 2019-2022).
+
+## Balanced vs. Unbalanced Panel Data
+
+- **Balanced Panel Data**
+  *   **Definition:** A dataset where each cross-sectional unit (e.g., individual, firm, country) is observed for the exact same number of time periods.
+  *   **Structure:** If there are 'N' units and 'T' time periods, the total number of observations is exactly N x T.
+  *   **Characteristics:**
+      *   No missing observations for any unit over the time span.
+      *   Considered the "ideal" scenario for analysis as it simplifies calculations and avoids issues related to missing data.
+      *   Provides a complete and consistent dataset across all entities and time.
+
+- **Unbalanced Panel Data**
+  *   **Definition:** A dataset where at least one cross-sectional unit has missing data for one or more time periods.
+  *   **Structure:** The total number of observations is less than N x T.
+  *   **Characteristics:**
+      *   More common in real-world research due to factors like survey attrition, entities entering or leaving the sample (e.g., firm closures), or data collection errors.
+      *   Can still be used for robust analysis, as most modern statistical software can handle unbalanced panels.
+
 
 ## The Individual-Specific Effect
 
@@ -359,6 +377,10 @@ grid.arrange(fig1_plot, fig2_plot, fig3_plot, ncol = 3)
 - It is possible that $E(a_i | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) \neq 0$ (e.g. in an equation where wage is the dependent variable, `motivation` (subsumed in $a_i$) might be correlated with the RHS-variable `experience`).
 
 ## Strict Exogeneity
+
+- In simple words strict exogeneity means we have:
+  - No models with a lagged dependent variable
+  - No models with a feedback mechanism: $y(t) \leftarrow x(t) \leftarrow y(t-1) \leftarrow x(t-1)$
 
 :::{.callout-note title="Assumption TS.2 (Strict exogeneity)"}
 
@@ -382,9 +404,9 @@ This assumption implies that the error term in period *t* is uncorrelated with a
 
 :::{.callout-note title="Definition: Fixed Effects Model"}
 
-$$ y_{it} = (\beta_0 + \alpha_i) + \beta_1 X_{it} + \epsilon_{it} $$
+$$ y_{it} = (\beta_0 + \alpha_i) + \beta_1 X_{it} + u_{it} $$
 or more simply:
-$$ y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it} $$
+$$ y_{it} = \alpha_i + \beta_1 X_{it} + u_{it} $$
 (Here, the $\alpha_i$ represent the individual-specific intercepts)
 
 :::
@@ -395,7 +417,7 @@ $$ y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it} $$
 
 - It is easy to estimate a fixed effects model: it is actually OLS estimation on transformed data
 - This fact allows us to estimate the FE model without explicitly estimating $N$ different intercepts? 
-- The goal is to eliminate the fixed effect $\alpha_i$ in $Y_{it} = \alpha_i + \beta_1 X_{it} + \epsilon_{it}$
+- The goal is to eliminate the fixed effect $\alpha_i$ in $Y_{it} = \alpha_i + \beta_1 X_{it} + u_{it}$
 
 ## Within Transformation
 
@@ -430,7 +452,7 @@ Create a dummy (0/1) variable for each individual $i$ (except for one, to avoid 
 
 Run a single OLS regression including these $N-1$ dummy variables.
 
-$$ y_{it} = \beta_0 + \beta_1 X_{it} + d_1\alpha_1 + d_2\alpha_2 + ... + d_{N-1}\alpha_{N-1} + \epsilon_{it} $$
+$$ y_{it} = \beta_0 + \beta_1 X_{it} + d_1\alpha_1 + d_2\alpha_2 + ... + d_{N-1}\alpha_{N-1} + u_{it} $$
 
 The estimated coefficient $\beta_1$ from the LSDV model is **identical** to the one from the "Within" estimator.
 
@@ -457,8 +479,6 @@ The average change in $y$ for a one-unit increase in $X$ **within** a given indi
 - The parameter vector $\beta$ is identified ('can be estimated') due to time-variation in $x_{it}$ for each individual: the variables differ across time at the level of the individual.
   - Individual-specific variables that are constant over time (e.g. gender, year of birth) cannot be included in the model. Their parameters are not identified, as they are incorporated in the individual effect $a_i$.
 
-- Estimator $\hat{\beta}_{within}$ and $\hat{a}_i$ are consistent if $T$ and $N$ are large.
-- If $T$ is small and $N$ is large, then $\hat{\beta}_{within}$ is still consistent. $\hat{a}_i$ is inconsistent because of the small number of observations ($T$).
 
 ## Consistency of Fixed Effects 
 
@@ -652,20 +672,8 @@ xtreg y x1 x2, fe1 fe2 *\fixed effects separated by a comma
 
 - It means that $u_{it}$ is uncorrelated with $x_{i,t-1}, x_{it}, x_{i,t+1}$. In other words, strict exogeneity is needed (no lagged dependent variable, no feedback effects) for consistency (unbiasedness) of the first-difference estimator.
 
-## Contemporaneous Exogeneity
 
-- Note that contemporaneous exogeneity is too weak to prove consistency of the first-difference estimator $\hat{\beta}_{fdif}$, because it does not exclude consistency between $u_{it}$ and $x_{i,t-1}$.
-  - Furthermore, it is assumed that the error term $u_{it}$ follows a random walk, i.e.:
-    - $u_{it} = u_{i,t-1} + e_{it}$
-    - $E(e_{it}) = 0$; $Var(e_{it}) = \sigma_e^2$ (expected value of zero; constant variance)
-    - $e_{it}$ is independent over time and across individuals
-    
-- Then one can show that (here less important):
-  - $\hat{e}_{it} = \Delta y_{it} – \Delta x_{it}\hat{\beta}_{fdif}$
-  - $\hat{\sigma}_e^2 = \frac{\sum_{i=1}^{N} \sum_{t=1}^{T} \hat{e}_{it}^2}{N(T-1) - k}$
-  - Consistent estimates of $Var(\hat{\beta}_{fdif})$ (using $\hat{\sigma}_e^2$)
-
-## Dynamics in FD
+## Standard Errors in FD
 
 - In other words, OLS estimation of the FD equation gives the correct standard errors of $\hat{\beta}_{fdif}$.
 - Suppose that there is autocorrelation and heteroskedasticity in $e_{it}$. In that case $Var(\hat{\beta}_{fdif})$ is incorrect, because $\hat{\sigma}_e^2$ is incorrect: robust Newey-West standard errors are necessary.
