@@ -56,7 +56,7 @@ url = 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/data
 fertil = pd.read_stata(url)
 
 # Select the optimal AR model order using AIC
-# This is equivalent to R's ar(fertil$gfr, aic=TRUE, order.max=10)
+# This is equivalent to R's ar.ols(fertil$gfr, aic=TRUE, order.max=10)
 selection_result = ar_select_order(fertil['gfr'], maxlag=10, ic='aic')
 
 # Print the optimal order (equivalent to ar_model$order)
@@ -253,7 +253,7 @@ forecast solve, begin(1985) periods(10)
 *Step 7: View the results
 * The results are stored in new variables, typically with an _f suffix.
 * Let's list them to see the predictions.
-list year f_gfr if year > 72
+ list year f_gfr if t > 72
 ```
 
 :::
