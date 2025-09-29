@@ -113,8 +113,8 @@ The course also focuses on research questions related to the different economic 
 | Lecture 1 | Wooldridge 1 & 2 |
 | Lecture 2 | Wooldridge 3 & 4 |
 | Lecture 3 | Wooldridge 10, 11, 12, 18.5 |
-| Lecture 4 | Wooldridge 14 |
-| Lecture 5 | Wooldridge 13 |
+| Lecture 4 | Wooldridge 13.3, 13.4, 13.5, 14.1 |
+| Lecture 5 | Wooldridge 13.1, 13.2, 14.2, 14.3 |
 | Lecture 6 | Wooldridge 17 |
 | Lecture 7 | Causal Inference The Mixtape 4 and 9 |
 | Lecture 8 | Wooldridge 15 and Causal Inference The Mixtape 7 |
