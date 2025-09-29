@@ -50,7 +50,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Least Squares Dummy Variable estimator
 - Within estimator (or fixed effect estimator)
 
-- **Material:** Wooldridge Chapters 13 and 14.1, 14.2, 14.3
+- **Material:** Wooldridge Chapters 13.3, 13.4, 13.5, 14.1
 
 # Motivation
 
