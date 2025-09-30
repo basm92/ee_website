@@ -156,6 +156,33 @@ From the cross section it looks like (on average) home ownership rate peaks at a
 
 :::
 
+
+## Between vs. Within Variation
+
+- **Between variation:** the cross-sectional variation (across individuals). For example:
+
+| | Profit (= dependent variable) | Innovation (=explanatory variable) |
+|---|---|---|
+| Firm A | 500 thousand Euros | 1 percent |
+| Firm B | 750 thousand Euros | 3 percent |
+
+- **Between variation** (across firms): as a result of the increased innovation (from 1 percent to 3 percent) the profits increase from 500 thousand Euros to 750 thousand Euros.
+
+## Between vs. Within Variation (Cont.)
+
+- **Within variation:** the time-series variation (for a given individual). So the variation within individuals. For example:
+
+| | Profit (= dependent variable) | Innovation (=explanatory variable) |
+|---|---|---|
+| Time 1 | 500 thousand Euros | 1 percent |
+| Time 2 | 550 thousand Euros | 3 percent |
+
+- **Within variation** (for a given firm): as a result of the increased innovation (from 1 percent to 3 percent (thus by 2 percentage points) the profits increase from 500 thousand Euros to 550 thousand Euros from $t=1$ to $t=2$
+
+- Economists are usually interested in the within variation more than in the between variation.
+- To measure the within variation of *x* on *y*, we need to control for individual effects. Consequently, it allows for correlation between the individual effect and the explanatory variable.
+
+
 ## Advantages of Panel Data
 
 - Estimation of dynamic models (or transition models) is impossible in the case of a time series of cross sections (panel data).
@@ -421,23 +448,25 @@ $$ y_{it} = \alpha_i + \beta_1 X_{it} + u_{it} $$
 
 ## Within Transformation
 
-:::{.callout-note title="Definition: Within Transformation"}
+:::{.callout-note title="Definition: Within Transformation" style="font-size: 0.7em;"}
+
+Suppose $y_{it} = \alpha_i + \beta_1 X_{it} + u_{it}$. 
 
 **Step 1:** For each individual $i$, calculate the time-average of their variables:
-$$ \bar{y}_i = \frac{1}{T} \sum_{t=1}^{T} y_{it} \quad \text{and} \quad \bar{X}_i = \frac{1}{T} \sum_{t=1}^{T} X_{it} $$
+$$ \bar{y}_i = \frac{1}{T} \sum_{t=1}^{T} y_{it} \quad \text{and} \quad \bar{X}_i = \frac{1}{T} \sum_{t=1}^{T} X_{it} \quad \text{and} \quad \bar{\alpha_i} = \frac{1}{T} \sum_{t=1}^{T} \alpha_i = \alpha_i$$
 
 **Step 2:** Subtract the individual-specific average from the original model:
 
   $$
   \begin{align}
-    y_{it} - \bar{y}_i &= \beta_1 (X_{it} - \bar{X}_i) + (u_{it} - \bar{u}_i) \\
+    y_{it} - \bar{y}_i &= \beta_1 (X_{it} - \bar{X}_i) + (\alpha_i - \bar{\alpha_i}) + (u_{it} + - \bar{u}_i) \\
     \ddot{y}_{it} &= \beta_1 \ddot{x}_{it} + \ddot{u}_{it}
   \end{align}
   $$
 The fixed effect $\alpha_i$ is time-constant, so $\alpha_i - \bar{\alpha}_i = \alpha_i - \alpha_i = 0$. It drops out!
 
 **Step 3:** Run OLS on the "de-meaned" data:
-$$ (y_{it} - \bar{y}_i) \text{ on } (X_{it} - \bar{X}_i) $$
+$$ (y_{it} - \bar{y}_i) = \beta_1 (X_{it} - \bar{X}_i) + (u_{it} - \bar{u}_{it}) \Leftrightarrow \ddot{y}_{it} = \beta_1 \ddot{x}_{it} + \ddot{u}_{it}$$
 This gives a consistent estimate of $\beta_1$.
 :::
 
@@ -607,32 +636,6 @@ xtreg y x1 x2, fe1 fe2 *\fixed effects separated by a comma
 ```
 
 :::
-
-
-## Between vs. Within Variation
-
-- **Between variation:** the cross-sectional variation (across individuals). For example:
-
-| | Profit (= dependent variable) | Innovation (=explanatory variable) |
-|---|---|---|
-| Firm A | 500 thousand Euros | 1 percent |
-| Firm B | 750 thousand Euros | 3 percent |
-
-- **Between variation** (across firms): as a result of the increased innovation (from 1 percent to 3 percent) the profits increase from 500 thousand Euros to 750 thousand Euros.
-
-## Between vs. Within Variation (Cont.)
-
-- **Within variation:** the time-series variation (for a given individual). So the variation within individuals. For example:
-
-| | Profit (= dependent variable) | Innovation (=explanatory variable) |
-|---|---|---|
-| Time 1 | 500 thousand Euros | 1 percent |
-| Time 2 | 550 thousand Euros | 3 percent |
-
-- **Within variation** (for a given firm): as a result of the increased innovation (from 1 percent to 3 percent (thus by 2 percentage points) the profits increase from 500 thousand Euros to 550 thousand Euros from $t=1$ to $t=2$
-
-- Economists are usually interested in the within variation more than in the between variation.
-- To measure the within variation of *x* on *y*, we need to control for individual effects. Consequently, it allows for correlation between the individual effect and the explanatory variable.
 
 
 # First Differences Estimator
