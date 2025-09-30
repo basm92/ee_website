@@ -41,13 +41,12 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## This lecture
 
-- Classification
-- The first-difference estimator
-- Fixed effects versus first differences
+- Classification of panel data models
 - Pooled OLS estimator
 - Random-effects estimator
 - Random effects or fixed effects: Hausman test
-- Line of reasoning with panel data: final example
+- Pooled OLS or Random effects
+- Line of reasoning with panel data
 
 - **Material:** Wooldridge Chapter 13: 13.1, 13.3, 13.4, 13.5
 
@@ -127,7 +126,7 @@ use_python("/home/bas/anaconda3/bin/python")
   $$
 
 - The assumptions in the table on the next slide are necessary to estimate equation (10). It leads to the following two questions:
-  - **Question 1:** Is there any nonzero correlation between $a_{i}$ and all of the k RHS vars $x_{it}$? Is it nonzero in all T time periods?
+- **Question 1:** Is there any nonzero correlation between $a_{i}$ and all of the k RHS vars $x_{it}$? Is it nonzero in all T time periods?
   - $E(a_{i} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ 
   - $E(a_{i} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) \neq 0$?
    
@@ -198,6 +197,10 @@ use_python("/home/bas/anaconda3/bin/python")
 
 ## Strict Exogeneity
 
+- In simple words strict exogeneity means we have:
+  - No models with a lagged dependent variable
+  - No models with a feedback mechanism: $y(t) \leftarrow x(t) \leftarrow y(t-1) \leftarrow x(t-1)$
+
 :::{.callout-note title="Assumption TS.2 (Strict exogeneity)"}
 
 For each $t$, the expected value of $u_t$ given ALL of the $k$ explanatory variables FOR ALL $T$ time periods, is equal to zero: $E[u_t | X] = 0$
@@ -229,7 +232,7 @@ $y_t = \alpha_0 + \alpha_1y_{t-1} + \delta_1z_t + u_t$
 
 :::
 
-## Examples
+## Violation of Exogeneity Examples
 
 :::{.callout-tip title="Example: Models with a feedback mechanism"}
 
@@ -246,7 +249,7 @@ $gGDP_t = \alpha_0 + \delta_0r_t + u_t$ (8)
 :::
 
 
-## Pooled OLS
+## Pooled OLS Estimator
 
 - The Pooled OLS Estimator is an estimator for a zero correlation between $\alpha_i$ and the explanatory variables
 
@@ -257,21 +260,18 @@ $gGDP_t = \alpha_0 + \delta_0r_t + u_t$ (8)
 
 ## Pooled OLS Estimation
 
-*Aim: to introduce the OLS-estimator for a panel data specification.*
-
-*   Now we assume that there is no correlation between aᵢ and all of the k explanatory variables xᵢₜ.
+*   Now we assume that there is no correlation between $a_i$ and all of the $k$ explanatory variables $x_{it}$.
 *   Equation (12) can be estimated with OLS. This is referred to as pooled OLS:
-*   yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ (12)
-    *   For which vᵢₜ = aᵢ + uᵢₜ where uᵢₜ is i.i.d.
-    *   As a result of the identical distribution: Var(vᵢₜ) = Var(vᵢ,ₜ₋₁)
-    *   In a pooled regression vᵢₜ = aᵢ + uᵢₜ
+    $$y_{it} = \beta_1x_{1it} + \dots + \beta_kx_{kit} + v_{it} \quad (12)$$
+    *   For which $v_{it} = a_i + u_{it}$ where $u_{it}$ is i.i.d.
+    *   As a result of the identical distribution: $\text{Var}(v_{it}) = \text{Var}(v_{i,t-1})$
+    *   In a pooled regression $v_{it} = a_i + u_{it}$
     *   So, in equation (12), it is assumed that:
-
-        E(aᵢ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ) = 0 and
-        E(uᵢₜ | xᵢ₁₁,..,xᵢ₁ₖ,..,xᵢₜ₁,..,xᵢₜₖ, aᵢ) = 0
-
-*   aᵢ is uncorrelated with all of the explanatory variables.
-*   uᵢₜ is uncorrelated with all of the explanatory variables and aᵢ
+        $E(a_i | x_{i11}, \dots, x_{i1k}, \dots, x_{it1}, \dots, x_{itk}) = 0$
+        and
+        $E(u_{it} | x_{i11}, \dots, x_{i1k}, \dots, x_{it1}, \dots, x_{itk}, a_i) = 0$
+*   $a_i$ is uncorrelated with all of the explanatory variables.
+*   $u_{it}$ is uncorrelated with all of the explanatory variables and $a_i$.
 
 ## Autocorrelation in Pooled OLS
 
@@ -314,214 +314,61 @@ $$
 - Conclusion: In pooled OLS there is always autocorrelation.
   - The estimation procedure for Pooled OLS: OLS on with Newey-West robust standard errors, which are similar to clustered standard errors. It corrects for both heteroskedasticity and autocorrelation.
 
-## Example 5 (continued): Pooled OLS
+## Example: Pooled OLS
 
-**Estimation procedure:**
-*   We started with the pooled OLS estimator.
-*   Next, we checked for autocorrelation, using the Breusch Godfrey test.
-*   The parameter on the lagged residual was statistically different from zero (t-value: 27.90).
-*   We re-estimated the model with the pooled OLS estimator, using clustered standard errors.
+- Example: Vella and Verbeek (1998) ask whether unions raise wages. 
+  - They have a panel dataset with individual wages, union membership, and various control variables, of which some are time-varying (e.g. experience), and some are constant over time (e.g. race).
 
+- **Estimation procedure:**
+  *   We start with the pooled OLS estimator.
+  *   Next, we check for autocorrelation, using the Breusch Godfrey test.
+  *   The parameter on the lagged residual is statistically different from zero (F-value: 27.90).
+  *   We re-estimated the model with the pooled OLS estimator, using clustered standard errors.
 
-## Example: first differences, autocorrelation, and fixed effects**
+## Example: Pooled OLS (Cont.)
 
-**leveragedata.dta**
+- Results show that unions raise wages by about 18%
 
-- **Estimate the first-difference equation:**
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
 
-`reg d.leverage i.year d.cashflow_assets d.net_income_MV d.capex_MV d.volatility d.gdp_growth d.inflation`
+# Install and load necessary packages
+library(wooldridge); library(lmtest); library(fixest); library(modelsummary); library(tinytable)
 
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 99.3476528 | 28 | 3.54813046 |
-| Residual | 334.332667 | 32636 | .010244291 |
-| Total | 433.68032 | 32664 | .013277012 |
+# Load the wagepan dataset
+data("wagepan")
 
-| | |
-| :--- | :--- |
-| Number of obs | = 32665 |
-| F(28, 32636) | = 346.35 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.2291 |
-| Adj R-squared | = 0.2284 |
-| Root MSE | = .10121 |
+# 1. Pooled OLS Regression
+pooled_ols <- lm(lwage ~ union + educ + black + hisp + exper + expersq + married, data=wagepan)
 
-| D.leverage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **year** | | | | | |
-| 1992 | .0248175 | .0102758 | 2.42 | 0.016 | .0046764 | .0449585 |
-| 1993 | -.0551676 | .0096015 | -5.75 | 0.000 | -.0739868 | -.0363484 |
-| 1994 | .0062496 | .0096471 | 0.65 | 0.517 | -.0126591 | .0251583 |
-| 1995 | .0139463 | .0093621 | 1.49 | 0.136 | -.0044038 | .0322964 |
-| 1996 | -.0269879 | .0090235 | -2.99 | 0.003 | -.0446742 | -.0093015 |
-| 1997 | -.0234538 | .0089761 | -2.61 | 0.009 | -.0410472 | -.0058603 |
-| 1998 | -.0061028 | .0088369 | -0.69 | 0.490 | -.0234234 | .0112178 |
-| 1999 | .0087492 | .0088319 | 0.99 | 0.322 | -.0085615 | .02606 |
-| 2000 | .0150779 | .0089385 | 1.69 | 0.092 | -.002442 | .0325978 |
-| 2001 | .0046464 | .0087413 | 0.53 | 0.595 | -.0124869 | .0217797 |
-| 2002 | .0115113 | .0087246 | 1.32 | 0.187 | -.0055892 | .0286118 |
-| 2003 | -.031665 | .0086835 | -3.65 | 0.000 | -.048685 | -.014645 |
-| 2004 | -.0240877 | .008755 | -2.75 | 0.006 | -.0412479 | -.0069276 |
-| 2005 | -.0259071 | .0086258 | -3.00 | 0.003 | -.042814 | -.0090003 |
-| 2006 | -.0125877 | .0087022 | -1.45 | 0.148 | -.0296443 | .004469 |
-| 2007 | .0048807 | .0086034 | 0.57 | 0.571 | -.0119823 | .0217438 |
-| 2008 | .0802273 | .0086554 | 9.27 | 0.000 | .0632625 | .0971922 |
-| 2009 | -.0450363 | .0089832 | -5.01 | 0.000 | -.0626437 | -.027429 |
-| 2010 | .0138347 | .0092961 | 1.49 | 0.137 | -.004386 | .0320553 |
-| 2011 | .0132293 | .0086416 | 1.53 | 0.126 | -.0037086 | .0301672 |
-| 2012 | -.0247699 | .0085823 | -2.89 | 0.004 | -.0415916 | -.0079482 |
-| 2013 | -.0260382 | .0086973 | -2.99 | 0.003 | -.0430852 | -.0089913 |
-| **cashflow_assets** | | | | | |
-| D1. | -.1576294 | .0086324 | -18.26 | 0.000 | -.1745493 | -.1407096 |
-| **net_income_MV** | | | | | |
-| D1. | -.0456648 | .0015237 | -29.97 | 0.000 | -.0486512 | -.0426784 |
-| **capex_MV** | | | | | |
-| D1. | .1665012 | .0034578 | 48.15 | 0.000 | .1597238 | .1732786 |
-| **volatility** | | | | | |
-| D1. | .0005507 | .0002147 | 2.57 | 0.010 | .00013 | .0009715 |
-| **gdp_growth** | | | | | |
-| D1. | -.0043542 | .0003905 | -11.15 | 0.000 | -.0051196 | -.0035888 |
-| **inflation** | | | | | |
-| D1. | .0029569 | .0007924 | 3.73 | 0.000 | .0014037 | .0045101 |
-| _cons | .0072149 | .0083321 | 0.87 | 0.387 | -.0091162 | .023546 |
+# 3. Pooled OLS with Clustered Standard Errors
+pooled_ols_cluster <- feols(lwage ~ educ + black + hisp + exper + expersq + married + union, data=wagepan, vcov=~as.factor(nr))
 
-26
+modelsummary(list('Pooled OLS'=pooled_ols, 'Pooled OLS, Clustered SE'=pooled_ols_cluster), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
 
----
+## Example: Pooled OLS (Cont.)
 
-`predict uhat, resid`
-(5353 missing values generated)
+- Since there is strong evidence for autocorrelation according to the BG-test, cluster standard errors by individual. 
 
--   **Breusch-Godfrey after first-difference estimate:**
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+# 2. Breusch-Godfrey Test for Autocorrelation
+# The null hypothesis is that there is no serial correlation.
+bg_test <- bgtest(pooled_ols, order=1, type="F")
+print(bg_test)
+paste("F-statistic: ", bg_test$statistic)
+paste("p-value: ", bg_test$p.value)
 
-`reg uhat l.uhat i.year d.cashflow_assets d.net_income_MV d.capex_MV d.volatility d.gdp_growth d.inflation`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 2.74238351 | 28 | .097942268 |
-| Residual | 274.433137 | 28073 | .009775697 |
-| Total | 277.175521 | 28101 | .009863547 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 28102 |
-| F(28, 28073) | = 10.02 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.0099 |
-| Adj R-squared | = 0.0089 |
-| Root MSE | = .09887 |
-
-| uhat | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| uhat | | | | | |
-| L1. | -.0972879 | .0059722 | -16.29 | 0.000 | -.1089937 | -.085582 |
-| year | | | | | |
-| 1993 | .0118092 | .0101402 | 1.16 | 0.244 | -.008066 | .0316845 |
-| 1994 | .014257 | .009538 | 1.49 | 0.135 | -.004438 | .0329519 |
-| 1995 | .01849 | .0092818 | 1.99 | 0.046 | .0002973 | .0366827 |
-| 1996 | .0139628 | .0091525 | 1.53 | 0.127 | -.0039766 | .0319021 |
-| 1997 | .0135198 | .008873 | 1.52 | 0.128 | -.0038717 | .0309113 |
-| 1998 | .0115234 | .0087537 | 1.32 | 0.188 | -.0056341 | .028681 |
-| 1999 | .0165504 | .0086718 | 1.91 | 0.056 | -.0004467 | .0335475 |
-| 2000 | .0143471 | .0088124 | 1.63 | 0.104 | -.0029257 | .0316198 |
-| 2001 | .0150142 | .0087248 | 1.72 | 0.085 | -.0020869 | .0321152 |
-| 2002 | .0162071 | .0086254 | 1.88 | 0.060 | -.0006991 | .0331133 |
-| 2003 | .018279 | .0085907 | 2.13 | 0.033 | .0014408 | .0351172 |
-| 2004 | .0163362 | .0085818 | 1.90 | 0.057 | -.0004847 | .033157 |
-| 2005 | .0155979 | .0085044 | 1.83 | 0.067 | -.0010712 | .032267 |
-| 2006 | .016494 | .0085168 | 1.94 | 0.053 | -.0001993 | .0331874 |
-| 2007 | .0165834 | .0084451 | 1.96 | 0.050 | .0000306 | .0331361 |
-| 2008 | .0137903 | .0085929 | 1.60 | 0.109 | -.0030522 | .0306327 |
-| 2009 | .0178115 | .0089722 | 1.99 | 0.047 | .0002257 | .0353974 |
-| 2010 | .0149909 | .0090753 | 1.65 | 0.099 | -.0027972 | .032779 |
-| 2011 | .0157722 | .0085215 | 1.85 | 0.064 | -.0009304 | .0324748 |
-| 2012 | .0160332 | .0084817 | 1.89 | 0.059 | -.0005914 | .0326579 |
-| 2013 | .017986 | .008481 | 2.12 | 0.034 | .0013629 | .0346091 |
-| cashflow_assets | | | | | |
-| D1. | -.0198735 | .00956 | -2.08 | 0.038 | -.0386116 | -.0011355 |
-| net_income_MV | | | | | |
-| D1. | .0013649 | .0016652 | 0.82 | 0.412 | -.001899 | .0046288 |
-| capex_MV | | | | | |
-| D1. | .0024205 | .0037537 | 0.64 | 0.519 | -.0049369 | .0097779 |
-| volatility | | | | | |
-| D1. | .0005136 | .000237 | 2.17 | 0.030 | .0000492 | .0009781 |
-| gdp_growth | | | | | |
-| D1. | .0001906 | .0004156 | 0.46 | 0.647 | -.0006241 | .0010053 |
-| inflation | | | | | |
-| D1. | .0003954 | .0008525 | 0.46 | 0.643 | -.0012754 | .0020662 |
-| _cons | -.0162629 | .0081466 | -2.00 | 0.046 | -.0322306 | -.0002951 |
-
-27
-
----
-
-- Conclusion: -0.5 is not included in the 95% confidence interval of the parameter on l.uhat
-- Implication: we prefer the first-difference estimator.
-- We re-estimate the equation with clustered standard errors (which also corrects for heteroskedasticity).
-
-`. reg d.leverage i.year d.cashflow_assets d.net_income_MV d.capex_MV d.volatility d.gdp_growth d.inflation, cluster(id_firm)`
-
-Linear regression
-
-| | |
-| :--- | :--- |
-| Number of obs | = 32665 |
-| F( 28, 4033) | = 151.44 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.2291 |
-| Root MSE | = .10121 |
-
-(Std. Err. adjusted for 4034 clusters in id_firm)
-
-| D.leverage | Robust Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| year | | | | | |
-| 1992 | .0248175 | .009056 | 2.74 | 0.006 | .0070627 | .0425722 |
-| 1993 | -.0551676 | .0079563 | -6.93 | 0.000 | -.0707664 | -.0395688 |
-| 1994 | .0062496 | .0080243 | 0.78 | 0.436 | -.0094825 | .0219816 |
-| 1995 | .0139463 | .007127 | 1.96 | 0.050 | -.0000266 | .0279192 |
-| 1996 | -.0269879 | .0072956 | -3.70 | 0.000 | -.0412912 | -.0126845 |
-| 1997 | -.0234538 | .0073051 | -3.21 | 0.001 | -.0377758 | -.0091317 |
-| 1998 | -.0061028 | .0073293 | -0.83 | 0.405 | -.0204722 | .0082666 |
-| 1999 | .0087492 | .0071142 | 1.23 | 0.219 | -.0051985 | .0226969 |
-| 2000 | .0150779 | .0073423 | 2.05 | 0.040 | .0006829 | .0294729 |
-| 2001 | .0046464 | .0071457 | 0.65 | 0.516 | -.0093631 | .0186559 |
-| 2002 | .0115113 | .0070606 | 1.63 | 0.103 | -.0023313 | .0253539 |
-| 2003 | -.031665 | .0069352 | -4.57 | 0.000 | -.0452619 | -.0180681 |
-| 2004 | -.0240877 | .0070915 | -3.40 | 0.001 | -.037991 | -.0101845 |
-| 2005 | -.0259071 | .0069892 | -3.71 | 0.000 | -.0396098 | -.0122045 |
-| 2006 | -.0125877 | .0070929 | -1.77 | 0.076 | -.0264936 | .0013183 |
-| 2007 | .0048807 | .0068994 | 0.71 | 0.479 | -.0086459 | .0184073 |
-| 2008 | .0802273 | .007301 | 10.99 | 0.000 | .0659133 | .0945414 |
-| 2009 | -.0450363 | .0075672 | -5.95 | 0.000 | -.0598722 | -.0302004 |
-| 2010 | .0138347 | .0078845 | 1.75 | 0.079 | -.0016232 | .0292925 |
-| 2011 | .0132293 | .0069604 | 1.90 | 0.057 | -.0004168 | .0268755 |
-| 2012 | -.0247699 | .006876 | -3.60 | 0.000 | -.0382506 | -.0112892 |
-| 2013 | -.0260382 | .0070397 | -3.70 | 0.000 | -.03984 | -.0122365 |
-| cashflow_assets | | | | | |
-| D1. | -.1576294 | .0134112 | -11.75 | 0.000 | -.1839227 | -.1313362 |
-| net_income_MV | | | | | |
-| D1. | -.0456648 | .0030126 | -15.16 | 0.000 | -.0515712 | -.0397584 |
-| capex_MV | | | | | |
-| D1. | .1665012 | .0064726 | 25.72 | 0.000 | .1538114 | .179191 |
-| volatility | | | | | |
-| D1. | .0005507 | .000276 | 2.00 | 0.046 | 9.54e-06 | .0010919 |
-| gdp_growth | | | | | |
-| D1. | -.0043542 | .0004465 | -9.75 | 0.000 | -.0052295 | -.0034789 |
-| inflation | | | | | |
-| D1. | .0029569 | .0009011 | 3.28 | 0.001 | .0011903 | .0047236 |
-| _cons | .0072149 | .0065703 | 1.10 | 0.272 | -.0056664 | .0200963 |
-
-
-## Pooled OLS (again!)
-
-**Estimators for a zero correlation between aᵢ and the explanatory variables**
-
-*   Now we assume that there is no correlation between aᵢ and xᵢₜ.
-*   Consider the following methods:
-    *   Pooled OLS (method 5; previous week; next example)
-    *   Random effects (method 4; this week)
-
+```
 
 ## Pooled OLS Visualization
 
@@ -598,969 +445,95 @@ ggplot(panel_data, aes(x = x, y = y, color = country)) +
   )
 ```
 
-## Example 1: Pooled OLS and autocorrelation
+# Random Effects
 
-**Pooled OLS (with clustered standard errors):**
+## Random Effects Model
 
-`reg leverage i.year i.ncountry cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation`
+- Consider the static model:
 
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 812.032429 | 46 | 17.6528789 |
-| Residual | 2024.17412 | 37971 | .053255751 |
-| Total | 2834.20655 | 38017 | .074551031 |
+  $$
+    y_{it} = \beta_1x_{1it} + \dots + \beta_kx_{kit} + a_i + u_{it} \quad (6)
+  $$
 
-| | |
-| :--- | :--- |
-| Number of obs | = 38018 |
-| F( 46, 37971) | = 331.47 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.2865 |
-| Adj R-squared | = 0.2856 |
-| Root MSE | = .23077 |
+- for $i=1,...,N; t=1,...,T$
 
-| leverage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **year** | | | | | |
-| 1991 | .0029504 | .0232836 | 0.13 | 0.899 | -.0426861 | .0485868 |
-| 1992 | .0000561 | .0217867 | 0.00 | 0.998 | -.0426463 | .0427586 |
-| 1993 | -.036609 | .0216375 | -1.69 | 0.091 | -.0790191 | .0058011 |
-| 1994 | .0008144 | .0213076 | 0.04 | 0.970 | -.040949 | .0425779 |
-| 1995 | .0095802 | .0206564 | 0.46 | 0.643 | -.0309068 | .0500672 |
-| 1996 | -.0102466 | .0204811 | -0.50 | 0.617 | -.0503902 | .029897 |
-| 1997 | -.0179961 | .0204068 | -0.88 | 0.378 | -.057994 | .0220018 |
-| 1998 | -.017542 | .0205455 | -0.85 | 0.393 | -.0578118 | .0227278 |
-| 1999 | -.0105355 | .0206114 | -0.51 | 0.609 | -.0509343 | .0298633 |
-| 2000 | .0044244 | .0200754 | 0.22 | 0.826 | -.034924 | .0437728 |
-| 2001 | .0000975 | .0199214 | 0.00 | 0.996 | -.038949 | .0391441 |
-| 2002 | .0149194 | .019984 | 0.75 | 0.455 | -.0242498 | .0540887 |
-| 2003 | -.0042183 | .020029 | -0.21 | 0.833 | -.0434757 | .0350391 |
-| 2004 | -.0159808 | .019941 | -0.80 | 0.423 | -.0550657 | .0231042 |
-| 2005 | -.0366836 | .0198668 | -1.85 | 0.065 | -.0756231 | .0022558 |
-| 2006 | -.0384295 | .0198872 | -1.93 | 0.053 | -.0774089 | .0005499 |
-| 2007 | -.0290793 | .0198382 | -1.47 | 0.143 | -.0679627 | .009804 |
-| 2008 | .0201234 | .0196752 | 1.02 | 0.306 | -.0184406 | .0586874 |
-| 2009 | -.0335673 | .0212667 | -1.58 | 0.114 | -.0752506 | .008116 |
-| 2010 | .0173953 | .0199924 | 0.87 | 0.384 | -.0217904 | .0565811 |
-| 2011 | .0278749 | .0197154 | 1.41 | 0.157 | -.0107678 | .0665176 |
-| 2012 | .0049275 | .0200135 | 0.25 | 0.806 | -.0342996 | .0441545 |
-| 2013 | -.006493 | .0204539 | -0.32 | 0.751 | -.0465832 | .0335972 |
-| **ncountry** | | | | | |
-| 2 | -.0445892 | .0081852 | -5.45 | 0.000 | -.0606325 | -.0285459 |
-| 3 | .0603322 | .0212166 | 2.84 | 0.004 | .018747 | .1019173 |
-| 4 | -.048074 | .0287972 | -1.67 | 0.095 | -.1045173 | .0083692 |
-| 5 | -.0455876 | .0081123 | -5.62 | 0.000 | -.0614879 | -.0296872 |
-| 6 | -.0490725 | .0066374 | -7.39 | 0.000 | -.062082 | -.0360631 |
-| 7 | -.0895072 | .0066424 | -13.48 | 0.000 | -.1025264 | -.076488 |
-| 8 | .0499154 | .008389 | 5.95 | 0.000 | .0334726 | .0663581 |
-| 9 | -.0513545 | .0100213 | -5.12 | 0.000 | -.0709965 | -.0317125 |
-| 10 | .057862 | .0073695 | 7.85 | 0.000 | .0434175 | .0723064 |
-| 11 | -.0569571 | .021772 | -2.62 | 0.009 | -.0996307 | -.0142834 |
-| 12 | -.0598471 | .0133481 | -4.48 | 0.000 | -.0860097 | -.0336845 |
-| 13 | -.0964434 | .0302854 | -3.18 | 0.001 | -.1558035 | -.0370832 |
-| 14 | -.0768503 | .0076046 | -10.11 | 0.000 | -.0917555 | -.0619452 |
-| 15 | .1175568 | .0102683 | 11.45 | 0.000 | .0974307 | .1376829 |
-| 16 | .0016017 | .0240471 | 0.07 | 0.947 | -.0455312 | .0487347 |
-| 17 | .0071014 | .0145235 | 0.49 | 0.625 | -.0213651 | .035568 |
-| 18 | .0154778 | .0079679 | 1.94 | 0.052 | -.0001395 | .0310952 |
-| cashflow_assets | -.7094728 | .0148948 | -47.63 | 0.000 | -.738667 | -.6802787 |
-| net_income_MV | -.0686996 | .0033831 | -20.31 | 0.000 | -.0753304 | -.0620687 |
-| capex_MV | .5044541 | .0064815 | 77.83 | 0.000 | .4917501 | .517158 |
-| volatility | -.0010765 | .0001137 | -9.47 | 0.000 | -.0012994 | -.0008536 |
-| gdp_growth | -.0067869 | .0007704 | -8.81 | 0.000 | -.0082969 | -.005277 |
-| inflation | -.0046364 | .0017127 | -2.71 | 0.007 | -.0079934 | -.0012794 |
-| _cons | .4091819 | .0212779 | 19.23 | 0.000 | .3674766 | .4508872 |
+-   The equation (6) does not allow correlation between $a_i$ and all of the right hand side variables $x_{1it},...,x_{kit}$ (over all $T$ periods)
+    $$
+      E(a_i | x_{1i1},...,x_{1iT},...,x_{ki1},...,x_{kiT}) = 0
+    $$
+-   The exogenous time-varying regressors are assumed to be strictly exogenous (conditional on the unobserved effect):
+    $$
+      E(u_{it} | x_{1i1},...,x_{1iT},...,x_{ki1},...,x_{kiT}, a_i) = 0
+    $$
+-   In simple words: there are neither lagged dependent variables nor is there any feedback mechanism
 
-## Example 1 (Cont.)
+## Random Effects Model (Cont.)
 
-`predict uhat, resid`
+-   The following is assumed about $u_{it}$:
+    -   $E(u_{it}) = 0$; $\text{Var}(u_{it}) = \sigma_u^2$ (expected value of zero; constant variance)
+    -   $u_{it}$ is independent over time and across individuals
+-   The following is assumed about $a_i$:
+    -   $E(a_i) = 0$; $\text{Var}(a_i) = \sigma_a^2$ (expected value of zero; constant variance)
+    -   $a_i$ is independent over time and across individuals
+-   Equation (6) can be rewritten as follows:
+    Model: $y_{it} = \beta_1x_{1it} + \dots + \beta_kx_{kit} + v_{it} \quad (6)$
+    $i=1,...,N; t=1,...,T$
+    where
+    $$v_{it} = a_i + u_{it} \quad (7)$$
 
-`reg uhat l.uhat i.year i.ncountry cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation`
+-   The random effects estimator works as follows. We estimate equation (6), in which the error structure of equation (7) is taken into account.
 
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 1236.9336 | 46 | 26.8898608 |
-| Residual | 446.475075 | 32618 | .013687997 |
-| Total | 1683.40867 | 32664 | .051537126 |
 
-| | |
-| :--- | :--- |
-| Number of obs | = 32665 |
-| F( 46, 32618) | = 1964.48 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.7348 |
-| Adj R-squared | = 0.7344 |
-| Root MSE | = .117 |
+## Correlation Structure Error Terms
 
-| uhat | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| uhat | | | | | |
-| L1. | .8681897 | .0028916 | 300.25 | 0.000 | .8625221 | .8738573 |
-| year | | | | | |
-| 1992 | .0054429 | .0118535 | 0.46 | 0.646 | -.0177903 | .0286761 |
-| 1993 | -.0104477 | .011141 | -0.94 | 0.348 | -.0322845 | .0113891 |
-| 1994 | -.0307748 | .011023 | -2.79 | 0.005 | -.0523803 | -.0091693 |
-| 1995 | -.0178197 | .0109172 | -1.63 | 0.103 | -.0392179 | .0035786 |
-| 1996 | -.0173844 | .0105893 | -1.64 | 0.101 | -.0381399 | .0033711 |
-| 1997 | -.018507 | .0105939 | -1.75 | 0.081 | -.0392715 | .0022575 |
-| 1998 | -.0214503 | .0105839 | -2.03 | 0.043 | -.0421951 | -.0007055 |
-| 1999 | -.0178809 | .010631 | -1.68 | 0.093 | -.038718 | .0029562 |
-| 2000 | -.0067058 | .0104137 | -0.64 | 0.520 | -.0271169 | .0137054 |
-| 2001 | -.0081796 | .0102159 | -0.80 | 0.423 | -.0282031 | .0118439 |
-| 2002 | -.0142949 | .0102462 | -1.40 | 0.163 | -.0343778 | .005788 |
-| 2003 | -.0093085 | .0102263 | -0.91 | 0.363 | -.0293523 | .0107353 |
-| 2004 | -.0121306 | .0102212 | -1.19 | 0.235 | -.0321646 | .0079033 |
-| 2005 | -.0203213 | .0101848 | -2.00 | 0.046 | -.0402839 | -.0003586 |
-| 2006 | -.025473 | .0102126 | -2.49 | 0.013 | -.0454901 | -.0054559 |
-| 2007 | -.0238148 | .0101682 | -2.34 | 0.019 | -.0437449 | -.0038847 |
-| 2008 | -.0077731 | .0099828 | -0.78 | 0.436 | -.0273397 | .0117935 |
-| 2009 | -.0107624 | .0107814 | -1.00 | 0.318 | -.0318944 | .0103697 |
-| 2010 | -.0164746 | .0102141 | -1.61 | 0.107 | -.0364947 | .0035454 |
-| 2011 | -.0148785 | .010036 | -1.48 | 0.138 | -.0345494 | .0047924 |
-| 2012 | -.0182539 | .0101256 | -1.80 | 0.071 | -.0381004 | .0015927 |
-| 2013 | -.023887 | .0103999 | -2.30 | 0.022 | -.0442711 | -.0035028 |
-| ncountry | | | | | |
-| 2 | -.0128124 | .0044356 | -2.89 | 0.004 | -.0215064 | -.0041184 |
-| 3 | -.0025386 | .0162013 | -0.16 | 0.875 | -.0342937 | .0292165 |
-| 4 | -.0207784 | .0167837 | -1.24 | 0.216 | -.0536751 | .0121182 |
-| 5 | -.0164043 | .0043752 | -3.75 | 0.000 | -.0249799 | -.0078287 |
-| 6 | -.0113643 | .0036 | -3.16 | 0.002 | -.0184204 | -.0043082 |
-| 7 | -.0112784 | .0036052 | -3.13 | 0.002 | -.0183448 | -.004212 |
-| 8 | .009326 | .0046566 | 2.00 | 0.045 | .0001989 | .0184531 |
-| 9 | -.0173592 | .0054397 | -3.19 | 0.001 | -.0280212 | -.0066972 |
-| 10 | -.002379 | .0039989 | -0.59 | 0.552 | -.0102169 | .005459 |
-| 11 | .0116422 | .0130029 | 0.90 | 0.371 | -.013844 | .0371283 |
-| 12 | -.0147346 | .0074554 | -1.98 | 0.048 | -.0293475 | -.0001217 |
-| 13 | -.0207819 | .0178103 | -1.17 | 0.243 | -.0556907 | .0141268 |
-| 14 | -.0130139 | .0041147 | -3.16 | 0.002 | -.0210788 | -.0049489 |
-| 15 | .0091127 | .0055611 | 1.64 | 0.101 | -.0017872 | .0200127 |
-| 16 | -.0132585 | .0137125 | -0.97 | 0.334 | -.0401356 | .0136186 |
-| 17 | .0027798 | .0081756 | 0.34 | 0.734 | -.0132446 | .0188043 |
-| 18 | -.0080106 | .004312 | -1.86 | 0.063 | -.0164622 | .000441 |
-| cashflow_assets | .101437 | .008489 | 11.95 | 0.000 | .0847983 | .1180758 |
-| net_income_MV | .0134957 | .0019354 | 6.97 | 0.000 | .0097023 | .0172891 |
-| capex_MV | -.0964637 | .0037497 | -25.73 | 0.000 | -.1038133 | -.0891141 |
-| volatility | .0002336 | .0000651 | 3.59 | 0.000 | .000106 | .0003611 |
-| gdp_growth | .0014666 | .0004292 | 3.42 | 0.001 | .0006253 | .0023079 |
-| inflation | -.0001985 | .0009722 | -0.20 | 0.838 | -.0021041 | .001707 |
-| _cons | .0233256 | .0109373 | 2.13 | 0.033 | .001888 | .0447631 |
+-   Error term (see slide above): $v_{it} = a_i + u_{it}$
+-   Covariance across two individuals $i$ and $j$:
+    -   $\text{Cov}(v_{it}, v_{jt}) = 0$ for $i \neq j$
+    -   $\text{Cov}(v_{it}, v_{js}) = 0$ for $i \neq j; t \neq s$
+-   Covariance for the same individual across time:
+    -   $\text{Cov}(aX+bY, cW+dZ) = ac\text{Cov}(X,W) + ad\text{Cov}(X,Z) + bc\text{Cov}(Y,W) + bd\text{Cov}(Y,Z)$
+-   So that:
+    $$
+      \begin{align*}
+      \text{Cov}(v_{it}, v_{is}) &= \text{Cov}(a_i + u_{it}, a_i + u_{is}) \\
+      &= \text{Cov}(a_i, a_i) + \text{Cov}(a_i, u_{is}) + \text{Cov}(u_{it}, a_i) + \text{Cov}(u_{it}, u_{is}) \\
+      &= \sigma_a^2 + 0 + 0 + 0 \\
+      &= \sigma_a^2
+      \end{align*}
+    $$
 
-## Conclusion
+## Correlation Structure Error Terms
 
-**Conclusion: there is autocorrelation**
-**So: compute clustered standard errors:**
+-   Variance for an individual:
+    $$\text{Var}(X+Y) = \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X,Y)$$
+    $$
+    \begin{align*}
+    \text{Var}(v_{it}) &= \text{Var}(a_i + u_{it}) \\
+    &= \text{Var}(a_i) + \text{Var}(u_{it}) + 2\text{Cov}(a_i, u_{it}) \\
+    &= \sigma_a^2 + \sigma_u^2 + 0
+    \end{align*}
+    $$
+-   Thus:
+    $$\text{Corr}(v_{it}, v_{is}) = \frac{\text{Cov}(v_{it}, v_{is})}{\sqrt{\text{Var}(v_{it})\text{Var}(v_{is})}} = \frac{\sigma_a^2}{\sigma_a^2 + \sigma_u^2}$$
+-   Conclusion: random effects estimator $\beta_{re}$ takes account of the autocorrelation structure
 
-`reg leverage i.year i.ncountry cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, cluster(id_firm)`
-Linear regression
-
-| | |
-| :--- | :--- |
-| Number of obs | = 38018 |
-| F( 46, 4452) | = 125.91 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.2865 |
-| Root MSE | = .23077 |
-
-(Std. Err. adjusted for 4453 clusters in id_firm)
-
-| leverage | Robust Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **year** | | | | | |
-| 1991 | .0029504 | .0138055 | 0.21 | 0.831 | -.0241154 | .0300161 |
-| 1992 | .0000561 | .0150799 | 0.00 | 0.997 | -.029508 | .0296203 |
-| 1993 | -.036609 | .0159728 | -2.29 | 0.022 | -.0679236 | -.0052944 |
-| 1994 | .0008144 | .0161321 | 0.05 | 0.960 | -.0308125 | .0324414 |
-| 1995 | .0095802 | .0166859 | 0.57 | 0.566 | -.0231326 | .0422929 |
-| 1996 | -.0102466 | .0167745 | -0.61 | 0.541 | -.043133 | .0226397 |
-| 1997 | -.0179961 | .0167746 | -1.07 | 0.283 | -.0508826 | .0148904 |
-| 1998 | -.017542 | .0171381 | -1.02 | 0.306 | -.0511413 | .0160573 |
-| 1999 | -.0105355 | .0171958 | -0.61 | 0.540 | -.0442477 | .0231767 |
-| 2000 | .0044244 | .0166613 | 0.27 | 0.791 | -.0282401 | .0370889 |
-| 2001 | .0000975 | .0168222 | 0.01 | 0.995 | -.0328823 | .0330774 |
-| 2002 | .0149194 | .0170239 | 0.88 | 0.381 | -.0184558 | .0482947 |
-| 2003 | -.0042183 | .0171922 | -0.25 | 0.806 | -.0379236 | .0294869 |
-| 2004 | -.0159808 | .016918 | -0.94 | 0.345 | -.0491486 | .017187 |
-| 2005 | -.0366836 | .0168973 | -2.17 | 0.030 | -.0698107 | -.0035565 |
-| 2006 | -.0384295 | .016741 | -2.30 | 0.022 | -.0712502 | -.0056088 |
-| 2007 | -.0290793 | .0167073 | -1.74 | 0.082 | -.0618339 | .0036753 |
-| 2008 | .0201234 | .0168652 | 1.19 | 0.233 | -.0129407 | .0531875 |
-| 2009 | -.0335673 | .0197538 | -1.70 | 0.089 | -.0722946 | .00516 |
-| 2010 | .0173953 | .0171219 | 1.02 | 0.310 | -.0161721 | .0509628 |
-| 2011 | .0278749 | .016915 | 1.65 | 0.099 | -.0052869 | .0610368 |
-| 2012 | .0049275 | .0174995 | 0.28 | 0.778 | -.0293802 | .0392351 |
-| 2013 | -.006493 | .0179112 | -0.36 | 0.717 | -.0416078 | .0286219 |
-| **ncountry** | | | | | |
-| 2 | -.0445892 | .0237515 | -1.88 | 0.061 | -.0911539 | .0019755 |
-| 3 | .0603322 | .0456017 | 1.32 | 0.186 | -.0290698 | .1497342 |
-| 4 | -.048074 | .0451443 | -1.06 | 0.287 | -.1365792 | .0404312 |
-| 5 | -.0455876 | .0225627 | -2.02 | 0.043 | -.0898217 | -.0013534 |
-| 6 | -.0490725 | .0203556 | -2.41 | 0.016 | -.0889795 | -.0091655 |
-| 7 | -.0895072 | .0205905 | -4.35 | 0.000 | -.1298748 | -.0491396 |
-| 8 | .0499154 | .02224 | 2.24 | 0.025 | .0063138 | .0935169 |
-| 9 | -.0513545 | .0314302 | -1.63 | 0.102 | -.1129733 | .0102642 |
-| 10 | .057862 | .0231333 | 2.50 | 0.012 | .0125092 | .1032147 |
-| 11 | -.0569571 | .0534926 | -1.06 | 0.287 | -.1618292 | .0479151 |
-| 12 | -.0598471 | .0417232 | -1.43 | 0.152 | -.1416454 | .0219511 |
-| 13 | -.0964434 | .0490531 | -1.97 | 0.049 | -.1926119 | -.0002749 |
-| 14 | -.0768503 | .0221101 | -3.48 | 0.001 | -.1201972 | -.0335035 |
-| 15 | .1175568 | .0308953 | 3.81 | 0.000 | .0569867 | .1781269 |
-| 16 | .0016017 | .070134 | 0.02 | 0.982 | -.1358958 | .1390992 |
-| 17 | .0071014 | .0323112 | 0.22 | 0.826 | -.0562445 | .0704474 |
-| 18 | .0154778 | .0243164 | 0.64 | 0.524 | -.0321944 | .06315 |
-| cashflow_assets | -.7094728 | .0364888 | -19.44 | 0.000 | -.7810091 | -.6379366 |
-| net_income_MV | -.0686996 | .0056015 | -12.26 | 0.000 | -.0796812 | -.0577179 |
-| capex_MV | .5044541 | .0132879 | 37.96 | 0.000 | .4784033 | .5305049 |
-| volatility | -.0010765 | .0002885 | -3.73 | 0.000 | -.001642 | -.000511 |
-| gdp_growth | -.0067869 | .0009723 | -6.98 | 0.000 | -.0086931 | -.0048808 |
-| inflation | -.0046364 | .0019291 | -2.40 | 0.016 | -.0084184 | -.0008544 |
-| _cons | .4091819 | .0276264 | 14.81 | 0.000 | .3550203 | .4633434 |
-
-# Random Effects Estimator
-
-## Random-effects estimator
-
-**Estimation method 5: random-effects estimator**
-
-**Aim:** *to introduce the random-effects estimator.*
-
-Consider the static model:
-
-yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + aᵢ + uᵢₜ  (6)
-
-i=1,...,N;t=1,...,T
-
-- The equation (6) does not allow correlation between aᵢ and all of the right hand side variables x₁ᵢₜ,...,xₖᵢₜ (over all T periods)
-  E(aᵢ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ) = 0
-- The exogenous time-varying regressors are assumed to be strictly exogenous (conditional on the unobserved effect):
-  E(uᵢₜ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ, aᵢ) = 0
-- In simple words: there are neither lagged dependent variables nor is there any feedback mechanism
-- The following is assumed about uᵢₜ:
-  - E(uᵢₜ) = 0; Var(uᵢₜ) = σᵤ² (expected value of zero; constant variance)
-  - uᵢₜ is independent over time and across individuals
-- The following is assumed about aᵢ:
-  - E(aᵢ) = 0; Var(aᵢ) = σₐ² (expected value of zero; constant variance)
-  - aᵢ is independent over time and across individuals
-- Equation (6) can be rewritten as follows:
-  Model: yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ  (6)
-  i=1,...,N;t=1,...,T
-  where
-  vᵢₜ = aᵢ + uᵢₜ (7)
-
-- The random effects estimator works as follows. We estimate equation (6), in which the error structure of equation (7) is taken into account.
-
-## More on the correlation structure between the error terms
-
-**Aim:** *to discuss the correlation structure of the error terms.*
-
-- Error term (see slide above):
-  vᵢₜ = aᵢ + uᵢₜ
-- Covariance across two individuals i and j:
-  - Cov(vᵢₜ,vⱼₜ) = 0   i≠j
-  - Cov(vᵢₜ,vⱼₛ) = 0   i≠j; t≠s
-- Covariance for the same individual across time:
-  Cov[aX+bY,cW+dZ]=acCov[X,W]+adCov[X,Z]+bcCov[Y,W]+bdCov[Y,Z]
-- So that
-  Cov(vᵢₜ,vᵢₛ) = Cov(aᵢ+uᵢₜ, aᵢ+uᵢₛ)
-  = Cov(aᵢ,aᵢ) + Cov(aᵢ,uᵢₛ) + Cov(uᵢₜ,aᵢ) + Cov(uᵢₜ,uᵢₛ)
-  = σₐ² + 0 + 0 + 0
-  = σₐ²
-- Variance for an individual:
-  Var[X+Y] = Var[X]+Var[Y]+2Cov[X,Y]
-  Var(vᵢₜ) = Var(aᵢ+uᵢₜ) = Var(aᵢ)+Var(uᵢₜ)+2Cov(aᵢ,uᵢₜ)
-  = σₐ² + σᵤ² + 0
-- Thus: Corr(vᵢₜ,vᵢₛ) = Cov(vᵢₜ,vᵢₛ) / sqrt(Var(vᵢₜ)Var(vᵢₛ)) = σₐ² / (σₐ²+σᵤ²)
-- Conclusion: random effects estimator β_re takes account of the autocorrelation structure!
-
-## **Random effects or fixed effects: Hausman test**
-
-**Random effects or fixed effects**
-
-**Aim:** *to establish when to choose fixed effects or random effects*
-
-- Model: yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + aᵢ + uᵢₜ (8)
-
-  E(aᵢ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ) = 0
-  E(uᵢₜ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ, aᵢ) = 0
-
-  xᵢₜ is strictly exogenous (in simple words: no lagged dependent variables; no feedback mechanism).
-
-**Estimation method: Random effects**
-- Equation (8) can be estimated with random effects, which requires the assumption E(aᵢ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ) = 0
-- β̂ᵣₑ is a consistent estimator of β
-
-**Estimation method: Fixed effects**
-- Equation (8) can be estimated with fixed effects, which does NOT assume that E(aᵢ | x₁ᵢ₁,...,x₁ᵢₜ,...,xₖᵢ₁,...,xₖᵢₜ) = 0
-- β̂_within is a consistent estimator of β
-- β̂_within is less efficient than β̂ᵣₑ: It means that Var(β̂ᵣₑ) < Var(β̂_within)
-- Consequently, random effects yields significant t-statistics more easily than fixed effects.
-
-## Random effects: further remarks (II)
+## Random Effects: Further Remarks
 
 - Both random effects and pooled OLS allow for the inclusion of time-invariant individual variables (e.g. gender in a wage equation):
 
-  yᵢₜ = aᵢ + β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + γ₁z₁ᵢ + ... + γᵣzᵣᵢ + uᵢₜ
-  i=1,...,N;t=1,...,T
-
-- Where z is a vector of individual-specific regressors.
-- Remember: the effect of z on y cannot be estimated ('is not identified') in the fixed-effects specification.
-
-## Example 1 (continued): Pooled OLS and Random effects
-
-**Pooled OLS (with clustered standard errors):**
-
-`reg leverage i.year i.ncountry cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, cluster(id_firm)`
-
-Linear regression
-
-| | |
-| :--- | :--- |
-| Number of obs | = 38018 |
-| F( 46, 4452) | = 125.91 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.2865 |
-| Root MSE | = .23077 |
-
-(Std. Err. adjusted for 4453 clusters in id_firm)
-
-| leverage | Robust Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| cashflow_assets | -.7094728 | .0364888 | -19.44 | 0.000 | -.7810091 | -.6379366 |
-| net_income_MV | -.0686996 | .0056015 | -12.26 | 0.000 | -.0796812 | -.0577179 |
-| capex_MV | .5044541 | .0132879 | 37.96 | 0.000 | .4784033 | .5305049 |
-| volatility | -.0010765 | .0002885 | -3.73 | 0.000 | -.001642 | -.000511 |
-| gdp_growth | -.0067869 | .0009723 | -6.98 | 0.000 | -.0086931 | -.0048808 |
-| inflation | -.0046364 | .0019291 | -2.40 | 0.016 | -.0084184 | -.0008544 |
-| _cons | .4091819 | .0276264 | 14.81 | 0.000 | .3550203 | .4633434 |
-
-**Random effects:**
-`xtreg leverage i.year cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, re`
-
-Random-effects GLS regression
-Group variable: id_firm
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.2629 | Number of obs | = 38018 |
-| | between = 0.2026 | Number of groups | = 4453 |
-| | overall = 0.2212 | | |
-| | | Obs per group: min = | 1 |
-| | | avg = | 8.5 |
-| | | max = | 24 |
-| corr(u_i, X) = 0 (assumed) | Wald chi2(29) | = 12901.32 |
-| | Prob > chi2 | = 0.0000 |
-
-| leverage | Coef. | Std. Err. | z | P>\|z\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| cashflow_assets | -.3440569 | .0116573 | -29.51 | 0.000 | -.3669048 | -.321209 |
-| net_income_MV | -.0733575 | .0021795 | -33.66 | 0.000 | -.0776291 | -.0690858 |
-| capex_MV | .2973662 | .0047898 | 62.08 | 0.000 | .2879783 | .3067541 |
-| volatility | .001116 | .0001244 | 8.97 | 0.000 | .0008721 | .0013598 |
-| gdp_growth | -.0100331 | .000456 | -22.00 | 0.000 | -.0109269 | -.0091392 |
-| inflation | -.0012062 | .0009845 | -1.23 | 0.221 | -.0031359 | .0007235 |
-| _cons | .3032823 | .0125461 | 24.17 | 0.000 | .2786923 | .3278723 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .21045753 |
-| sigma_e | .12571004 |
-| rho | .73703448 | (fraction of variance due to u_i) |
-
-43
-
-## The Hausman test
-
-`xtreg leverage i.year cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, fe`
-
-Fixed-effects (within) regression
-Group variable: id_firm
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.2635 | Number of obs | = 38018 |
-| | between = 0.1852 | Number of groups | = 4453 |
-| | overall = 0.2094 | | |
-| | | Obs per group: min = | 1 |
-| | | avg = | 8.5 |
-| | | max = | 24 |
-| corr(u_i, Xb) = 0.1416 | F(29,33536) | = 413.74 |
-| | Prob > F | = 0.0000 |
-
-| leverage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| cashflow_assets | -.3282559 | .0119771 | -27.41 | 0.000 | -.3517314 | -.3047804 |
-| net_income_MV | -.0717367 | .0022064 | -32.51 | 0.000 | -.0760613 | -.0674121 |
-| capex_MV | .281408 | .0048738 | 57.74 | 0.000 | .2718552 | .2909609 |
-| volatility | .0016269 | .0001371 | 11.86 | 0.000 | .0013581 | .0018957 |
-| gdp_growth | -.0095725 | .0004607 | -20.78 | 0.000 | -.0104755 | -.0086695 |
-| inflation | -.0027681 | .0009939 | -2.78 | 0.005 | -.0047163 | -.00082 |
-| _cons | .3082911 | .0121223 | 25.43 | 0.000 | .2845309 | .3320513 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .23427663 |
-| sigma_e | .12571004 |
-| rho | .77644166 (fraction of variance due to ui) |
-| F test that all u_i=0: | F(4452, 33536) = 22.42 Prob > F = 0.0000 |
-
-`est store fixed`
-
-`xtreg leverage i.year cashflow_assets net_income_MV capex_MV volatility gdp_growth inflation, re`
-
-Random-effects GLS regression
-Group variable: id_firm
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.2629 | Number of obs | = 38018 |
-| | between = 0.2026 | Number of groups | = 4453 |
-| | overall = 0.2212 | | |
-| | | Obs per group: min = | 1 |
-| | | avg = | 8.5 |
-| | | max = | 24 |
-| corr(u_i, X) = 0 (assumed) | Wald chi2(29) | = 12901.32 |
-| | Prob > chi2 | = 0.0000 |
-
-| leverage | Coef. | Std. Err. | z | P>\|z\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| cashflow_assets | -.3440569 | .0116573 | -29.51 | 0.000 | -.3669048 | -.321209 |
-| net_income_MV | -.0733575 | .0021795 | -33.66 | 0.000 | -.0776291 | -.0690858 |
-| capex_MV | .2973662 | .0047898 | 62.08 | 0.000 | .2879783 | .3067541 |
-| volatility | .001116 | .0001244 | 8.97 | 0.000 | .0008721 | .0013598 |
-| gdp_growth | -.0100331 | .000456 | -22.00 | 0.000 | -.0109269 | -.0091392 |
-| inflation | -.0012062 | .0009845 | -1.23 | 0.221 | -.0031359 | .0007235 |
-| _cons | .3032823 | .0125461 | 24.17 | 0.000 | .2786923 | .3278723 |
-
-44
-
-## Hausman Test for FE
-
-`hausman fixed, force`
-
-| | Coefficients | | | |
-| :--- | :--- | :--- | :--- | :--- |
-| | (b) fixed | (B) | (b-B) Difference | sqrt(diag(V_b-V_B)) S.E. |
-| year | | | | |
-| 1991 | -.0071953 | -.0071565 | -.0000388 | |
-| 1992 | .0063964 | .0056499 | .0007466 | |
-| 1993 | -.0500511 | -.0492874 | -.0007636 | |
-| 1994 | -.0187898 | -.0147991 | -.0039907 | |
-| 1995 | -.0041872 | -.0000976 | -.0040896 | |
-| 1996 | -.0273106 | -.0220795 | -.0052312 | |
-| 1997 | -.0383464 | -.0315306 | -.0068158 | |
-| 1998 | -.0394148 | -.031532 | -.0078828 | |
-| 1999 | -.0286589 | -.0208409 | -.007818 | |
-| 2000 | -.0048752 | .000976 | -.0058512 | |
-| 2001 | -.0107868 | -.0065929 | -.0041939 | |
-| 2002 | .0005191 | .0049294 | -.0044103 | |
-| 2003 | -.02291 | -.0180144 | -.0048956 | |
-| 2004 | -.0283002 | -.0230235 | -.0052766 | |
-| 2005 | -.0476214 | -.0428228 | -.0047987 | |
-| 2006 | -.0417042 | -.0365223 | -.0051819 | |
-| 2007 | -.0310703 | -.0267037 | -.0043666 | |
-| 2008 | .0297393 | .0302732 | -.0005339 | |
-| 2009 | -.0450109 | -.0409076 | -.0041034 | |
-| 2010 | .0212174 | .0249711 | -.0037537 | |
-| 2011 | .0361837 | .0377859 | -.0016022 | |
-| 2012 | .007615 | .0089219 | -.0013069 | |
-| 2013 | -.0082831 | -.0046373 | -.0036457 | |
-| cashflow_a~s | -.3282559 | -.3440569 | .015801 | .0027492 |
-| net_income~V | -.0717367 | -.0733575 | .0016208 | .0003438 |
-| capex_MV | .281408 | .2973662 | -.0159582 | .0009009 |
-| volatility | .0016269 | .001116 | .000511 | .0000577 |
-| gdp_growth | -.0095725 | -.0100331 | .0004606 | .0000653 |
-| inflation | -.0027681 | -.0012062 | -.0015619 | .0001363 |
-
-b = consistent under Ho and Ha; obtained from xtreg
-B = inconsistent under Ha, efficient under Ho; obtained from xtreg
-
-Test: Ho: difference in coefficients not systematic
-chi2(29) = (b-B)'[(V_b-V_B)^(-1)](b-B)
-= 798.44
-Prob>chi2 = 0.0000
-(V_b-V_B is not positive definite)
-
-- Conclusion: Reject Ho (thus fixed-effects specification is preferred).
-- However, we prefer the first-difference specification to the fixed-effects specification (see the conclusion above with the test on -0.5).
-- It means that overall, we conclude that the first-difference specification is preferred.
-
-
-## Line of reasoning with panel data: final example
-
-
-**To wind up: Line of reasoning with panel data (5 steps)**
-
-- **Step 1a:** Apply pooled OLS
-  yᵢₜ = β₁x₁ᵢₜ + ... + βₖxₖᵢₜ + vᵢₜ
-- **Step 1b:** Test for autocorrelation of error term with Breusch-Godfrey. Estimated parameter on lagged vᵢₜ is
-  Corr(vᵢₜ, vᵢₛ) = σₐ² / (σₐ²+σᵤ²)
-- **Step 1c:** Re-estimate pooled OLS with clustered standard errors
-- **Step 2a:** Apply first-differences estimator (FD):
-  Δyᵢₜ = β₁Δx₁ᵢₜ + ... + βₖΔxₖᵢₜ + Δuᵢₜ
-- **Step 2b:** Compute autocorrelation: is the parameter on Δuᵢ,ₜ₋₁ of Breusch-Godfrey equal to -0.5?
-- **Step 2c:** Re-estimate FD with clustered standard errors
-- **Step 3a:** Apply LSDV/ fixed-effects estimator (FE):
-  ÿᵢₜ = β₁ẍ₁ᵢₜ + ... + βₖẍₖᵢₜ + üᵢₜ
-- **Step 3b:** Compute autocorrelation
-- **Step 3c:** Compare the outcome of the FD estimator with the outcome of the FE estimator
-- **Step 4a:** Apply random effects estimator (RE)
-- **Step 4b:** Test for autocorrelation
-- **Step 4c:** Compare the outcome of the Random effects estimator and Pooled OLS estimator
-- **Step 5:** Test for Random effects versus fixed effects using the Hausman test.
-
-## Example 2 (for the entire procedure)
-
-We apply the five steps on the dataset `wagepan.dta`
-
-`. xtset nr year`
-`. xtsum lwage married educ union`
-
-| Variable | | Mean | Std. Dev. | Min | Max | Observations |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| lwage | overall | 1.649147 | .5326094 | -3.579079 | 4.05186 | N = 4360 |
-| | between | | .3907468 | .3333435 | 3.174173 | n = 545 |
-| | within | | .3622636 | -2.467201 | 3.204687 | T = 8 |
-| married | overall | .4389908 | .4963208 | 0 | 1 | N = 4360 |
-| | between | | .3766116 | 0 | 1 | n = 545 |
-| | within | | .3236137 | -.4360092 | 1.313991 | T = 8 |
-| educ | overall | 11.76697 | 1.746181 | 3 | 16 | N = 4360 |
-| | between | | 1.747585 | 3 | 16 | n = 545 |
-| | within | | 0 | 11.76697 | 11.76697 | T = 8 |
-| union | overall | .2440367 | .4295639 | 0 | 1 | N = 4360 |
-| | between | | .3294467 | 0 | 1 | n = 545 |
-| | within | | .2759787 | -.6309633 | 1.119037 | T = 8 |
-
-
-## Step 1a: Apply pooled OLS
-
-`reg lwage married educ union`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 151.850323 | 3 | 50.6167742 |
-| Residual | 1084.67932 | 4356 | .249008108 |
-| Total | 1236.52964 | 4359 | .283672779 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 4360 |
-| F(3, 4356) | = 203.27 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.1228 |
-| Adj R-squared | = 0.1222 |
-| Root MSE | = .49901 |
-
-| lwage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2090758 | .0152444 | 13.71 | 0.000 | .179189 | .2389626 |
-| educ | .0760449 | .0043292 | 17.57 | 0.000 | .0675574 | .0845324 |
-| union | .1710456 | .0176107 | 9.71 | 0.000 | .1365197 | .2055716 |
-| _cons | .6208054 | .051991 | 11.94 | 0.000 | .5188766 | .7227343 |
-
-
-## Step 1b: Test for autocorrelation of error term with Breusch-Godfrey.
-
-`predict uhat, resid`
-`reg uhat l.uhat married educ union`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 315.938702 | 4 | 78.9846754 |
-| Residual | 588.20123 | 3810 | .154383525 |
-| Total | 904.139931 | 3814 | .237058189 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 3815 |
-| F(4, 3810) | = 511.61 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.3494 |
-| Adj R-squared | = 0.3488 |
-| Root MSE | = .39292 |
-
-| uhat | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| uhat | | | | | |
-| L1. | .5733121 | .0126968 | 45.15 | 0.000 | .5484188 | .5982053 |
-| married | -.0441766 | .0127575 | -3.46 | 0.001 | -.0691889 | -.0191644 |
-| educ | .0033008 | .0036449 | 0.91 | 0.365 | -.0038453 | .010447 |
-| union | -.0400586 | .0148631 | -2.70 | 0.007 | -.069199 | -.0109182 |
-| _cons | .0355483 | .0437596 | 0.81 | 0.417 | -.0502461 | .1213428 |
-
-**Conclusion: there is autocorrelation**
-
-## **Step 1c: Re-estimate pooled OLS with clustered standard errors**
-
-`reg lwage married educ union, cluster(nr)`
-
-Linear regression
-(Std. Err. adjusted for 545 clusters in nr)
-
-| | |
-| :--- | :--- |
-| Number of obs | = 4360 |
-| F( 3, 544) | = 60.91 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.1228 |
-| Root MSE | = .49901 |
-
-| lwage | Robust Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2090758 | .0243617 | 8.58 | 0.000 | .1612213 | .2569303 |
-| educ | .0760449 | .0088779 | 8.57 | 0.000 | .0586057 | .093484 |
-| union | .1710456 | .0282567 | 6.05 | 0.000 | .1155399 | .2265513 |
-| _cons | .6208054 | .1060566 | 5.85 | 0.000 | .4124747 | .8291361 |
-
-
-## Step 2a: Apply first-differences estimator (FD)
-
-`reg d.lwage d.married d.educ d.union, nocons`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 3.57932445 | 2 | 1.78966222 |
-| Residual | 765.033676 | 3813 | .200638258 |
-| Total | 768.613001 | 3815 | .201471298 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 3815 |
-| F( 2, 3813) | = 8.92 |
-| Prob > F | = 0.0001 |
-| R-squared | = 0.0047 |
-| Adj R-squared | = 0.0041 |
-| Root MSE | = .44793 |
-
-| D.lwage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | | | | | |
-| D1. | .0820425 | .0226819 | 3.62 | 0.000 | .0375727 | .1265123 |
-| educ | | | | | |
-| D1. | (dropped) | | | | | |
-| union | | | | | |
-| D1. | .0430192 | .0198737 | 2.16 | 0.030 | .004055 | .0819833 |
-
-## Step 2b: Compute autocorrelation: is the parameter on Δuᵢ,ₜ₋₁ of Breusch-Godfrey equal to -0.5?**
-
-`. predict uhat, resid`
-(545 missing values generated)
-
-- **Breusch-Godfrey after first-difference estimate:**
-
-`. reg uhat l.uhat d.married d.educ d.union`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 104.390207 | 3 | 34.7967355 |
-| Residual | 468.291419 | 3266 | .143383778 |
-| Total | 572.681626 | 3269 | .175185569 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 3270 |
-| F( 3, 3266) | = 242.68 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.1823 |
-| Adj R-squared | = 0.1815 |
-| Root MSE | = .37866 |
-
-| uhat | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| uhat | | | | | |
-| L1. | -.3950886 | .0146761 | -26.92 | 0.000 | -.4238638 | -.3663134 |
-| married | | | | | |
-| D1. | -.0280538 | .0214986 | -1.30 | 0.192 | -.0702059 | .0140983 |
-| educ | | | | | |
-| D1. | (dropped) | | | | | |
-| union | | | | | |
-| D1. | .0155607 | .0185722 | 0.84 | 0.402 | -.0208536 | .051975 |
-| _cons | .0806243 | .0067844 | 11.88 | 0.000 | .0673222 | .0939265 |
-
-- **Conclusion: -0.5 is not within interval of parameter on l.uhat**
-- **Thus we prefer first-difference estimator above the fixed-effects estimator**
-
-
-## Step 2c: Re-estimate FD with clustered standard errors
-
-`. reg d.lwage d.married d.educ d.union, nocons cluster(nr)`
-
-Linear regression
-(Std. Err. adjusted for 545 clusters in nr)
-
-| | |
-| :--- | :--- |
-| Number of obs | = 3815 |
-| F( 2, 544) | = 6.91 |
-| Prob > F | = 0.0011 |
-| R-squared | = 0.0047 |
-| Root MSE | = .44793 |
-
-| D.lwage | Robust Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | | | | | |
-| D1. | .0820425 | .0239245 | 3.43 | 0.001 | .0350467 | .1290383 |
-| educ | | | | | |
-| D1. | (dropped) | | | | | |
-| union | | | | | |
-| D1. | .0430192 | .022077 | 1.95 | 0.052 | -.0003474 | .0863857 |
-
-## Step 3a: Apply LSDV/fixed-effects estimator (FE)
-
-**LSDV:**
-`. reg lwage married educ union dnum*`
-
-| Source | SS | df | MS |
-| :--- | :--- | :--- | :--- |
-| Model | 692.98604 | 546 | 1.2692052 |
-| Residual | 543.543602 | 3813 | .142550118 |
-| Total | 1236.52964 | 4359 | .283672779 |
-
-| | |
-| :--- | :--- |
-| Number of obs | = 4360 |
-| F(546, 3813) | = 8.90 |
-| Prob > F | = 0.0000 |
-| R-squared | = 0.5604 |
-| Adj R-squared | = 0.4975 |
-| Root MSE | = .37756 |
-
-| lwage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2416845 | .0176735 | 13.67 | 0.000 | .2070341 | .2763348 |
-| educ | .0328052 | .0145304 | 2.26 | 0.024 | .0043171 | .0612934 |
-| union | .0700438 | .020724 | 3.38 | 0.001 | .0294127 | .1106749 |
-...
-...
-...
-
-**F-test:**
-`. testparm dnum*`
-Constraint 209 dropped
-Constraint 395 dropped
-
-F(543, 3813) = 6.99
-Prob > F = 0.0000
-
-52
-
-## Fixed-effects, within regression
-
-`. xtreg lwage married educ union, fe i(nr)`
-
-Fixed-effects (within) regression
-Group variable: nr
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.0498 | Number of obs | = 4360 |
-| | between = 0.0573 | Number of groups | = 545 |
-| | overall = 0.0538 | | |
-| | | Obs per group: min = | 8 |
-| | | avg = | 8.0 |
-| | | max = | 8 |
-| corr(u_i, Xb) = -0.0035 | F(2,3813) | = 100.00 |
-| | Prob > F | = 0.0000 |
-
-| lwage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2416845 | .0176735 | 13.67 | 0.000 | .2070341 | .2763348 |
-| educ | (dropped) | | | | | |
-| union | .0700438 | .020724 | 3.38 | 0.001 | .0294127 | .1106749 |
-| _cons | 1.525957 | .010825 | 140.97 | 0.000 | 1.504733 | 1.54718 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .37939434 |
-| sigma_e | .3775581 |
-| rho | .50242582 (fraction of variance due to u_i) |
-| F test that all u_i=0: | F(544, 3813) = 6.98 Prob > F = 0.0000 |
-
-## Step 4a: Apply random effects estimator
-
-**Random effects:**
-`. xtreg lwage married educ union, re i(nr)`
-
-Random-effects GLS regression
-Group variable: nr
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.0493 | Number of obs | = 4360 |
-| | between = 0.1791 | Number of groups | = 545 |
-| | overall = 0.1191 | | |
-| | | Obs per group: min = | 8 |
-| | | avg = | 8.0 |
-| | | max = | 8 |
-| Random effects u_i ~ Gaussian | Wald chi2(3) | = 317.44 |
-| corr(u_i, X) = 0 (assumed) | Prob > chi2 | = 0.0000 |
-
-| lwage | Coef. | Std. Err. | z | P>\|z\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2328783 | .0161908 | 14.38 | 0.000 | .201145 | .2646117 |
-| educ | .0758092 | .0086334 | 8.78 | 0.000 | .058888 | .0927303 |
-| union | .0991208 | .0189042 | 5.24 | 0.000 | .0620693 | .1361723 |
-| _cons | .6306824 | .1029879 | 6.12 | 0.000 | .4288299 | .8325349 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .32508679 |
-| sigma_e | .3775581 |
-| rho | .42573728 (fraction of variance due to u_i) |
-
-## Step 5: Test for Random effects versus fixed effects using Hausman test.
-
-`. xtreg lwage married educ union, fe i(nr)`
-
-Fixed-effects (within) regression
-Group variable: nr
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.0498 | Number of obs | 4360 |
-| | between = 0.0573 | Number of groups | 545 |
-| | overall = 0.0538 | | |
-| | | Obs per group: min | 8 |
-| | | avg | 8.0 |
-| | | max | 8 |
-| corr(u_i, Xb) = -0.0035 | F(2,3813) | = 100.00 |
-| | Prob > F | = 0.0000 |
-
-| lwage | Coef. | Std. Err. | t | P>\|t\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2416845 | .0176735 | 13.67 | 0.000 | .2070341 | .2763348 |
-| educ | (dropped) | | | | | |
-| union | .0700438 | .020724 | 3.38 | 0.001 | .0294127 | .1106749 |
-| _cons | 1.525957 | .010825 | 140.97 | 0.000 | 1.504733 | 1.54718 |
-
-| | |
-| :--- | :--- |
-| sigma_u | .37939434 |
-| sigma_e | .3775581 |
-| rho | .50242582 (fraction of variance due to u_i) |
-| F test that all u_i=0: | F(544, 3813) = 6.98 Prob > F = 0.0000 |
-
-`. est store fixed`
-
-`. xtreg lwage married educ union, re i(nr)`
-
-Random-effects GLS regression
-Group variable: nr
-
-| | | |
-| :--- | :--- | :--- |
-| R-sq: | within = 0.0493 | Number of obs | 4360 |
-| | between = 0.1791 | Number of groups | 545 |
-| | overall = 0.1191 | | |
-| | | Obs per group: min | 8 |
-| | | avg | 8.0 |
-| | | max | 8 |
-| Random effects u_i ~ Gaussian | Wald chi2(3) | = 317.44 |
-| corr(u_i, X) = 0 (assumed) | Prob > chi2 | = 0.0000 |
-
-| lwage | Coef. | Std. Err. | z | P>\|z\| | [95% Conf. Interval] |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| married | .2328783 | .0161908 | 14.38 | 0.000 | .201145 | .2646117 |
-| educ | .0758092 | .0086334 | 8.78 | 0.000 | .058888 | .0927303 |
-| union | .0991208 | .0189042 | 5.24 | 0.000 | .0620693 | .13617
-
-
-
-
-# The Pooled OLS Model
-
-## The Pooled OLS Model
-
-- The simplest approach is to ignore the panel structure entirely.
-
-:::{.callout-note title="Definition: Pooled OLS Model"}
-  $$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
-:::
-- **Method:**
-  - Stack all $N \times T$ observations together.
-  - Run a single OLS regression as if it were one large cross-section.
-
-- **Key Assumption:**
-  - The error term $u_{it}$ is uncorrelated with the regressors $X_{it}$.
-  - This implicitly assumes that there are **no unobserved individual-specific or time-specific effects** that are correlated with our $X$ variables. 
-  - This assumption is almost always violated in practice! It ignores the very heterogeneity that panel data is designed to address, leading to biased estimates.
-
-## Unobserved Heterogeneity
-
-- The error term $u_{it}$ in a panel model is often thought to have multiple parts:
-
-  $$ u_{it} = \alpha_i + \lambda_t + \epsilon_{it} $$
-
-- $\alpha_i$: **Individual-specific effect**. This is an unobserved factor that is constant over time for a given individual $i$, but varies across individuals.
-- $\lambda_t$: **Time effect**. This is an unobserved factor that is constant for all individuals at a given time $t$, but varies over time.
-- $\epsilon_{it}$: The idiosyncratic error term that varies across both $i$ and $t$.
-- The core challenge of panel data is how to deal with $\alpha_i$ and $\lambda_t$.
-
-## Unobserved Heterogeneity Examples
-
-:::{.callout-tip title="Example: Unobserved Heterogeneity"}
-
-$\alpha_i$:  An individual's innate ability, a firm's management quality, a country's cultural norms. All of these affect a particular individual, firm, or country $i$ in a way that is constant over time.
-
-$\lambda_t$: A global financial crisis, a major policy change, a technological shock. All of these affect an entire cross-section at particular point in time $t$.
-
-:::
-
-
-# The Random Effects Estimator
-
-## The Random Effects (RE) Model
-
-- **Core Idea:** Instead of treating $\alpha_i$ as a fixed parameter for each individual, we treat it as a **random variable** that is part of the composite error term.
-
-:::{.callout-note title="Definition: Random Effects"}
-
-$$ y_{it} = \beta_0 + \beta_1 X_{it} + u_{it} $$
-
-Where the composite error term is:
-$$ u_{it} = \alpha_i + \epsilon_{it} $$
-
-- $\alpha_i$ is the random individual-specific error component.
-- $\epsilon_{it}$ is the idiosyncratic error.
-
-:::
-
-- The RE model is a compromise between Pooled OLS and Fixed Effects.
-
-## Random Effects Specification
-
-- The Random Effects Estimator can also be written as follows:
-
   $$
-    y_{it} - \theta \bar{y_i}  = \beta_1( x_{1it} -\theta\overline{x_{1i}}) +\dots + \beta_k(x_{kit} - \theta\overline{x_{ki}}) + (u_{it} -\theta \bar{u}_i)
+    y_{it} = a_i + \beta_1x_{1it} + \dots + \beta_kx_{kit} + \gamma_1z_{1i} + \dots + \gamma_rz_{ri} + u_{it}
   $$
-
-
-- $\bar{y_i} = (1/T) \sum_t y_{it}$ (the mean of $y$ for individual $i$). Similar for $\overline{x_{ji}}$.
-- $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T_i \sigma^2_\alpha + \sigma^2_\epsilon)}}$, with $\sigma^2_{.}$ denoting the variance of the $\epsilon$ and $\alpha$ terms respectively. 
-- $T_i$ is the no. of observations for individual $i.$ If balanced, $T_i = T$.
-
-
-## The Key Assumption for Random Effects
-
-- For the RE model to be valid (i.e., provide consistent estimates), we must assume:
-
-$$ E(\alpha_i | X_{it}) = 0 $$
-
-- **In English:** The unobserved individual-specific effects ($\alpha_i$) are **uncorrelated** with the explanatory variables ($X_{it}$) for all time periods.
-
-- This is a much stronger assumption than in the FE model.
-  - **Example where it might be violated:** In a wage regression, if unobserved `ability` ($\alpha_i$) is correlated with `education` ($X_{it}$), the RE assumption is violated, and the RE estimator will be biased.
-  - **Example where it might hold:** In an experiment where treatment ($X_{it}$) is randomly assigned, the assumption would hold by design.
+- For $i=1,...,N; \quad t=1,...,T$. 
+- And $z$ is a vector of individual-specific regressors.
+- Remember: the effect of $z$ on $y$ cannot be estimated ('is not identified') in the fixed-effects specification.
 
 ## Estimation of RE Models (GLS)
 
 - Estimating the RE model can "almost" be done using Pooled OLS. 
   - If we run Pooled OLS on the data, assuming the RE model, the estimates of $\beta$ will be unbiased (if the key assumption holds), but they will be **inefficient**.
 
-- The composite error term $u_{it} = \alpha_i + \epsilon_{it}$ creates serial correlation within each individual. 
-  - The error for individual $i$ at time $t$ is correlated with their error at time $t+1$ because they share the same $\alpha_i$:
-  
-  $$\rho(u_{it}, u_{is}) \neq 0 \quad \text{for } t \neq s$$
-
+- The composite error term $u_{it} = \alpha_i + \nu_{it}$ creates serial correlation within each individual. 
 - **Solution:** Generalized Least Squares (GLS).
     - GLS is a method that transforms the data to account for this specific error structure, producing efficient estimates.
     - In practice, we use **Feasible GLS (FGLS)** because we have to estimate the components of the error correlation first. This is what statistical software does automatically.
@@ -1573,11 +546,11 @@ $$ E(\alpha_i | X_{it}) = 0 $$
 
 The coefficient $\beta_1$ from an RE model is interpreted as:
 
-The estimated change in $y$ for a one-unit increase in $X$, assuming the unobserved individual effects $\alpha_i$ are uncorrelated with $X$.
+The estimated change in $y$ for a one-unit increase in $x$, assuming the unobserved individual effects $\alpha_i$ are uncorrelated with $x$.
 
 :::
 
-- It's a more general interpretation than the FE coefficient.
+- It's a more general interpretation than in the FE model.
 - The reliability of this interpretation hinges entirely on the key RE assumption holding true.
 
 ## Pros and Cons of the Random Effects Model
@@ -1589,11 +562,30 @@ The estimated change in $y$ for a one-unit increase in $X$, assuming the unobser
 - **Cons:**
     - **Estimates are biased and inconsistent if the key assumption is violated.** This is the critical weakness. If the unobserved effects are correlated with your regressors, the RE model suffers from omitted variable bias.
 
+
 # Hausman Test
+
+## RE or FE? 
+
+- Model: $y_{it} = \beta_1x_{1it} + \dots + \beta_kx_{kit} + a_i + u_{it} \quad (8)$
+  - $E(a_i | x_{1i1},\dots,x_{1iT},\dots,x_{ki1},\dots,x_{kiT}) = 0$
+  - $E(u_{it} | x_{1i1},\dots,x_{1iT},\dots,x_{ki1},\dots,x_{kiT}, a_i) = 0$
+
+- $x_{it}$ is strictly exogenous (in simple words: no lagged dependent variables; no feedback mechanism).
+
+- **Estimation method: Random effects**
+  - Equation (8) can be estimated with random effects, which requires the assumption $E(a_i | x_{1i1},\dots,x_{1iT},\dots,x_{ki1},\dots,x_{kiT}) = 0$
+  - $\hat{\beta}_{re}$ is a consistent estimator of $\beta$
+
+- **Estimation method: Fixed effects**
+  - Equation (8) can be estimated with fixed effects, which does NOT assume that $E(a_i | x_{1i1},\dots,x_{1iT},\dots,x_{ki1},\dots,x_{kiT}) = 0$
+  - $\hat{\beta}_{within}$ is a consistent estimator of $\beta$
+  - $\hat{\beta}_{within}$ is less efficient than $\hat{\beta}_{re}$: It means that $\text{Var}(\hat{\beta}_{re}) < \text{Var}(\hat{\beta}_{within})$
+- Consequently, random effects yields significant t-statistics more easily than fixed effects.
 
 ## Comparing FE and RE: The Hausman Test
 
-- So, which model should we use? FE or RE? The **Hausman Test** helps us decide.
+- So which model should we use? FE or RE? The **Hausman Test** helps us decide.
 
 - **Intuition:**
     - The FE estimator is **always consistent**, whether the unobserved effects $\alpha_i$ are correlated with $X$ or not.
@@ -1706,37 +698,342 @@ p
 
 :::
 
+## Example: FE vs. RE 
+
+- We use the same dataset as before (Vella and Verbeek, 1998)
+- We estimate the model: $\log \text{Wage} = \alpha_i + \beta_1 \text{Union}_{it} + \beta_2 \text{Exper}_{it} + \beta_3 \text{Exper}^2_{it} + u_{it}$ by FE and RE
+  - The Hausman test can only compare models with the same variables, hence we only include time-varying control variables. 
+- The results are shown below:
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+# Install and load necessary packages if you haven't already.
+# install.packages(c("wooldridge", "plm"))
+library(wooldridge); library(plm); library(modelsummary)
+
+# Load the wagepan dataset
+data("wagepan")
+
+# Define the model formula
+# We will model the log of wage (lwage) as a function of several explanatory variables.
+# Note: Time-invariant variables like 'educ', 'black', and 'hisp' will be
+# dropped from the Fixed Effects model automatically.
+formula <- lwage ~ union + exper + expersq
+
+# 1. Estimate the Random Effects (RE) Model
+# The RE model assumes that the unobserved individual effects (a_i) are
+# uncorrelated with the explanatory variables.
+re_model <- plm(formula,
+                data = wagepan,
+                index = c("nr", "year"),
+                model = "random")
+
+
+# 2. Estimate the Fixed Effects (FE) Model
+# The FE model (or 'within' estimator) allows the unobserved individual effects (a_i)
+# to be correlated with the explanatory variables. It removes the a_i by
+# demeaning the variables.
+fe_model <- plm(formula,
+                data = wagepan,
+                index = c("nr", "year"),
+                model = "within")
+
+modelsummary(list('FE'=fe_model, 'RE'=re_model), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+## Example: Hausman Test
+
+- According to these models, union membership raises wages with 8.3% (FE) or 10.2% (RE). 
+- The Hausman test clearly rejects the null hypothesis of $E(\alpha_i | X_{it}) = 0$. 
+- This implies the fixed effects model is preferable to the random effects model.
+
+```{r}
+#| echo: false
+# 3. Conduct the Hausman Test
+# The Hausman test compares the FE and RE models.
+# H0 (Null Hypothesis): The Random Effects model is appropriate (i.e., individual effects are not correlated with regressors).
+# H1 (Alternative Hypothesis): The Fixed Effects model is appropriate (i.e., individual effects are correlated with regressors).
+hausman_test_result <- phtest(fe_model, re_model)
+
+# Print the results of the Hausman test
+print(hausman_test_result)
+```
+
+# Pooled OLS vs. Random Effects
+
+## Pooled OLS vs. RE
+
+*   To formally decide between Pooled OLS and Random Effects, you should use the Breusch-Pagan test for random effects.
+
+*   **Purpose of the Test:** This test checks whether the variance of the individual-specific effect ($a_i$) is equal to zero.
+*   **Hypotheses:**
+    *   **Null Hypothesis ($H_0$):** $Var(a_i) = \sigma_a^2 = 0$. There are no significant individual-specific effects. The Pooled OLS model is adequate.
+    *   **Alternative Hypothesis ($H_1$):** $Var(a_i) = \sigma_a^2 > 0$. There are significant individual-specific effects. The Random Effects model is preferred over Pooled OLS.
+*   **Decision Rule:**
+    *   If the **p-value is high** (e.g., > 0.05), you fail to reject the null hypothesis. This suggests that the individual effects are not significant, and you can use the simpler **Pooled OLS** model.
+    *   If the **p-value is low** (e.g., < 0.05), you reject the null hypothesis. This provides strong evidence for the presence of individual-specific effects, making the **Random Effects** model the better choice.
+
+## Example: Pooled OLS vs. RE
+
+- Using again the same dataset (Vella and Verbeek, 1998)
+  - We can now use the full set of control variables, since both pooled OLS and Random Effects 
+  - The results are shown below.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Install and load necessary packages
+library(wooldridge)
+library(plm); library(modelsummary)
+
+# Load the dataset
+data("wagepan")
+
+# Define the model formula
+formula <- lwage ~ union + educ + black + hisp + exper + expersq + married
+
+# 1. Estimate a Pooled OLS model
+pooled_ols <- plm(formula, data = wagepan, model = "pooling")
+re <- plm(formula, data = wagepan, model = "random")
+
+
+modelsummary(list('Pooled OLS'=pooled_ols, 'Random Effects'=re), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+
+## Example: Pooled OLS vs. RE (Cont.)
+
+- The results of the Breusch-Pagan test show significant autocorrelation in the OLS estimates, implying the Random Effects model is more reliable. 
+- Hence the Random Effects model should be preferred. 
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+# 2. Run the Breusch-Pagan LM Test
+# The plmtest() function in the 'plm' package performs this test.
+# The 'type = "bp"' argument specifies the Breusch-Pagan version.
+lm_test_result <- plmtest(pooled_ols, type = "bp")
+
+# 3. Print and interpret the results
+print(lm_test_result)
+```
+
+# Choosing Panel Models
+
+## Reasoning with Panel Data
+
+:::{.callout-tip title="Line of Reasoning with Panel Data"}
+
+-   **Step 1a:** Apply pooled OLS
+    $$y_{it} = \beta_1x_{1it} + \dots + \beta_kx_{kit} + v_{it}$$
+-   **Step 1b:** Test for autocorrelation of error term with Breusch-Godfrey. Estimated parameter on lagged $v_{it}$ is
+    $$\text{Corr}(v_{it}, v_{is}) = \frac{\sigma_a^2}{\sigma_a^2 + \sigma_u^2}$$
+-   **Step 1c:** Re-estimate pooled OLS with clustered standard errors
+-   **Step 2a:** Apply first-differences estimator (FD):
+    $$\Delta y_{it} = \beta_1\Delta x_{1it} + \dots + \beta_k\Delta x_{kit} + \Delta u_{it}$$
+-   **Step 2b:** Compute autocorrelation: is the parameter on $\Delta u_{i,t-1}$ of Breusch-Godfrey equal to -0.5?
+-   **Step 2c:** Re-estimate FD with clustered standard errors
+- (Continued on next slide.)
+
+:::
+
+
+## Reasoning with Panel Data (Cont.)
+
+:::{.callout-tip title="Line of Reasoning with Panel Data"}
+
+-   **Step 3a:** Apply LSDV/ fixed-effects estimator (FE):
+    $$\ddot{y}_{it} = \beta_1\ddot{x}_{1it} + \dots + \beta_k\ddot{x}_{kit} + \ddot{u}_{it}$$
+-   **Step 3b:** Compute autocorrelation
+-   **Step 3c:** Compare the outcome of the FD estimator with the outcome of the FE estimator
+-   **Step 4a:** Apply random effects estimator (RE)
+-   **Step 4b:** Test for autocorrelation
+-   **Step 4c:** Compare the outcome of the Random effects estimator and Pooled OLS estimator
+-   **Step 5:** Test for Random effects versus fixed effects using the Hausman test.
+:::
+
+
+## Example (Entire Procedure)
+
+- We apply the five steps on the Vella and Verbeek (1998) dataset
+- Step 1a: Apply Pooled OLS: 
+
+```{r pooled_ols}
+modelsummary(list('Pooled OLS'=pooled_ols), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 1b: Test for autocorrelation of error term with Breusch-Godfrey.
+
+```{r}
+#| echo: false
+library(lmtest); library(plm)
+pbgtest(pooled_ols)
+```
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 1c: Re-estimate pooled OLS with clustered standard errors
+
+
+```{r pooled_clust}
+#| echo: false
+library(fixest)
+# Define the model formula
+formula <- lwage ~ union + educ + black + hisp + exper + expersq + married
+
+# 1. Estimate a Pooled OLS model
+pooled_ols <- feols(formula, data = wagepan, vcov=~nr)
+modelsummary(list('Pooled OLS, Clustered SE'=pooled_ols), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 2a: Apply first-differences estimator (FD)
+- Only time-varying variables remain in the equation.
+
+```{r first_diff}
+#| echo: false
+fd <- plm(formula, data=wagepan, index=c("nr", "year"), model="fd")
+modelsummary(list('FD'=fd), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 2b: Compute autocorrelation: is the parameter on $\Delta u_{it-1}$ of Breusch-Godfrey equal to -0.5?
+- $-0.5$ is not in the confidence interval. Therefore we prefer FD over the FE estimator (see previous lecture).
+
+```{r}
+#| echo: false
+library(dplyr)
+uhat <- residuals(fd)
+uhat_lag1 <- dplyr::lag(uhat, 1)
+diff_regressors <- model.matrix(fd)[, -1] # We drop the intercept
+aux_data <- na.omit(data.frame(uhat, uhat_lag1, diff_regressors))
+aux_reg <- lm(uhat ~ ., data = aux_data)
+modelsummary(list('Breusch-Godfrey Test'=aux_reg),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 2c: Re-estimate FD with clustered standard errors
+
+```{r}
+#| echo: false
+fd <- plm(formula, data=wagepan, index=c("nr", "year"), model="fd")
+fd$vcov <- vcovHC(fd, method="arellano", cluster="group")
+modelsummary(list('FD, Clustered SE'=fd),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 3a: Apply LSDV/fixed-effects estimator (FE)
+
+```{r}
+#| echo: false
+library(fixest)
+formula2 <- lwage ~ union + educ + black + hisp + exper + expersq + married | nr
+fe <- feols(formula2, data=wagepan)
+modelsummary(list('FE'=fe),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 4a: Apply random effects estimator
+
+```{r}
+#| echo: false
+# Define the model formula
+formula <- lwage ~ union + educ + black + hisp + exper + expersq + married
+
+# 1. Estimate a Pooled OLS model
+re <- plm(formula, data = wagepan, model = "random")
+
+
+modelsummary(list('Random Effects'=re), 
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
+```
+
+## Example (Entire Procedure) (Cont.)
+
+- Step 5: Test for Random effects versus fixed effects using Hausman test.
+  - The Hausman test convincingly rejects the null hypothesis, hence Fixed Effects is preferred over Random Effects. 
+
+```{r}
+#| echo: false
+fe <- plm(formula, data = wagepan, model = "within")
+phtest(re, fe)
+```
+
 
 # Conclusion
 
 ## Conclusion 
 
-- The FD transformation has converted the highly serially correlated random walk error ($\epsilon_{it}$) into a non-serially correlated error ($\nu_{it}$).
+*   This lecture expanded our toolkit for panel data by introducing **Pooled OLS** and the **Random Effects (RE)** estimator, providing alternatives to the Fixed Effects (FE) and First Differences models. 
 
-- Because OLS on the transformed data is most efficient when the errors are not serially correlated, the **FD estimator will be more efficient than the FE estimator** under the specific condition of random walk errors. 
-  - This makes FD a powerful alternative, especially for panels with a long time dimension (large T) where such error dynamics are more plausible.
+*   The critical choice between Fixed Effects (FE) and Random Effects (RE) hinges on a key assumption: Is the unobserved individual effect ($a_i$) correlated with the explanatory variables ($X_{it}$)?
 
-- **Comparison with FE:**
-  - If $T=2$, FD and FE give identical results.
-  - For $T>2$, they are different. FE is more efficient if the original errors ($\epsilon_{it}$) are not serially correlated.
-  - FD can be better if the errors follow a random walk. FD is a popular choice for robustness checks.
+*   **Model Summary:**
+    *   **Use Fixed Effects (FE)** if you believe $a_i$ and $X_{it}$ are correlated. This provides **consistent** estimates, but you cannot estimate the effect of time-invariant variables.
+    *   **Use Random Effects (RE)** if you can assume $a_i$ and $X_{it}$ are uncorrelated. This model is more **efficient** (has smaller standard errors) and, importantly, allows you to estimate the effects of time-invariant variables.
+    *   **Pooled OLS** is the simplest model but is often inappropriate due to its strict assumption that there are no unique individual effects, which can lead to omitted variable bias.
 
-## Practical Considerations & Summary
 
-- In practice, researchers opt almost always for the FE model.
-  - However, if you want to be robust, you can follow this workflow: 
+## Conclusion (Cont.)
 
-:::{.callout-tip title="Workflow for Panel Models"}
+*   **Decision Framework:**
+    *   The **Breusch-Pagan test** helps you choose between Pooled OLS and Random Effects by testing for the presence of significant individual effects.
+    *   The **Hausman test** is the crucial tool for deciding between the Fixed Effects and Random Effects models. It formally tests whether the individual effects are correlated with the regressors.
+        *   A significant result (low p-value) favors the **Fixed Effects model**.
+        *   An insignificant result favors the more efficient **Random Effects model**.
 
-1.  Start by considering your research question. Are you interested in time-invariant variables? If yes, FE is not an option for those variables.
-2.  Run both FE and RE models.
-3.  Perform the Hausman test.
-4.  **If Hausman test rejects H0 (p < 0.05):** Use FE. The correlation between unobserved effects and your regressors is a significant problem that FE solves.
-5.  **If Hausman test fails to reject H0 (p >= 0.05):** You can justify using the more efficient Random Effects model.
-6.  Consider Pooled OLS only if you have a strong theoretical reason to believe there is no unobserved heterogeneity (very rare).
-7.  Consider the First Differences model as a robustness check.
+*   We have established a systematic line of reasoning: estimate the various models (Pooled OLS, FE, RE) and use this series of statistical tests to justify your final model choice.
 
-:::
 
 # The End
 
