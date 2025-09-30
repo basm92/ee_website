@@ -470,7 +470,6 @@ $$ (y_{it} - \bar{y}_i) = \beta_1 (X_{it} - \bar{X}_i) + (u_{it} - \bar{u}_{it})
 This gives a consistent estimate of $\beta_1$.
 :::
 
-
 ## Least Squares Dummy Variable Model
 
 - An alternative, but **equivalent**, way to get FE estimates is the LSDV model.

@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 4: Time Series"
+subtitle: "Tutorial 4: Panel Data I"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,7 +11,7 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Tutorial - Time Series'
+    footer: 'Empirical Economics: Tutorial - Panel Data I'
 resources:
   - demo.pdf
 ---
@@ -140,7 +140,7 @@ c) The Fixed Effects (FE) model from the previous question yielded an estimated 
 
 ## Visualizing Unobserved Heterogeneity
 
-The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.
+The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-invariant, unobserved characteristics of each individual (e.g., innate ability, motivation, family background) that affect their wage. Visualizing the distribution of these effects can reveal the extent of this heterogeneity.^[The data is available [here.](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/WAGEPAN.DTA)]
 
 1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
 2.  Extract the individual fixed effects from your estimated model.

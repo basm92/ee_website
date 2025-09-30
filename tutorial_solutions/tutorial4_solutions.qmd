@@ -75,6 +75,7 @@ clear
 * 2. Import the data directly from the URL
 * We specify the delimiter as a semicolon (;) and the decimal as a comma (,)
 import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv", delimiter(";") decimalseparator(,) clear
+destring scrap, generate(scrap1) force float dpcomma
 
 * 3. Declare the data as a panel dataset, with 'fcode' as the individual identifier
 xtset fcode
@@ -82,7 +83,7 @@ xtset fcode
 * 4. Estimate the fixed effects model
 * 'scrap' is the dependent variable, 'grant' is the independent variable
 * The ', fe' option specifies a fixed effects (within) estimator.
-xtreg scrap grant, fe
+xtreg scrap1 grant, fe
 ```
 
 :::
@@ -172,14 +173,14 @@ clear
 * 2. Import the data directly from the URL
 * We specify the delimiter as a semicolon (;) and the decimal as a comma (,)
 import delimited "https://raw.githubusercontent.com/basm92/ee_website/refs/heads/master/tutorials/datafiles/jtrain.csv", delimiter(";") decimalseparator(,) clear
+destring scrap, generate(scrap1) force float dpcomma
 
 * 3. Declare the data as a panel dataset, with 'fcode' as the individual identifier AND 'year' as the time variable
 xtset fcode year
 
 * 4. Estimate the First Differences model
 * 'scrap' is the dependent variable, 'grant' is the independent variable
-* The ', fd' option specifies the first-differences estimator.
-xtreg scrap grant, fd
+reg d.scrap1 d.grant
 ```
 
 :::
@@ -233,7 +234,7 @@ import pyfixest as pf
 import matplotlib.pyplot as plt
 
 # Load data
-df = pd.read_stata("../tutorials/datafiles/WAGEPAN.DTA")
+df = pd.read_stata("https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/WAGEPAN.DTA")
 
 # Estimate FE model
 fit = pf.feols("lwage ~ exper + expersq + union | nr", data=df)
@@ -255,7 +256,7 @@ plt.show()
 library(fixest); library(ggplot2); library(haven)
 
 # Load data (adjust path as needed)
-df <- haven::read_dta("../tutorials/datafiles/WAGEPAN.DTA")
+df <- haven::read_dta("https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/WAGEPAN.DTA")
 
 # Estimate FE model
 fit <- feols(lwage ~ exper + expersq + union | nr, data = df)
@@ -278,7 +279,7 @@ ggplot(data.frame(fe), aes(x = fe)) +
 #| eval: false
 #| echo: true
 * Load data (adjust path as needed)
-use "../tutorials/datafiles/WAGEPAN.DTA", clear
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/WAGEPAN.DTA", clear
 
 * Estimate FE model
 xtset nr
@@ -332,6 +333,56 @@ histogram fe, bin(30) frequency normal ///
   To check for serial correlation, we need to determine if the covariance between $\tilde{\epsilon}_{it}$ and $\tilde{\epsilon}_{i,t-1}$ is zero.
   
   $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1}) = E[(\epsilon_{it} - \bar{\epsilon}_i)(\epsilon_{i,t-1} - \bar{\epsilon}_i)]$
+  
+
+```{=html}
+<details>
+<summary>Click to see why the covariance is nonzero explicitly.</summary>
+```
+
+To demonstrate mathematically that the covariance of the demeaned error term in a Fixed Effects (FE) model is nonzero when the original error term follows a random walk, we will expand the covariance expression and analyze its components.
+
+The transformed error term in the FE model is $\tilde{\epsilon}_{it} = \epsilon_{it} - \bar{\epsilon}_i$, where $\bar{\epsilon}_i = \frac{1}{T} \sum_{s=1}^{T} \epsilon_{is}$. We want to show that $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1}) \neq 0$.
+
+Let's expand the covariance term:
+
+$Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1}) = E[(\epsilon_{it} - \bar{\epsilon}_i)(\epsilon_{i,t-1} - \bar{\epsilon}_i)]$
+$= E[\epsilon_{it}\epsilon_{i,t-1} - \epsilon_{it}\bar{\epsilon}_i - \epsilon_{i,t-1}\bar{\epsilon}_i + \bar{\epsilon}_i^2]$
+$= Cov(\epsilon_{it}, \epsilon_{i,t-1}) - Cov(\epsilon_{it}, \bar{\epsilon}_i) - Cov(\epsilon_{i,t-1}, \bar{\epsilon}_i) + Var(\bar{\epsilon}_i)$
+
+Now, we need to calculate each of these components:
+
+1.  **$Cov(\epsilon_{it}, \epsilon_{i,t-1})$**: As established from the properties of a random walk, for $t > t-1$:
+    $Cov(\epsilon_{it}, \epsilon_{i,t-1}) = Var(\epsilon_{i,t-1}) = (t-1)\sigma_{\nu}^2$
+
+2.  **$Cov(\epsilon_{it}, \bar{\epsilon}_i)$**:
+    $Cov(\epsilon_{it}, \bar{\epsilon}_i) = Cov(\epsilon_{it}, \frac{1}{T}\sum_{s=1}^{T} \epsilon_{is}) = \frac{1}{T}\sum_{s=1}^{T} Cov(\epsilon_{it}, \epsilon_{is})$
+    This sum can be split into two parts: for $s \le t$ and for $s > t$.
+    *   For $s \le t$, $Cov(\epsilon_{it}, \epsilon_{is}) = Var(\epsilon_{is}) = s\sigma_{\nu}^2$.
+    *   For $s > t$, $Cov(\epsilon_{it}, \epsilon_{is}) = Var(\epsilon_{it}) = t\sigma_{\nu}^2$.
+
+    So, $Cov(\epsilon_{it}, \bar{\epsilon}_i) = \frac{\sigma_{\nu}^2}{T} [\sum_{s=1}^{t} s + \sum_{s=t+1}^{T} t]$
+    $= \frac{\sigma_{\nu}^2}{T} [\frac{t(t+1)}{2} + (T-t)t]$
+
+3.  **$Cov(\epsilon_{i,t-1}, \bar{\epsilon}_i)$**: Similarly,
+    $Cov(\epsilon_{i,t-1}, \bar{\epsilon}_i) = \frac{1}{T}\sum_{s=1}^{T} Cov(\epsilon_{i,t-1}, \epsilon_{is})$
+    $= \frac{\sigma_{\nu}^2}{T} [\sum_{s=1}^{t-1} s + \sum_{s=t}^{T} (t-1)]$
+    $= \frac{\sigma_{\nu}^2}{T} [\frac{(t-1)t}{2} + (T-t+1)(t-1)]$
+
+4.  **$Var(\bar{\epsilon}_i)$**:
+    $Var(\bar{\epsilon}_i) = Var(\frac{1}{T}\sum_{t=1}^{T} \epsilon_{it}) = \frac{1}{T^2} [\sum_{t=1}^{T} Var(\epsilon_{it}) + 2\sum_{t=2}^{T}\sum_{s=1}^{t-1} Cov(\epsilon_{it}, \epsilon_{is})]$
+    $= \frac{\sigma_{\nu}^2}{T^2} [\sum_{t=1}^{T} t + 2\sum_{t=2}^{T}\sum_{s=1}^{t-1} s]$
+    $= \frac{\sigma_{\nu}^2}{T^2} [\frac{T(T+1)}{2} + 2\sum_{t=2}^{T} \frac{(t-1)t}{2}]$
+    $= \frac{\sigma_{\nu}^2}{T^2} [\frac{T(T+1)}{2} + \sum_{t=2}^{T} (t^2-t)]$
+
+Combining these terms will result in a complex expression. However, we can see that each component is a function of $t$ and $T$, and they will not generally cancel each other out to zero. The demeaning process, by subtracting the individual-specific mean, introduces a common component ($\bar{\epsilon}_i$) into each transformed error term. Because the original error terms are strongly serially correlated in a random walk, this shared component does not eliminate the correlation. Instead, it creates a new, complex covariance structure.
+
+Since the individual covariance terms are generally non-zero and do not cancel out, the overall $Cov(\tilde{\epsilon}_{it}, \tilde{\epsilon}_{i,t-1})$ will be non-zero. This demonstrates that the error term in the FE transformed model remains serially correlated when the idiosyncratic error follows a random walk, making the FE estimator inefficient in this scenario.
+
+
+```{=html}
+</details>
+```
   
   Because $\epsilon_{it}$ is a random walk, it is strongly serially correlated with its own past values. For instance, $\epsilon_{it} = \epsilon_{i,t-1} + \nu_{it}$, and $\epsilon_{i,t-1} = \epsilon_{i,t-2} + \nu_{i,t-1}$, and so on. This means that $\epsilon_{it}$ is a sum of all past white noise shocks.
   
