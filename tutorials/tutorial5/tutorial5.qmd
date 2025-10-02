@@ -1,6 +1,6 @@
 ---
 title: "Empirical Economics"
-subtitle: "Tutorial 5: Panel Data"
+subtitle: "Tutorial 5: Panel Data II"
 mainfont: Lato
 monofont: Ubuntu Mono
 format:
@@ -11,18 +11,93 @@ format:
     preview-links: auto
     logo: logo.svg
     css: styles.css
-    footer: 'Empirical Economics: Tutorial - Panel Data'
+    footer: 'Empirical Economics: Tutorial - Panel Data II'
 resources:
   - demo.pdf
 ---
 
 # Tutorial 5
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
+## New Estimators
 
-## Slide 2
+The fundamental static panel data model is:
+$$ y_{it} = \beta_1 x_{1it} + ... + \beta_k x_{kit} + a_i + u_{it} $$
+
+- $a_i$ is the unobserved, time-invariant individual effect.
+- $u_{it}$ is the idiosyncratic error term.
+
+New estimators:
+
+1.  **Pooled OLS**: Ignores the panel structure and treats the data as one large cross-section. It estimates
+  - $y_{it} = \beta_0 + \beta_1 x_{1it} + ... + \beta_k x_{kit} + v_{it}$ where the composite error is $v_{it} = a_i + u_{it}$.
+  *   **Key Assumption:** Assumes the unobserved effect $a_i$ is uncorrelated with the explanatory variables ($E(a_i | X_i) = 0$) AND that the variance of $a_i$ is zero ($\sigma_a^2 = 0$).
+  *   **Problem:** The presence of $a_i$ in the error term induces serial correlation. This requires using **clustered standard errors** for correct inference.
+
+## New Estimators (Cont.)
+
+
+The fundamental static panel data model is:
+$$ y_{it} = \beta_1 x_{1it} + ... + \beta_k x_{kit} + a_i + u_{it} $$
+
+- $a_i$ is the unobserved, time-invariant individual effect.
+- $u_{it}$ is the idiosyncratic error term.
+
+2.  **Random Effects (RE)**: acknowledges the unobserved effect $a_i$ but treats it as a random component of the error term. It uses Generalized Least Squares (GLS) to account for the serial correlation structure.
+
+*   **Key Assumption:** $a_i$ is **uncorrelated** with the explanatory variables ($E(a_i | X_i) = 0$).
+*   **Main Advantages:**
+  *   It can estimate the coefficients of **time-invariant variables** (e.g., gender, race, a firm's industry).
+  *   It is **more efficient** (has smaller standard errors) than Fixed Effects *if the key assumption holds*.
+
+## Dilemma - Fixed Effects vs. Random Effects
+
+The most important choice in panel data analysis is often between Fixed Effects (FE) and Random Effects (RE).
+
+| Feature | Fixed Effects (FE) | Random Effects (RE) |
+| :--- | :--- | :--- |
+| **Key Assumption** | Allows for **correlation** between the unobserved effect $a_i$ and regressors $X_{it}$. | Assumes **no correlation** between $a_i$ and $X_{it}$. |
+| **Consistency** | **Always consistent**, even if the RE assumption is violated. | **Inconsistent** if $a_i$ and $X_{it}$ are correlated (suffers from omitted variable bias). |
+| **Efficiency** | Less efficient (uses only within-individual variation). | More efficient *if* its assumption holds (uses both within and between variation). |
+| **Time-Invariant Variables**| **Cannot** estimate their effects (they are wiped out by the de-meaning process). | **Can** estimate their effects. |
+
+## Hausman Test
+
+The Hausman test is the formal procedure for choosing between FE and RE.
+
+-   **Intuition:** It compares the coefficient estimates from the FE and RE models. If the RE assumption holds, the estimates should be similar. If they are systematically different, the RE assumption is likely violated.
+-   **Hypotheses:**
+  -   $H_0$: The Random Effects model is appropriate ($E(a_i | X_{it}) = 0$).
+  -   $H_A$: The Fixed Effects model is appropriate ($E(a_i | X_{it}) \neq 0$).
+-   **Decision Rule:**
+  -   **If p-value is low (< 0.05):** Reject $H_0$. The models are significantly different. Use the consistent **Fixed Effects** model.
+  -   **If p-value is high (> 0.05):** Fail to reject $H_0$. You have no evidence against the RE assumption. Use the more efficient **Random Effects** model.
+
+## Line of Reasoning for Model Selection
+
+Follow this flowchart to select and justify your panel data model:
+
+**Step 1: Is there an individual effect? (Pooled OLS vs. Random Effects)**
+
+-   **Action:** Run a **Breusch-Pagan LM Test** after estimating a Pooled OLS model.
+-   **Hypothesis:** $H_0: \sigma_a^2 = 0$ (no significant individual effect).
+-   **Decision:**
+    -   **p-value HIGH $\rightarrow$** Stop. Use **Pooled OLS** (with clustered standard errors).
+    -   **p-value LOW $\rightarrow$** An individual effect exists. Proceed to Step 2.
+
+**Step 2: Is the individual effect correlated with regressors? (RE vs. FE)**
+
+-   **Action:** Run a **Hausman Test** comparing your Random Effects and Fixed Effects models.
+-   **Hypothesis:** $H_0: E(a_i | X_{it}) = 0$ (the effect is not correlated with regressors).
+-   **Decision:**
+    -   **p-value HIGH $\rightarrow$** The RE assumption holds. Your final model is **Random Effects**.
+    -   **p-value LOW $\rightarrow$** The RE assumption is violated. Your final model is **Fixed Effects**.
+
+**Step 3: Final Checks**
+
+-   Always check for **serial correlation** in the residuals of your chosen model (e.g., with a Breusch-Godfrey test).
+-   If serial correlation is present, use **robust (clustered) standard errors** to ensure your statistical inferences are valid. This is standard practice in panel data analysis.
 
 # Questions
 
