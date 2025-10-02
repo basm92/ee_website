@@ -363,11 +363,16 @@ modelsummary(list('Pooled OLS'=pooled_ols, 'Pooled OLS, Clustered SE'=pooled_ols
 #| message: false
 # 2. Breusch-Godfrey Test for Autocorrelation
 # The null hypothesis is that there is no serial correlation.
-bg_test <- bgtest(pooled_ols, order=1, type="F")
-print(bg_test)
-paste("F-statistic: ", bg_test$statistic)
-paste("p-value: ", bg_test$p.value)
-
+uhat <- residuals(pooled_ols)
+uhat_lag1 <- dplyr::lag(uhat, 1)
+diff_regressors <- model.matrix(pooled_ols)[, -1] # We drop the intercept
+aux_data <- na.omit(data.frame(uhat, uhat_lag1, diff_regressors))
+aux_reg <- lm(uhat ~ ., data = aux_data)
+modelsummary(list('Breusch-Godfrey Test'=aux_reg),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
 ```
 
 ## Pooled OLS Visualization
@@ -814,7 +819,7 @@ modelsummary(list('Pooled OLS'=pooled_ols, 'Random Effects'=re),
 
 ## Example: Pooled OLS vs. RE (Cont.)
 
-- The results of the Breusch-Pagan test show significant autocorrelation in the OLS estimates, implying the Random Effects model is more reliable. 
+- The results of the Breusch-Pagan test show the variance of the unobserved effects $\text{Var}(\sigma^2_{\alpha}) > 0$, implying the Random Effects model is more reliable. 
 - Hence the Random Effects model should be preferred. 
 
 ```{r}
@@ -886,7 +891,18 @@ modelsummary(list('Pooled OLS'=pooled_ols),
 ```{r}
 #| echo: false
 library(lmtest); library(plm)
-pbgtest(pooled_ols)
+# 2. Breusch-Godfrey Test for Autocorrelation
+# The null hypothesis is that there is no serial correlation.
+uhat <- residuals(pooled_ols)
+uhat_lag1 <- dplyr::lag(uhat, 1)
+diff_regressors <- model.matrix(pooled_ols)[, -1] # We drop the intercept
+aux_data <- na.omit(data.frame(uhat, uhat_lag1, diff_regressors))
+aux_reg <- lm(uhat ~ ., data = aux_data)
+modelsummary(list('Breusch-Godfrey Test'=aux_reg),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_revealjs(fontsize=1)
 ```
 
 ## Example (Entire Procedure) (Cont.)

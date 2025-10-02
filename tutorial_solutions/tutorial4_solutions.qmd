@@ -201,7 +201,7 @@ c) Comparing FE and FD estimates
     *   **FD Estimate:** -0.45 (p-value ≈ 0.159)
     *   **Sign:** Both coefficients are negative, providing consistent evidence that training grants are associated with a reduction in scrap rates.
     *   **Magnitude:** The FE estimate suggests a substantially larger effect than the FD estimate. The effect size is about 64% larger in the FE model (-0.75 vs -0.45).
-    *   **Significance:** The FE estimate is marginally statistically significant ($p=0.12$), providing weak evidence of an effect. The FD estimate is also statistically significant at conventional levels (e.g., 5% or 10%), meaning we cannot confidently reject the null hypothesis of no effect based on this model alone.
+    *   **Significance:** The FE estimate is marginally statistically insignificant ($p=0.12$), providing weak evidence of an effect. The FD estimate is also statistically insignificant at conventional levels (e.g., 5% or 10%), meaning we cannot confidently reject the null hypothesis of no effect based on this model alone.
 
 *   **Evidence for Strict Exogeneity:**
 

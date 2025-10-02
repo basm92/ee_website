@@ -30,11 +30,15 @@ resources:
 
 The Pooled OLS model ignores the panel structure of the data and can suffer from omitted variable bias if unobserved individual characteristics are correlated with the regressors. The Fixed Effects model is designed to solve this problem.
 
-1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).
+:::{style="font-size: 0.8em;"}
+
+1.  Load the `wagepan` dataset (and declare it as a panel dataset using `nr` as the individual identifier and `year` as the time identifier).^[Available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/WAGEPAN.DTA).]
 2.  Estimate a **Pooled OLS** model to predict `lwage` using `exper` (experience), `expersq` (experience squared), and `union`.
 3.  Estimate a **Fixed Effects ("within")** model using the same variables.
 4.  Present the results of both models side-by-side in a single table.
 5.  **Interpret the difference:** Pay close attention to the coefficient for the `union` variable. Why is the estimated return to union membership different in the FE model compared to the Pooled OLS model? What does this suggest about how union members may differ from non-union members in ways not captured by the other variables?
+
+:::
 
 ## Choosing Your Model 
 
@@ -48,7 +52,7 @@ While the Fixed Effects (FE) model is robust to correlation between unobserved e
 
 ## Time-Invariant Variables
 
-A critical drawback of the Fixed Effects model is that it cannot estimate the coefficients of time-invariant variables. The "within" transformation, which subtracts the individual-specific mean, wipes out any variable that is constant over time for an individual.
+A critical drawback of the Fixed Effects model is that it cannot estimate the coefficients of time-invariant variables. The "within" transformation, which subtracts the individual-specific mean, wipes out any variable that is constant over time for an individual. Again using the `wagepan` dataset:
 
 1.  Attempt to estimate a **Fixed Effects** model for `lwage` that includes both time-varying (`union`, `married`) and time-invariant (`black`, `hisp`) predictors.
 2.  Observe the model output. What happens to the coefficients for the `black` and `hisp` variables?
@@ -64,9 +68,73 @@ In mathematical terms, what is the null hypothesis ($H_0$) of the Hausman test r
 
 Why would a large, statistically significant test statistic lead you to conclude that the Random Effects estimates are inconsistent?
 
+## Choosing an Empirical Strategy
+
+:::{style="font-size:0.6em;"}
+
+An economist is studying the determinants of CEO salary in the tech industry. They have collected panel data for 100 tech firms over a 10-year period (2015-2024). The proposed model is:
+  
+  $$
+      \log(\text{Salary}_{it}) = \beta_0 + \beta_1 \text{FirmProfit}_{it} + \beta_2 \text{Experience}_{it} + \gamma_1 \text{IvyLeague}_{i} + a_i + u_{it}
+  $$
+
+Where `Salary_it` is the salary of the CEO in firm *i* at time *t*, `FirmProfit_it` is the annual profit of firm *i* at time *t*, `Experience_it` is the number of years the CEO has been in their role at firm *i* at time *t*, `IvyLeague_i` is a time-invariant dummy variable, equal to 1 if the CEO graduated from an Ivy League university and 0 otherwise, `a_i` represents unobserved, time-invariant firm-specific effects (e.g., corporate culture, brand reputation), and `u_it` is the idiosyncratic error term.
+
+
+1.  The economist first considers using a **Fixed Effects (FE) / Within estimator**. What is the primary advantage of this estimator in the context of the unobserved effect `a_i`? What is a significant practical limitation of the FE estimator for the specific model proposed above?
+
+2.  Next, the economist considers a **Random Effects (RE)** model. What is the key assumption the RE model makes about the relationship between the unobserved effect `a_i` and the explanatory variables? How does this assumption, if true, make the RE model advantageous over the FE model?
+
+3.  Drawing from the "Line of Reasoning with Panel Data" presented in the lecture, outline a complete, step-by-step testing procedure the economist should follow to decide which estimator is most appropriate for their data. Specifically, name the statistical tests they should perform and explain what the null and alternative hypotheses for each test tell them about which model to choose (i.e., Pooled OLS vs. RE, and RE vs. FE).
+
+:::
+
+## Interpreting Conflicting Results
+
+:::{style="font-size:0.7em;"}
+
+A researcher wants to determine the effect of a new fertilizer (`Fertilizer_it`) on crop yield (`Yield_it`) using panel data from 500 farms over 5 years. They also control for annual rainfall (`Rainfall_it`). They estimate three different models and conduct the relevant specification tests. The results are presented in the table below.
+
+  $$
+    \text{Yield}_{it} = \beta_0 + \beta_1 \text{Fertilizer}_{it} + \beta_2 \text{Rainfall}_{it} + v_{it}
+  $$
+
+:::
+
+:::{style="font-size:1.2m;"}
+
+| Variable | (1) Pooled OLS | (2) Random Effects (RE) | (3) Fixed Effects (FE) |
+| :--- | :--- | :--- | :--- |
+| **Fertilizer** | 10.5*** | 6.2*** | 2.1* |
+| | (1.1) | (1.5) | (1.2) |
+| **Rainfall** | 0.8*** | 0.7*** | 0.6** |
+| | (0.2) | (0.2) | (0.3) |
+| _Standard errors in parentheses_ |
+| _*** p<0.01, ** p<0.05, * p<0.1_ |
+
+::: 
+
+:::{style="font-size:0.7em;"}
+
+**Specification Test Results:**
+
+*   **Breusch-Pagan Test for Random Effects:** p-value = 0.001
+*   **Hausman Test (RE vs. FE):** Chi-squared = 25.4, p-value = 0.000
+
+:::
+
+## Interpreting Conflicting Results (Cont.)
+
+1.  Based on the result of the **Breusch-Pagan test**, should the researcher prefer the Random Effects model or the Pooled OLS model? Explain what the p-value of 0.001 implies about the unobserved individual effects (`a_i`) in the data.
+
+2.  The coefficient for `Fertilizer` is positive and highly significant in the Pooled OLS and RE models but is much smaller and only marginally significant in the FE model. Provide a clear and concise econometric explanation for why the `Fertilizer` coefficient might be so different between the RE and FE models. What does this difference suggest about the nature of the unobserved farm-specific effects (`a_i`)?
+
+3.  Using the result of the **Hausman test**, which of the three models (Pooled OLS, RE, or FE) should the researcher select as the most reliable? Justify your choice by interpreting what the test's p-value indicates about the core assumption that distinguishes the RE and FE models. What is the final estimated effect of the fertilizer on crop yield according to your chosen model?
+
+
 ## Random Effects and the Role of $\theta$
 
-The Random Effects model can be estimated using a transformation involving a parameter $\theta$, where $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T \sigma^2_\alpha + \sigma^2_\epsilon)}}$. Analyze the behavior of $\theta$ under two extreme scenarios:
+The Random Effects model can be estimated using a transformation of the data involving a parameter $\theta$, where $\theta = 1 - \sqrt{\frac{\sigma^2_\epsilon}{(T \sigma^2_\alpha + \sigma^2_\epsilon)}}$. Analyze the behavior of $\theta$ under two extreme scenarios:
 
 a. What happens to the value of $\theta$ as the variance of the individual-specific effect, $\sigma^2_\alpha$, approaches zero? What does the Random Effects model simplify to in this case?
 
