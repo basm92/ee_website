@@ -125,7 +125,7 @@ use_python("/home/bas/anaconda3/bin/python")
     y_{it} = a_{i} + \beta_{1}x_{1it} + ... + \beta_{k}x_{kit} + u_{it} \quad i=1,...,N; t=1,...,T
   $$
 
-- The assumptions in the table on the next slide are necessary to estimate equation (10). It leads to the following two questions:
+- It leads to the following two questions:
 - **Question 1:** Is there any nonzero correlation between $a_{i}$ and all of the k RHS vars $x_{it}$? Is it nonzero in all T time periods?
   - $E(a_{i} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) = 0$ 
   - $E(a_{i} | x_{i11},..,x_{i1k},..,x_{iT1},...,x_{iTk}) \neq 0$?
@@ -324,6 +324,24 @@ $$
   *   Next, we check for autocorrelation, using the Breusch Godfrey test.
   *   The parameter on the lagged residual is statistically different from zero (F-value: 27.90).
   *   We re-estimated the model with the pooled OLS estimator, using clustered standard errors.
+
+## Example: Pooled OLS (Cont.)
+
+- This is what the data look like:
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(xtsum)
+library(wooldridge); library(modelsummary); library(tinytable)
+
+# Load the wagepan dataset
+data("wagepan")
+
+xtsum(data=wagepan, id = 'nr', t= 'year', variables= c('union', 'black', 'educ', 'hisp', 'exper', 'expersq'))
+```
+
 
 ## Example: Pooled OLS (Cont.)
 
@@ -774,7 +792,7 @@ print(hausman_test_result)
 
 ## Pooled OLS vs. RE
 
-*   To formally decide between Pooled OLS and Random Effects, you should use the Breusch-Pagan test for random effects.
+*   To formally decide between Pooled OLS and Random Effects, you should use the Breusch-Godfrey test for random effects.
 
 *   **Purpose of the Test:** This test checks whether the variance of the individual-specific effect ($a_i$) is equal to zero.
 *   **Hypotheses:**
@@ -787,7 +805,7 @@ print(hausman_test_result)
 ## Example: Pooled OLS vs. RE
 
 - Using again the same dataset (Vella and Verbeek, 1998)
-  - We can now use the full set of control variables, since both pooled OLS and Random Effects 
+  - We can now use the full set of control variables. 
   - The results are shown below.
 
 ```{r}
@@ -819,21 +837,29 @@ modelsummary(list('Pooled OLS'=pooled_ols, 'Random Effects'=re),
 
 ## Example: Pooled OLS vs. RE (Cont.)
 
-- The results of the Breusch-Pagan test show the variance of the unobserved effects $\text{Var}(\sigma^2_{\alpha}) > 0$, implying the Random Effects model is more reliable. 
-- Hence the Random Effects model should be preferred. 
+:::{style="font-size:0.8em;"}
+- The results of the Breusch-Godfrey test show the variance of the unobserved effects $\text{Var}(\sigma^2_{a}) > 0$.
+  - This implies the Random Effects model is more reliable. 
+  - Hence the Random Effects model should be preferred. 
 
 ```{r}
 #| echo: false
 #| warning: false
 #| message: false
-# 2. Run the Breusch-Pagan LM Test
-# The plmtest() function in the 'plm' package performs this test.
-# The 'type = "bp"' argument specifies the Breusch-Pagan version.
-lm_test_result <- plmtest(pooled_ols, type = "bp")
-
-# 3. Print and interpret the results
-print(lm_test_result)
+# The null hypothesis is that there is no serial correlation.
+uhat <- residuals(pooled_ols)
+uhat_lag1 <- dplyr::lag(uhat, 1)
+diff_regressors <- model.matrix(pooled_ols)[, -1] # We drop the intercept
+aux_data <- na.omit(data.frame(uhat, uhat_lag1, diff_regressors))
+aux_reg <- lm(uhat ~ ., data = aux_data)
+modelsummary(list('Breusch-Godfrey Test'=aux_reg),
+             stars=c("*"=0.1, "**"=0.05, "***"=0.10),
+             width=c(0.2, 0.15),
+             gof_map=c('r.squared', 'nobs')) |>
+  theme_latex(resize_direction = 'down', resize_width = 0.2)
 ```
+
+:::
 
 # Choosing Panel Models
 
