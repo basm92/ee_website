@@ -146,7 +146,7 @@ The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-inv
 1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
 2.  Extract the individual fixed effects from your estimated model.
 3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
-4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
+4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are an important factor in explaining wage variation?
 
 
 ## Efficiency of FD vs. FE Estimators
@@ -175,7 +175,7 @@ Consider the following small panel dataset for two firms ($i=A, B$) over three y
 
   a) Calculate the firm-specific means ($\bar{y}_A, \bar{x}_A, \bar{y}_B, \bar{x}_B$). Then, construct the "de-meaned" variables $\ddot{y}_{it} = y_{it} - \bar{y}_i$ and $\ddot{x}_{it} = x_{it} - \bar{x}_i$ for all six observations.
   
-  b) Construct the first-differenced variables $\Delta y_{it} = y_{it} - y_{i,t-1}$ and $\Delta x_{it} = x_{it} - x_{i,t-1}$. How many observations do you have in your differenced dataset?
+  b) Construct the first-differenced variables $\Delta y_{it} = y_{it} - y_{i,t-1}$ and $\Delta x_{it} = x_{it} - x_{i,t-1}$. How many observations do you have in your differenced dataset? Also suppose $\beta=2$. Calculate the residuals for both models.
   
   c) Suppose that a firm's investment in the current year ($X_{it}$) is partly determined by an unexpectedly high profit shock from the previous year (which is part of $u_{i,t-1}$). Explain why this "feedback effect" violates the strict exogeneity assumption required for both the FE and FD estimators to be unbiased.
 

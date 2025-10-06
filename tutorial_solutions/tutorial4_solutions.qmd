@@ -219,7 +219,7 @@ The "fixed effects" ($\alpha_i$) estimated in an FE model represent the time-inv
 1.  Estimate a Fixed Effects model for `lwage` using `exper`, `expersq`, and `union` as predictors.
 2.  Extract the individual fixed effects from your estimated model.
 3.  Create a **histogram or density plot** to visualize the distribution of these fixed effects.
-4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are a significant factor in explaining wage variation?
+4.  **Interpret the plot:** What does the shape and spread of the distribution tell you about the sample? Does it appear that unobserved, time-constant individual differences are an important factor in explaining wage variation?
 
 The histogram shows a wide spread of fixed effects, suggesting substantial unobserved time-constant heterogeneity across individuals. Since these effects capture persistent individual differences not explained by the predictors, their significant variation implies that individual-specific factors play an important role in wage determination. The roughly bell-shaped but somewhat skewed distribution indicates most individuals cluster around the mean effect, with some outliers showing particularly high or low baseline wages.
 
@@ -426,6 +426,36 @@ Using the formulas $\Delta y_{it} = y_{it} - y_{i,t-1}$ and $\Delta x_{it} = x_{
 |     B    |     3    | $14 - 10 = 4$   | $7 - 5 = 2$     |
 
 You are left with **4 observations** in the differenced dataset. The general formula is $N(T-1)$, where $N$ is the number of individuals and $T$ is the number of time periods. Here, $2(3-1) = 4$.
+
+- (i) Fixed Effects (FE) Model Errors
+
+The error (residual) for the FE model is calculated using the de-meaned data with the formula:
+$e_{it} = \ddot{y}_{it} - \beta \ddot{x}_{it}$
+
+Given $\beta = 2$:
+
+| Firm (i) | Year (t) | $\ddot{y}_{it}$ | $\ddot{x}_{it}$ | Calculation of $e_{it} = \ddot{y}_{it} - 2 \ddot{x}_{it}$ | FE Error ($e_{it}$) |
+|:--------:|:--------:|:---------------:|:---------------:|:---------------------------------------------------------:|:-------------------:|
+|     A    |     1    | -1              | -1              | $-1 - (2 \times -1)$                                      | 1                   |
+|     A    |     2    | 1               | 0               | $1 - (2 \times 0)$                                        | 1                   |
+|     A    |     3    | 0               | 1               | $0 - (2 \times 1)$                                        | -2                  |
+|     B    |     1    | 0               | 0               | $0 - (2 \times 0)$                                        | 0                   |
+|     B    |     2    | -2              | -1              | $-2 - (2 \times -1)$                                      | 0                   |
+|     B    |     3    | 2               | 1               | $2 - (2 \times 1)$                                        | 0                   |
+
+- (ii) First Differences (FD) Model Errors
+
+The error (residual) for the FD model is calculated using the first-differenced data with the formula:
+$\Delta e_{it} = \Delta y_{it} - \beta \Delta x_{it}$
+
+Given $\beta = 2$:
+
+| Firm (i) | Year (t) | $\Delta y_{it}$ | $\Delta x_{it}$ | Calculation of $\Delta e_{it} = \Delta y_{it} - 2 \Delta x_{it}$ | FD Error ($\Delta e_{it}$) |
+|:--------:|:--------:|:---------------:|:---------------:|:--------------------------------------------------------------:|:--------------------------:|
+|     A    |     2    | 2               | 1               | $2 - (2 \times 1)$                                             | 0                          |
+|     A    |     3    | -1              | 1               | $-1 - (2 \times 1)$                                            | -3                         |
+|     B    |     2    | -2              | -1              | $-2 - (2 \times -1)$                                           | 0                          |
+|     B    |     3    | 4               | 2               | $4 - (2 \times 2)$                                             | 0                          |
 
 **(c) Violation of Strict Exogeneity**
 
