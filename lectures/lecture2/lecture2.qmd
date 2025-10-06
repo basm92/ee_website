@@ -1,10 +1,9 @@
 ---
 title: "Empirical Economics"
 subtitle: "Lecture 2: The Linear Model II"
-mainfont: Lato
-monofont: Ubuntu Mono
 format:
   revealjs: 
+    theme: [default, theme.scss]
     slide-number: true
     chalkboard: 
       buttons: false

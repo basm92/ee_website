@@ -1,10 +1,9 @@
 ---
 title: "Empirical Economics"
 subtitle: "Lecture 4: Panel Data I"
-mainfont: Lato
-monofont: Ubuntu Mono
 format:
   revealjs: 
+    theme: [default, theme.scss]
     slide-number: true
     chalkboard: 
       buttons: false

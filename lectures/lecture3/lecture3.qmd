@@ -1,10 +1,9 @@
 ---
 title: "Empirical Economics"
 subtitle: "Lecture 3: Time Series and Prediction"
-mainfont: Lato
-monofont: Ubuntu Mono
 format:
   revealjs: 
+    theme: [default, theme.scss]
     slide-number: true
     chalkboard: 
       buttons: false
