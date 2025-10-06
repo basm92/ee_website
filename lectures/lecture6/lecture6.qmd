@@ -36,7 +36,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Panel Data II
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
-- Hands-on Econometrics in Practice
+- Instrumental Variables
 
 ## What do we do today?
 
