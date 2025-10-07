@@ -48,7 +48,7 @@ use_python("/home/bas/anaconda3/bin/python")
 
 - Discuss and contrast pitfalls of these models. 
 
-- Talk about more general ways to deal with **truncated** and **selected data**, such as the Tobit and Heckman models. 
+- Talk about more general ways to deal with **truncated** and **selected data**, such as the Tobit model.
 
 # Introduction
 
@@ -204,6 +204,92 @@ ggplot(sim_data, aes(x = x, y = y)) +
 
 - This requires a different way of thinking about the choice process.
 
+# Probability Reminder
+
+## PDF
+
+- The **PDF** describes the *relative likelihood* that a continuous random variable $X$ takes on a given value.
+
+- For a continuous variable, the probability of it being *exactly* one value is zero ($P(X=x) = 0$). Instead, the PDF gives us a function where the **area under the curve** over an interval corresponds to the probability of the variable falling within that interval.
+  - A higher value of $f_X(x)$ means that values in that immediate vicinity are more likely to occur.
+
+- **Formal Properties:**
+
+  1.  $f_X(x) \ge 0$ for all $x$. The density is never negative.
+  2.  $\int_{-\infty}^{\infty} f_X(x) dx = 1$. The total area under the curve is one.
+  3.  $P(a \le X \le b) = \int_{a}^{b} f_X(x) dx$. The probability of $X$ being between $a$ and $b$ is the area under the PDF from $a$ to $b$.
+
+## PDF Visualization 
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 7
+# Create a sequence of x-values
+x_vals <- seq(-4, 4, by = 0.01)
+
+# Calculate the PDF values using dnorm() for the normal distribution
+pdf_vals <- dnorm(x_vals, mean = 0, sd = 1)
+
+# Plot the PDF
+plot(x_vals, pdf_vals, type = "l", lwd = 2, col = "blue",
+     main = "PDF of a Standard Normal Distribution N(0,1)",
+     xlab = "x", ylab = "Density: f(x)")
+abline(h = 0, col = "grey")
+```
+
+
+## CDF 
+
+- The **CDF** $F(x)$ gives the probability that a random variable $X$ is *less than or equal to* a particular value $x$.
+
+- Think of the CDF as a "running total" of the probability. As you move from left to right along the x-axis, it accumulates all the probability up to that point. This is why its value always goes from 0 to 1.
+
+- **Formal Properties:**
+
+  1.  $F_X(x) = P(X \le x)$. This is the definition.
+  2.  The CDF is a non-decreasing function of $x$.
+  3.  $\lim_{x \to -\infty} F_X(x) = 0$ and $\lim_{x \to \infty} F_X(x) = 1$.
+  4.  For a continuous variable, $P(a < X \le b) = F_X(b) - F_X(a)$.
+
+## CDF Visualizaiton 
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 7
+# Use the same sequence of x-values
+x_vals <- seq(-4, 4, by = 0.01)
+
+# Calculate the CDF values using pnorm()
+cdf_vals <- pnorm(x_vals, mean = 0, sd = 1)
+
+# Plot the CDF
+plot(x_vals, cdf_vals, type = "l", lwd = 2, col = "darkgreen",
+     main = "CDF of a Standard Normal Distribution N(0,1)",
+     xlab = "x", ylab = "Cumulative Probability: F(x)")
+abline(h = c(0, 1), col = "grey", lty = 2) # Add lines at 0 and 1
+```
+
+
+## Relationship Between PDF and CDF
+
+- The PDF and CDF are intrinsically linked. This relationship is foundational for many econometric concepts, including **Maximum Likelihood Estimation**.
+
+- In particular, **the PDF is the derivative of the CDF.**
+    $$ f_X(x) = \frac{dF_X(x)}{dx} $$
+    - **Intuition:** The height of the PDF at a point $x$ represents the *slope* (or rate of change) of the CDF at that same point. Where the PDF is high (e.g., at the mean), the CDF is steepest, as probability is accumulating most rapidly.
+
+- Less importantly here, **the CDF is the integral of the PDF.**
+
+## Why This Matters in Econometrics
+
+- The S-shape of the CDF is crucial for modeling probabilities in models like **Probit** and **Logit**. 
+
+- The CDF naturally constrains the output to be between 0 and 1, which is exactly what a probability requires. 
+
+- The choice of distribution (e.g., Normal for Probit, Logistic for Logit) determines the specific shape of this S-curve.
+
 
 # Logit and Probit Models
 
@@ -355,7 +441,7 @@ ggplot() +
 ## Estimation: Maximum Likelihood (MLE)
 
 - Remember that in OLS, we take $\sum (y_i - \hat{y_i} (\beta, x_i))^2$ and set the derivative to zero to express the optimal $\beta$ coefficients. 
-  - These conditions **do not** lead to a unique expression for the $\beta$-coefficients in Logit/Probit. 
+  - These conditions **may not** lead to a unique expression for the $\beta$-coefficients in Logit/Probit. 
   - Hence we can't use OLS. Instead, we use **Maximum Likelihood Estimation (MLE)**.
 
 :::{.callout-note title="Definition: Maximum Likelihood Estimation"}
@@ -467,7 +553,7 @@ ggplot(plot_data, aes(x = p, y = log_likelihood)) +
 
 ## MLE for Probit/Logit Models
 
-- For our regression models, the principle is the same but more complex.
+- For our regression models, the principle is the same, the calculations are just more complex.
 
 - The **Likelihood Function** is the product of the probabilities of each individual observation:
 $L(\beta) = \prod_{i=1}^{N} [P(y_i=1|X_i)]^{y_i} \cdot [1 - P(y_i=1|X_i)]^{1-y_i}$
@@ -734,7 +820,7 @@ margins, dydx(*) atmeans
   *   **Con:** It is highly sensitive to the 0.5 cutoff. If the model is for a rare event (e.g., disease diagnosis), a different threshold might be more appropriate. It also treats all misclassifications as equal.
 
 
-## Calculating the Percent Correctly Predicted
+## Calculating Percent Correctly Predicted
 
 - Let's see how to implement this in code. We will fit a model and then evaluate its accuracy using a confusion matrix.
 
@@ -755,7 +841,7 @@ library(caret)
 set.seed(123) # for reproducibility
 sample_data <- data.frame(
   predictor = rnorm(100),
-  outcome = rbinom(100, 1, 0.6)
+  outcome = rbinom(100, 1, 0.5)
 )
 
 # Fit the logistic regression model
@@ -791,7 +877,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 np.random.seed(123) # for reproducibility
 sample_data = pd.DataFrame({
     'predictor': np.random.randn(100),
-    'outcome': np.random.binomial(1, 0.6, 100)
+    'outcome': np.random.binomial(1, 0.5, 100)
 })
 
 # Define predictor (X) and outcome (y) variables
@@ -811,17 +897,9 @@ predicted_class = model_fit.predict(X)
 # The labels parameter ensures the matrix is in the order [0, 1]
 # for TN, FP, FN, TP
 conf_matrix = confusion_matrix(y_true=y, y_pred=predicted_class)
-
+print(conf_matrix)
 # The classification_report provides precision, recall, f1-score, etc.
 class_report = classification_report(y_true=y, y_pred=predicted_class)
-
-# 5. Print
-print("--- Confusion Matrix ---")
-print("         Predicted 0 | Predicted 1")
-print("Actual 0 |    {}     |    {}     ".format(conf_matrix[0, 0], conf_matrix[0, 1]))
-print("Actual 1 |    {}     |    {}     ".format(conf_matrix[1, 0], conf_matrix[1, 1]))
-print("\n") # Add a newline for better spacing
-
 print(class_report)
 ```
 
@@ -890,7 +968,7 @@ estat classification
 
 - The LR test is the equivalent of the F-test in OLS. 
   - It tests the **joint significance** of a set of variables by comparing the goodness-of-fit of two **nested** models.
-  - One model (the restricted model) is a special case of the other (the full model). For example, a model with predictors `{X1}` is nested within a model with predictors `{X1, X2}`.
+  - One model (the restricted model) is a special case of the other (the full model). For example, a model with predictors $X_1$ is nested within a model with predictors $(X_1, X_2)$.
   - The test determines if the additional variables in the full model provide a statistically significant improvement in fit compared to the simpler, restricted model.
   $LR = 2(\ln L_{full} - \ln L_{restricted})$
 
@@ -941,7 +1019,7 @@ from scipy.stats import chi2
 np.random.seed(123) # for reproducibility
 sample_data = pd.DataFrame({
     'predictor': np.random.randn(100),
-    'outcome': np.random.binomial(1, 0.6, 100)
+    'outcome': np.random.binomial(1, 0.5, 100)
 })
 
 # Define predictor (X) and outcome (y) variables
@@ -1028,13 +1106,13 @@ lrtest full_model
 - **Rule of Thumb:**
   - Logit coefficients are larger than Probit coefficients by a factor of ~1.6 - 1.8.
   - Logit Marginal Effects $\approx$ Probit Marginal Effects.
-  - **Logit is often preferred** due to the simpler interpretation of coefficients as log-odds and the direct calculation of odds ratios.
+
   
 # Prediction
 
 ## Prediction on Unseen Data 
 
-- Once a model is trained, its primary purpose is often to make predictions on new data where the outcome is unknown.
+- Once a model is estimated, its primary purpose is often to make predictions on new data where the outcome is unknown.
 
 - The LPM is simply an OLS linear regression model where the dependent variable (Y) is binary (0 or 1).
 
@@ -1060,9 +1138,11 @@ lrtest full_model
 #| code-fold: true
 # Create some sample data for training
 set.seed(42)
+age = sample(20:70, 100, replace = TRUE)
+
 train_data <- data.frame(
-  age = sample(20:70, 100, replace = TRUE),
-  purchased = rbinom(100, 1, prob = seq(0.1, 0.9, length.out = 51)[-1])
+  age = age,
+  purchased = rbinom(100, 1, prob = age/70)
 )
 
 # Fit the Linear Probability Model on the training data
@@ -1100,13 +1180,12 @@ import statsmodels.formula.api as smf
 np.random.seed(42) # for reproducibility
 
 # R's rbinom recycles the probability vector. We replicate that behavior here.
-# seq(0.1, 0.9, length.out = 51)[-1] in R becomes:
-prob_vector = np.linspace(0.1, 0.9, 51)[1:] # creates a vector of 50 probabilities
-recycled_probs = np.tile(prob_vector, 2) # repeats the vector twice to get 100 probabilities
+age = np.random.randint(20, 71, 100) # np.randint is exclusive of the high end
+prob_vector = [np.random.binomial(1, i/70, 1)[0] for i in age]# creates a vector of 50 probabilities
 
 train_data = pd.DataFrame({
-  'age': np.random.randint(20, 71, 100), # np.randint is exclusive of the high end
-  'purchased': np.random.binomial(1, p=recycled_probs)
+  'age': age,
+  'purchased': prob_vector
 })
 
 # 2. Fit the Linear Probability Model (LPM) on the training data
@@ -1220,7 +1299,9 @@ list, noobs // The 'noobs' option hides the observation numbers for a cleaner lo
 
 - The model predicts the natural logarithm of the odds of the event occurring:
 
-$\ln\left(\frac{P(Y=1)}{1-P(Y=1)}\right) = \beta_0 + \beta_1X_1 + \dots + \beta_kX_k$
+  $$
+    \ln\left(\frac{P(Y=1)}{1-P(Y=1)}\right) = \beta_0 + \beta_1X_1 + \dots + \beta_kX_k
+  $$
 
 - To get the predicted probability, we solve for $P(Y=1)$.
 
@@ -1293,6 +1374,7 @@ X_unseen = unseen_data[['age']]
 
 # 4. Use the predict method to find the predicted probabilities
 predicted_probabilities = model.predict(X_unseen)
+unseen_data['predicted_prob_logit'] = predicted_probabilities
 
 # 5. Make the prediction on the basis of the 0.5 cutoff
 unseen_data['predicted_class'] = np.where(predicted_probabilities > 0.5, "Purchase", "No Purchase")
@@ -1422,9 +1504,9 @@ A firm's R&D spending.
 
 - Hence, the likelihood is:
 
-  $$
-    \prod_{i=1}^N \Phi \left(-\frac{\beta_0 + \beta_1 X_{1i}}{\sigma}\right)^{I(Y_i = 0)} \cdot \phi \left(\frac{Y_j - [\beta_0 + \beta_1 X_{i1} + \dots]}{\sigma}\right)^{I(Y_i >0)}
-  $$
+    $$
+      \prod_{i=1}^N \Phi \left(-\frac{\beta_0 + \beta_1 X_{1i} + \dots}{\sigma}\right)^{I(Y_i = 0)} \cdot \phi \left(\frac{Y_j - [\beta_0 + \beta_1 X_{i1} + \dots]}{\sigma}\right)^{I(Y_i >0)}
+    $$
   
 - MLE finds the parameter values ($\beta_0, \beta_1, ..., \sigma$) that maximize the joint probability (the product of these individual likelihoods) of observing our actual sample.
 
@@ -1577,165 +1659,6 @@ ax.set_xlim(df['X'].min() - 0.1, df['X'].max() + 0.1);
 
 plt.show()
 ```
-
-## The Heckman Model (Sample Selection Bias)
-
-- The Heckman model is used when the dependent variable is missing for a group of observations due to a systematic selection process.
-
-:::{.callout-tip title="Example: Missing DV"}
-
-Wage determination. We only observe wages ($y_i$) for individuals who are employed. The decision to work is likely not random and may be correlated with the factors that determine wages.
-
-The returns to a college education (we only observe wages for graduates).
-
-The effect of a training program on productivity (we only observe productivity for those who completed the program).
-:::
-
-## Model Set-Up
-
-- The Heckman model assumes **two distinct processes**: a selection process and an outcome process.
-
-- **Selection Equation (Probit Model):** A latent variable $s_i^*$ determines whether we observe the outcome.
-  - $s_i^* = γ_0 + γ_1Z_{1i} + γ_2Z_{2i} + ... + v_i$, where $v_i \sim N(0, 1)$
-  - We observe the outcome $y_i$ only if $s_i^* > 0$ (e.g., the offered wage exceeds the reservation wage).
-
-- **Outcome Equation:** The model for the variable of interest, $y_i$.
-  - $y_i = β_0 + β_1X_{1i} + β_2X_{2i} + ... + u_i$, where $u_i \sim N(0, σ^2)$
-  - This equation is only estimated for the selected sample (i.e., when $s_i^* > 0$).
-
-## Why OLS Fails
-
-- The bias arises if the unobserved factors in the two equations are correlated: $Corr(u_i, v_i) = \rho \neq 0$. 
-  - If $\rho>0$, people with unobservably high wage potential ($u_i > 0$) are also more likely to work ($v_i > 0$).
-- OLS on the selected sample (workers) suffers from omitted variable bias. The conditional expectation of the error is no longer zero:
-  - $E[y_i | X_i, \text{sample is selected}] = β_0 + β_1X_{1i} + ... + E[u_i | s_i^* > 0]$
-  - The term $E[u_i | s_i^* > 0]$ is non-zero if $\rho \neq 0$ and is a function of the $Z$ variables.
-
-## Solution: Heckman's Two-Step Procedure
-
-- **Step 1: Estimate the Selection Equation.**
-  - Run a Probit model of the selection decision (e.g., working vs. not working) on the **full sample**. The regressors are the $Z$ variables.
-  - From the Probit results, calculate the **Inverse Mills Ratio (IMR)** for each observation, often denoted $\lambda_i$:
-  - $\lambda_i = \frac{\phi(γ_0 + γ_1Z_{1i} + ...)}{\Phi(γ_0 + γ_1Z_{1i} + ...)}$ (where $\phi$ is the normal PDF, $\Phi$ is the normal CDF).
-  - The IMR is a measure of the "selection hazard" — the likelihood of being selected into the sample, given the Z variables. It acts as a proxy for the omitted term $E[u_i | s_i^* > 0]$.
-
-## Solution: Heckman's Two-Step Procedure (Cont.)
-
-- **Step 2: Estimate the Corrected Outcome Equation.**
-  - Run OLS on the outcome equation using **only the selected sample** (those for whom we observe $y_i$).
-  - Include the calculated IMR ($\lambda_i$) as an additional explanatory variable:
-  - $y_i = β_0 + β_1X_{1i} + ... + β_{\lambda}\lambda_i + \text{error}$
-  - The coefficient on the IMR, $β_{\lambda}$, is an estimate of $ρ \cdot σ_u$. A statistically significant $t$-test on this coefficient is a direct test for sample selection bias.
-
-- **The Exclusion Restriction:** 
-  - For identification of the IMR $\lambda$, there must be at least one variable in the selection equation ($Z$) that is **not** in the outcome equation ($Z$). 
-  - This variable should influence the selection decision but not the outcome itself (e.g., number of young children may affect the decision to work but not the potential wage rate).
-
-## Visualization 
-
-```{python}
-#| echo: false
-#| fig-align: 'center'
-#| fig-width: 8
-import numpy as np
-import pandas as pd
-import statsmodels.api as sm
-from scipy.stats import norm
-import matplotlib.pyplot as plt
-
-# --- 1. Data Generation with STRONGER Selection Bias ---
-
-# Set parameters
-np.random.seed(42)
-n_obs = 2000
-beta = np.array([5, 2])       # True coefficients for outcome eq: y = 5 + 2*x1
-gamma = np.array([0.5, 1, 1.5])  # True coefficients for selection eq.
-
-# ------------------------------------------------------------------- #
-#       KEY CHANGE: Increase rho to strengthen the selection bias     #
-rho = 0.95 # Previous value was 0.7
-# ------------------------------------------------------------------- #
-
-# Generate independent variables
-x0 = np.ones(n_obs)
-x1 = np.random.uniform(-5, 5, n_obs)
-z1 = np.random.normal(0, 1, n_obs) # Instrument
-
-# Create the design matrices
-X = np.column_stack((x0, x1))
-Z = np.column_stack((x0, x1, z1))
-
-# Generate strongly correlated errors for the two equations
-cov_matrix = np.array([[1, rho], [rho, 1]])
-errors = np.random.multivariate_normal([0, 0], cov_matrix, size=n_obs)
-error_outcome = errors[:, 0]
-error_selection = errors[:, 1]
-
-# Generate the latent outcome and selection decision
-y_latent = X @ beta + error_outcome
-selection_latent = Z @ gamma + error_selection
-selection = selection_latent > 0
-
-# Create the observed y with missing values
-y_observed = y_latent.copy()
-y_observed[~selection] = np.nan
-
-# Create a DataFrame
-df = pd.DataFrame({
-    'x1': x1, 'z1': z1, 'y_observed': y_observed, 'selection': selection.astype(int)
-})
-
-# --- 2. Model Fitting (No changes needed here) ---
-
-# a) OLS Model (on selected data)
-df_selected = df.dropna().copy()
-X_ols = sm.add_constant(df_selected['x1'])
-ols_model = sm.OLS(df_selected['y_observed'], X_ols)
-ols_results = ols_model.fit()
-
-# b) Manual Heckman Two-Step Estimator
-# STAGE 1: Probit
-Z_probit = sm.add_constant(df[['x1', 'z1']])
-probit_model = sm.Probit(df['selection'], Z_probit)
-probit_results = probit_model.fit(disp=0) # disp=0 suppresses convergence messages
-linear_prediction = probit_results.predict(Z_probit)
-imr = norm.pdf(linear_prediction) / norm.cdf(linear_prediction)
-df_selected['imr'] = imr[df_selected.index]
-
-# STAGE 2: OLS with IMR
-X_heckman = sm.add_constant(df_selected[['x1', 'imr']])
-heckman_stage2_model = sm.OLS(df_selected['y_observed'], X_heckman)
-heckman_results = heckman_stage2_model.fit()
-
-
-# --- 3. Plotting the Results (No changes needed here) ---
-
-plt.style.use('seaborn-v0_8-whitegrid')
-fig, ax = plt.subplots(figsize=(12, 8))
-ax.scatter(df_selected['x1'], df_selected['y_observed'], alpha=0.3, label='Observed Data (Selected Sample)')
-x_plot = np.linspace(-5, 5, 100)
-X_plot = sm.add_constant(x_plot)
-
-# True line
-y_true = X_plot @ beta
-ax.plot(x_plot, y_true, 'r-', lw=3, label=f'True Relationship (Slope={beta[1]:.2f})')
-
-# OLS line
-y_ols = ols_results.predict(X_plot)
-ax.plot(x_plot, y_ols, 'k--', lw=2, label=f'OLS Fit (Biased Slope={ols_results.params[1]:.2f})')
-
-# Heckman line
-heckman_coeffs = heckman_results.params[['const', 'x1']]
-y_heckman = X_plot @ heckman_coeffs
-ax.plot(x_plot, y_heckman, 'g-.', lw=3, label=f'Heckman Fit (Corrected Slope={heckman_coeffs[1]:.2f})')
-
-ax.set_title('OLS vs. Heckman with Selection Bias', fontsize=16)
-ax.set_xlabel('Independent Variable (x1)', fontsize=12)
-ax.set_ylabel('Dependent Variable (y)', fontsize=12)
-ax.legend(fontsize=11)
-plt.show()
-```
-
 
 # Summary
 
