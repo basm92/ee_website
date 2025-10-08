@@ -99,6 +99,15 @@ Follow this flowchart to select and justify your panel data model:
 -   Always check for **serial correlation** in the residuals of your chosen model (e.g., with a Breusch-Godfrey test).
 -   If serial correlation is present, use **robust (clustered) standard errors** to ensure your statistical inferences are valid. This is standard practice in panel data analysis.
 
+# Wooclap
+
+## Wooclap
+
+[Wooclap Link](https://app.wooclap.com/OFZFSD/questionnaires/68e6329c36d6d58cbb9e202a)
+
+Wooclap code: OFZFSD (Tutorial 5)
+
+
 # Questions
 
 ## The Omitted Variable Bias Problem in Pooled OLS
@@ -160,7 +169,7 @@ Where `Salary_it` is the salary of the CEO in firm *i* at time *t*, `FirmProfit_
 
 2.  Next, the economist considers a **Random Effects (RE)** model. What is the key assumption the RE model makes about the relationship between the unobserved effect `a_i` and the explanatory variables? How does this assumption, if true, make the RE model advantageous over the FE model?
 
-3.  Drawing from the "Line of Reasoning with Panel Data" presented in the lecture, outline a complete, step-by-step testing procedure the economist should follow to decide which estimator is most appropriate for their data. Specifically, name the statistical tests they should perform and explain what the null and alternative hypotheses for each test tell them about which model to choose (i.e., Pooled OLS vs. RE, and RE vs. FE).
+3.  Outline a complete, step-by-step testing procedure the economist should follow to decide which estimator is most appropriate for their data. Specifically, name the statistical tests they should perform and explain what the null and alternative hypotheses for each test tell them about which model to choose (i.e., Pooled OLS vs. RE, and RE vs. FE).
 
 :::
 

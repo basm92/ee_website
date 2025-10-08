@@ -223,7 +223,7 @@ The coefficients cannot be estimated, and are dropped from the model.
 3.  Now, estimate a **Random Effects** model using the exact same set of predictors.
 4.  **Explain the difference:** Why can the RE model provide estimates for `black` and `hisp` while the FE model cannot? Relate your answer directly to the underlying mathematical transformation of each estimator.
 
-The RE model is able to estimate the effects of time-invariant variables, while the FE model is not, due to collinearity of the time-invariant variables with the fixed effects. 
+The RE model is able to estimate the effects of time-invariant variables, while the FE model is not, due to collinearity of the time-invariant variables with the fixed effects. In other words, the FE model cannot provide estimates due to a lack of within variation. 
 
 
 :::{.panel-tabset}
