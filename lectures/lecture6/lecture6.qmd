@@ -83,29 +83,34 @@ Where $y_i$ is either 0 or 1.
 :::
 
 - **Key Insight:** The expected value of a binary variable is the probability that it equals 1.
-$E[y_i | X_i] = 1 \cdot P(y_i=1 | X_i) + 0 \cdot P(y_i=0 | X_i) = P(y_i=1 | X_i)$
+$E[y_i | X_i] = 1 \cdot Pr(y_i=1 | X_i) + 0 \cdot Pr(y_i=0 | X_i) = Pr(y_i=1 | X_i)$
 - This makes interpretation very appealing...
 
 ## LPM Interpretation
 
-- Since $E[y_i | X_i] = P(y_i=1 | X_i)$, the LPM becomes:
-$P(y_i=1 | X_i) = \beta_0 + \beta_1 x_{1i} + ...$
-
-- **Interpretation of Coefficients:**
-  - $\beta_k$ is the change in the *probability* that $y=1$ for a one-unit change in $x_k$, holding other factors constant.
-  -  **Simplicity:** Easy to estimate (just OLS) and coefficients are incredibly easy to interpret as changes in probability.
+- Since $E[y_i | X_i] = Pr(y_i=1 | X_i)$, the LPM becomes: $P(y_i=1 | X_i) = \beta_0 + \beta_1 x_{1i} + \dots$
+  - $\beta_k$ is the change in the *probability* that $y=1$ for a one-unit change in $x_k$, holding other factors constant. Important to compare with the average of $y$ in the sample. 
+  -  **Simplicity:** easy to estimate (just OLS) and coefficients are incredibly easy to interpret as changes in probability.
 
 :::{.callout-tip title="Example: Interpretation of LPM"}
-Suppose we have a model like: `employed = 0.20 + 0.15 * education_years`
+Suppose we have a model like: $\text{Employed} = 0.20 + 0.15 \cdot \text{Education Years}$
 
-Each additional year of education is associated with a 0.15 (or 15 percentage point) increase in the probability of being employed.
+Each additional year of education is associated with a 0.15 (or 15 percentage point) increase in the probability of being employed. 
+
+_Note_: A percentage point change refers to the simple difference between two percentage values, representing the direct impact of an independent variable on a dependent variable that is expressed as a percentage. A percentage change indicates the relative increase or decrease in a value, calculated as the ratio of the change to the original amount.
 :::
 
-## Problems with LPM: Out-of-Bounds Predictions
+## Pros and Cons of the LPM
+
+- The LPM is often a preferred method for researchers because it can easily incorporate fixed effects.
+  -  This is a significant advantage in panel data analysis, where controlling for unobserved time-invariant characteristics is important.
+
+- Drawbacks:
+  - The LPM is most effective when dealing with probabilities in the middle range. 
+  - The model's performance diminishes significantly when the average probability is very low or very high (e.g., below 0.15). 
 
 - The model is linear, but probability is bounded by $[0, 1]$. The LPM doesn't know this.
-
-  $$P(y=1|X) = \hat{\beta}_0 + \hat{\beta}_1 X$$
+    $$Pr(y=1|X) = \hat{\beta}_0 + \hat{\beta}_1 X$$
 
 - Nothing in the OLS mechanics prevents the predicted value, $\hat{y}$, from being less than 0 or greater than 1 for certain values of X.
   - Interpretation of a predicted probability of 1.2 or -0.1 is nonsensical. 
@@ -189,9 +194,13 @@ ggplot(sim_data, aes(x = x, y = y)) +
 ##  Problems with LPM: The Error Term
 
 - The assumptions of the Classical Linear Model are violated.
+- The probability that $y_i=1$ is $p_i = Pr(y_i=1|X_i)$ is Bernoulli distributed.
+  - $E[y_i | X_i] = p_i = \hat{\beta_0} + \hat{\beta_1}x_i$
+  - $Var(y_i | X_i) = p_i(1-p_i)=(\hat{\beta_0} + \hat{\beta_1 x_i}) \cdot (1 - (\hat{\beta_0} + \hat{\beta_1}x_i))$
+
 - Inherent Heteroskedasticity:
   - The variance of the error term depends on the values of the independent variables.
-  - $Var(\epsilon_i | X_i) = p_i(1-p_i)$, where $p_i = P(y_i=1|X_i)$
+  - $Var(\epsilon_i | X_i) = p_i(1-p_i)$, where $p_i = Pr(y_i=1|X_i)$
   - Since $p_i$ depends on X, the variance is not constant. This is heteroskedasticity.
   - **Consequence:** OLS standard errors are biased. We could use robust standard errors to fix this problem. 
   
@@ -208,16 +217,16 @@ ggplot(sim_data, aes(x = x, y = y)) +
 
 ## PDF
 
-- The **PDF** describes the *relative likelihood* that a continuous random variable $X$ takes on a given value.
+- The **PDF** describes the *relative likelihood* that a continuous random variable $Z$ takes on a given value.
 
-- For a continuous variable, the probability of it being *exactly* one value is zero ($P(X=x) = 0$). Instead, the PDF gives us a function where the **area under the curve** over an interval corresponds to the probability of the variable falling within that interval.
-  - A higher value of $f_X(x)$ means that values in that immediate vicinity are more likely to occur.
+- For a continuous variable, the probability of it being *exactly* one value is zero ($Pr(Z=z) = 0$). Instead, the PDF gives us a function where the **area under the curve** over an interval corresponds to the probability of the variable falling within that interval.
+  - A higher value of $f_Z(z)$ means that values in that immediate vicinity are more likely to occur.
 
 - **Formal Properties:**
 
-  1.  $f_X(x) \ge 0$ for all $x$. The density is never negative.
-  2.  $\int_{-\infty}^{\infty} f_X(x) dx = 1$. The total area under the curve is one.
-  3.  $P(a \le X \le b) = \int_{a}^{b} f_X(x) dx$. The probability of $X$ being between $a$ and $b$ is the area under the PDF from $a$ to $b$.
+  1.  $f_Z(z) \ge 0$ for all $x$. The density is never negative.
+  2.  $\int_{-\infty}^{\infty} f_Z(z) dz = 1$. The total area under the curve is one.
+  3.  $Pr(a \le X \le b) = \int_{a}^{b} f_Z(z) dz$. The probability of $Z$ being between $a$ and $b$ is the area under the PDF from $a$ to $b$.
 
 ## PDF Visualization 
 
@@ -233,9 +242,15 @@ pdf_vals <- dnorm(x_vals, mean = 0, sd = 1)
 
 # Plot the PDF
 plot(x_vals, pdf_vals, type = "l", lwd = 2, col = "blue",
-     main = "PDF of a Standard Normal Distribution N(0,1)",
+     main = "PDF φ(z) of a Standard Normal Distribution N(0,1)",
      xlab = "x", ylab = "Density: f(x)")
 abline(h = 0, col = "grey")
+
+# Add a vertical line at the expected value E[Z] = 0
+abline(v = 0, col = "red", lty = 2, lwd = 2)
+
+# Add text to label E[Z]
+text(0.1, 0.2, "E[Z] = 0", col = "red", pos = 4)
 ```
 
 
@@ -266,9 +281,16 @@ cdf_vals <- pnorm(x_vals, mean = 0, sd = 1)
 
 # Plot the CDF
 plot(x_vals, cdf_vals, type = "l", lwd = 2, col = "darkgreen",
-     main = "CDF of a Standard Normal Distribution N(0,1)",
+     main = "CDF Φ(z) of a Standard Normal Distribution N(0,1)",
      xlab = "x", ylab = "Cumulative Probability: F(x)")
 abline(h = c(0, 1), col = "grey", lty = 2) # Add lines at 0 and 1
+
+# Add lines to show that CDF = 0.5 at z = 0
+abline(h = 0.5, col = "red", lty = 2) # Horizontal line at p=0.5
+abline(v = 0, col = "red", lty = 2)   # Vertical line at z=0
+
+# Add text to label the point
+text(0.1, 0.45, "Φ(0) = 0.5", col = "red", pos = 4)
 ```
 
 
@@ -363,13 +385,16 @@ $y_i^* = \beta_0 + \beta_1 x_i + \epsilon_i$
 
 We don't observe $y^*$. We only observe the outcome, *y*, based on a threshold (usually normalized to 0):
 
-- If $y_i^* > 0$, then we choose Yes ($y_i = 1$)
-- If $y_i^* \le 0$, then we choose No ($y_i = 0$)
+- If $y_i^* > 0$, then we choose Yes ($y_i = 1$), and if $y_i^* \le 0$, then we choose No ($y_i = 0$)
 
 The probability that $y_i=1$ is the probability that $y_i^*$ is greater than 0.
 
   $$
-    P(y_i=1) = P(y_i^* > 0) = P(\beta_0 + \beta_1 x_i + \epsilon_i > 0) = P(\epsilon_i > -(\beta_0 + \beta_1 x_i))
+    Pr(y_i=1) = P(y_i^* > 0) = Pr(\beta_0 + \beta_1 x_i + \epsilon_i > 0) = Pr(\epsilon_i > -(\beta_0 + \beta_1 x_i))
+  $$
+
+  $$
+    Pr(y_i=0) = P(y_i^* \le 0) = Pr(\beta_0 + \beta_1 x_i + \epsilon_i \le 0) = Pr(\epsilon_i \le -(\beta_0 + \beta_1 x_i))
   $$
 
 :::
@@ -400,10 +425,28 @@ The probability that $y_i=1$ is the probability that $y_i^*$ is greater than 0.
 
 **Logit Model:** Assumes $\epsilon_i$ follows a **Standard Logistic** distribution.
 
-- $P(y_i=1 | X_i) = 1 - \Lambda(-(\beta_0 + \beta_1 x_i)) = \Lambda(\beta_0 + \beta_1 x_i) = \frac{e^{\beta_0 + \beta_1 x_i}}{1 + e^{\beta_0 + \beta_1 x_i}}$
+- $P(y_i=1 | X_i) = 1 - \Lambda(-(\beta_0 + \beta_1 x_i)) = \Lambda(\beta_0 + \beta_1 x_i) = \frac{e^{\beta_0 + \beta_1 x_i}}{1 + e^{\beta_0 + \beta_1 x_i}}=\frac{1}{1 + e^{-(\beta_0 + \beta_1 x_i)}}$
 - where $\Lambda(\cdot)$ is the Standard Logistic CDF.
   
 In both cases, $1-F(-(\beta_0 + \beta_1 x_i)) = F(\beta_0 + \beta_1 x_i)$, since both distributions are symmetric.  Both CDFs produce the S-shaped curve we need. 
+
+:::
+
+## Logistic Function
+
+:::{.callout-note title="Definition: Logistic Function"}
+
+The **logistic function**, also known as the standard logistic cumulative distribution function (CDF) or sigmoid function, is a function that produces an "S"-shaped curve. It is defined by the formula:
+
+  $$
+    F(x) = \frac{1}{1 + e^{-x}}
+  $$
+
+This function takes any real-valued number and maps it to a value between 0 and 1, making it particularly useful for modeling probabilities.
+
+As it is a CDF, the function always outputs a value between 0 and 1, but never reaches exactly 0 or 1. This makes it ideal for representing probabilities in statistical models like logistic regression.
+
+The standard logistic function is symmetric around the point $(0, 0.5)$. This means that $F(0) = 0.5$, and the curve is (rotationally) symmetric around this point.
 
 :::
 
@@ -466,8 +509,8 @@ curves_df <- data.frame(
   ) %>%
   # Make the model names prettier for the legend
   mutate(Model = recode(Model,
-    "Probability_A" = "Model A: log-odds = 0.5 + 0.8x",
-    "Probability_B" = "Model B: log-odds = 4.0 + 2.5x"
+    "Probability_A" = "Model A: p(y=1) = 1/(1+e^-(0.5 + 0.8x)",
+    "Probability_B" = "Model B: p(y=1) = 1/(1+e^-(4.0 + 2.5x)"
   ))
 
 ggplot() +
@@ -493,6 +536,19 @@ ggplot() +
   theme(legend.position = "bottom")
 
 ```
+
+## Logit and Probit with Panel Data
+
+-  Panel data allows us to control for unobserved, time-invariant individual characteristics (e.g., innate ability, motivation). 
+  - In linear models, this is straightforward. However, the non-linear nature of Logit and Probit models makes this complicated.
+
+- Conditional Logit: this model cleverly avoids estimating the fixed effects directly. Instead, it uses a conditional maximum likelihood estimation that focuses only on individuals who change their outcome (switch from 0 to 1 or 1 to 0) at some point in the panel.
+  - **Advantage:** Allows for correlation between the unobserved fixed effects and the explanatory variables, just like a standard Fixed Effects model.
+  - **Limitation:** Individuals who never change their outcome are dropped from the analysis. It also cannot estimate the effect of time-invariant variables (e.g., gender).
+
+- Random Effects Probit: this model treats the unobserved individual effects as random variables that are part of the error term.
+  - **Advantage:** It uses all the data (not just the "switchers") and can estimate the effects of time-invariant variables.
+  - **Limitation:** It relies on the strong assumption that the unobserved effects are **uncorrelated** with the explanatory variables. If this assumption is violated, the estimates will be biased and inconsistent, like RE.
 
 # Estimation of Logit and Probit
 
@@ -631,12 +687,12 @@ $L(\beta) = \prod_{i=1}^{N} [P(y_i=1|X_i)]^{y_i} \cdot [1 - P(y_i=1|X_i)]^{1-y_i
 
 - **Log-Likelihood Function:**
   $$
-    \ln\mathcal{L}(\beta) = \sum_{i=1}^n \left\{ Y_i \ln\Phi(\beta_0 + \beta_1 x_i) + (1-Y_i)\ln[1-\Phi(\beta_0 + \beta_1 x_i)] \right\}
+    \log\mathcal{L}(\beta) = \sum_{i=1}^n \left\{ Y_i \log\Phi(\beta_0 + \beta_1 x_i) + (1-Y_i)\log[1-\Phi(\beta_0 + \beta_1 x_i)] \right\}
   $$
 
 - **First-Order Conditions (FOC):**
   $$
-    \frac{\partial \ln\mathcal{L}(\beta_0, \dots, \beta_k)}{\partial \beta_j} = \sum_{i=1}^n \left[ \frac{Y_i \phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})}{\Phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})} - \frac{(1-Y_i)\phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})}{1-\Phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})} \right] x_{ij} = 0
+    \frac{\partial \log\mathcal{L}(\beta_0, \dots, \beta_k)}{\partial \beta_j} = \sum_{i=1}^n \left[ \frac{Y_i \phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})}{\Phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})} - \frac{(1-Y_i)\phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})}{1-\Phi(\beta_0 + \beta_1 x_{i1} + \dots + \beta_k x_{ik})} \right] x_{ij} = 0
   $$
 
 :::
@@ -1036,7 +1092,8 @@ estat classification
 
    - **$H_0$ (Null Hypothesis):** The restricted model is the true model. The coefficients of the extra variables in the full model are all equal to zero.
    - **$H_A$ (Alternative Hypothesis):** The full model is the true model. At least one of the extra variables has a non-zero coefficient.
-  - A small p-value (< 0.05) suggests that the full model is a significant improvement, and the additional variables are jointly significant.
+  - A small p-value (< 0.05) rejects $H_0$.
+  - It suggests that the full model is a significant improvement, and the additional variables are jointly significant.
 
 ## Performing a Likelihood Ratio Test
 
@@ -1498,6 +1555,80 @@ restore
 
 - In both cases, running OLS on the observed data leads to biased and inconsistent parameter estimates. 
   - We need models that explicitly account for the non-random nature of the sample.
+
+## Illustration: Censored Data
+
+```{r}
+#| echo: false
+#| fig-align: 'center'
+#| fig-width: 12
+#| fig-height: 8
+# --- 1. Generate and Plot the "True" Unobserved Data ---
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Generate independent variable (e.g., years of experience)
+x <- runif(100, 0, 20)
+
+# Generate a dependent variable (e.g., true wage) with a linear relationship and random noise
+# This is the "latent" or unobserved variable.
+y_true <- 5 + 1.5 * x + rnorm(100, mean = 0, sd = 8)
+
+# Plot the original, uncensored data (the "puntenwolk")
+plot(x, y_true, 
+     main = "Latent Data vs. Observed Censored Data",
+     xlab = "Independent Variable (X)", 
+     ylab = "Dependent Variable (Y)",
+     pch = 1, # Open circles for latent data
+     col = "grey",
+     ylim = c(0, 50),
+     cex.lab = 1.2,
+     cex.main = 1.5)
+
+# --- 2. Implement and Visualize Censoring ---
+
+# --- A) Right-Censoring (Top-coding / Ceiling) ---
+# Define a censoring line (e.g., a maximum observable wage of 40)
+censor_limit_high <- 40
+
+# Create the observed (censored) data
+# If the true value is above the limit, we only observe the limit. Otherwise, we observe the true value.
+y_observed_right <- ifelse(y_true > censor_limit_high, censor_limit_high, y_true)
+
+# Draw the horizontal censoring line ("cesuurlijn")
+abline(h = censor_limit_high, col = "red", lty = 2, lwd = 2)
+text(5, censor_limit_high + 2, "Censoring Ceiling (y = 40)", col = "red")
+
+# Add the observed data points to the plot
+points(x, y_observed_right, 
+       pch = 16, # Solid circles for observed data
+       col = "red")
+
+# --- B) Left-Censoring (Bottom-coding / Floor) ---
+# Define a censoring line (e.g., a minimum observable wage of 10)
+censor_limit_low <- 10
+
+# Create the observed (censored) data
+y_observed_left <- ifelse(y_true < censor_limit_low, censor_limit_low, y_true)
+
+# Draw the horizontal censoring line
+abline(h = censor_limit_low, col = "blue", lty = 2, lwd = 2)
+text(15, censor_limit_low - 2, "Censoring Floor (y = 10)", col = "blue")
+
+# Add the observed data points to the plot
+points(x, y_observed_left, 
+       pch = 16, # Solid circles for observed data
+       col = "blue")
+
+
+# --- 3. Add a Legend ---
+legend("bottomright", 
+       legend = c("Latent (True) Data", "Observed if Right-Censored", "Observed if Left-Censored"),
+       col = c("grey", "red", "blue"), 
+       pch = c(1, 16, 16),
+       bty = "n")
+```
 
 ## The Tobit Model (Censored Dependent Variable)
 
