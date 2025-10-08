@@ -5,6 +5,27 @@ format: pdf
 
 ## MC Questions
 
+1.  The Hausman test is used to compare the Fixed Effects (FE) and Random Effects (RE) models. What is the null hypothesis ($H_0$) of the Hausman test, and what is the appropriate modeling choice if you fail to reject the null?
+
+    a) $H_0$: The variance of the individual-specific effect is zero ($\sigma_a^2 = 0$). If not rejected, choose Pooled OLS.
+    b) $H_0$: The coefficients from the FE and RE models are the same. If not rejected, choose the FE model for its consistency.
+    c) $H_0$: The unobserved individual effect ($a_i$) is uncorrelated with the explanatory variables ($X_{it}$). If not rejected, choose the more efficient RE model.
+    d) $H_0$: There is serial correlation in the idiosyncratic error term ($u_{it}$). If not rejected, choose the First Differences (FD) model.
+
+
+1.  In a Pooled OLS model applied to panel data, the composite error term is defined as $v_{it} = a_i + u_{it}$, where $a_i$ is the unobserved individual-specific effect and $u_{it}$ is the idiosyncratic error. Assuming $\text{Var}(a_i) = \sigma_a^2$ and $\text{Var}(u_{it}) = \sigma_u^2$, what is the correlation between two error terms for the same individual *i* at different time periods *t* and *s*?
+
+    a) Zero, because the error terms are assumed to be independent across time.
+    b) $\frac{\sigma_a^2}{\sigma_a^2 + \sigma_u^2}$, because the shared $a_i$ component induces positive autocorrelation.
+    c) $\sigma_a^2$, because the covariance between the error terms is equal to the variance of the individual effect.
+    d) -0.5, which indicates that a First Differences estimator would be more appropriate.
+
+1.  A researcher is using panel data to investigate the determinants of firms' profits. One variable of interest is the country where the firm is headquartered, which does not change over the sample period. Which estimator is fundamentally unable to estimate the effect of the headquarter country, and why?
+
+    a) The Random Effects estimator, because it requires all explanatory variables to be strictly exogenous.
+    b) The Pooled OLS estimator, because it pools all data together and ignores the panel structure entirely.
+    c) The Fixed Effects estimator, because its transformation subtracts the individual-specific mean from each variable ($\ddot{X}_{it} = X_{it} - \bar{X}_i$), which eliminates any variable that is constant over time.
+    d) All panel data estimators are unable to estimate the effect of time-invariant variables.
 
 1.  What is a primary drawback of using the Linear Probability Model (LPM) for binary outcome data?
 

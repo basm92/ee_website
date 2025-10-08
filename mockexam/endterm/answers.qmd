@@ -5,7 +5,9 @@ format: pdf
 
 ## MC Answers
 
-1. a) Test answer. 
+1. c) The Hausman test's null hypothesis is that the unobserved individual effects are not correlated with the regressors. Under this assumption, the Random Effects estimator is both consistent and more efficient (i.e., has smaller variance) than the Fixed Effects estimator, making it the preferred choice.
+2. b) The presence of the time-invariant individual effect $a_i$ in the error term for all periods for a given individual means the errors are correlated over time. The derivation shows $\text{Corr}(v_{it}, v_{is}) = \frac{\text{Cov}(v_{it}, v_{is})}{\text{Var}(v_{it})} = \frac{\sigma_a^2}{\sigma_a^2 + \sigma_u^2}$. This autocorrelation necessitates the use of clustered standard errors.
+3. c) The Fixed Effects (or "within") estimator is designed to eliminate omitted variable bias from unobserved individual effects ($a_i$) by demeaning the data. A consequence of this transformation is that any variable that does not change over time for a given individual (like gender, race, or a firm's headquarter location) becomes zero and its effect cannot be estimated.
 1. c) The LPM can produce nonsensical predictions, such as probabilities less than 0 or greater than 1.
 2. d) The Probit model assumes the error term is distributed as $\epsilon_i \sim N(0,1)$, and its Cumulative Distribution Function ($\Phi$) is used to model the probability.
 3. b) MLE is the standard estimation technique for these models; it finds the parameter values that make the observed data "most likely".
