@@ -3,6 +3,8 @@ title: "Questions Mock Endterm"
 format: pdf
 ---
 
+The questions in this mock exam are mostly based on lectures 5, 6, 7, and 8. In the real endterm, all course material is potentially relevant, including lectures 1 to 4, but the questions will be more heavily focused on the latter part of the course.
+
 ## MC Questions
 
 1.  The Hausman test is used to compare the Fixed Effects (FE) and Random Effects (RE) models. What is the null hypothesis ($H_0$) of the Hausman test, and what is the appropriate modeling choice if you fail to reject the null?
@@ -155,3 +157,71 @@ format: pdf
 
 
 ## Open Questions
+
+1.  A city introduces a new public bike-sharing program to reduce traffic congestion. To evaluate its impact, you collect data on the average commute time (in minutes) from this city (the "Treatment Group") and a neighboring, similar city that did not introduce the program (the "Control Group"). The data is collected one year before the program's launch and one year after.
+
+The average commute times are as follows:
+
+|                    | **Before Program (Pre)** | **After Program (Post)** |
+| :----------------- | :----------------------: | :----------------------: |
+| **Treatment City** |        35 minutes        |        32 minutes        |
+| **Control City**   |        33 minutes        |        34 minutes        |
+
+
+a) Calculate the "first difference" for the Treatment City (the change in average commute time over the two periods).
+b) Calculate the "first difference" for the Control City. This represents the underlying trend in commute times.
+c) Calculate the Difference-in-Differences (DiD) estimate for the effect of the bike-sharing program.
+
+
+2.  A company offers a voluntary professional development course designed to increase employee productivity. After the course, the company measures productivity on a scale of 1 to 100.
+
+-   The employees who **took the course** ($T=1$) have an average productivity score of 85.
+-   The employees who **did not take the course** ($T=0$) have an average productivity score of 70.
+
+    A separate, rigorous analysis reveals that the **Average Treatment Effect on the Treated (ATT)** is 10 points. That is, for the specific group of employees who chose to take the course, the course itself caused their productivity to increase by an average of 10 points.
+
+a) Calculate the simple difference-in-means of the productivity scores between those who took the course and those who did not.
+b) Using the decomposition formula provided in the lecture, calculate the **Selection Bias**.
+$$ E[Y|T=1] - E[Y|T=0] = ATT + \text{Selection Bias} $$
+c) Interpret the sign (positive or negative) and magnitude of the selection bias you calculated. What does this value tell you about the employees who chose to enroll in the course compared to those who did not, in terms of their potential productivity *without* the course? (Hint: Think about the definition of selection bias: $\text{Selection Bias} = E[Y(0)|T=1] - E[Y(0)|T=0]$).
+
+3. A city wants to evaluate the causal effect of a new public transit subsidy program on employment. The program offers a 50% discount on monthly transit passes to eligible low-income residents. However, simply comparing the employment rates of those who used the subsidy ($X=1$) versus those who did not ($X=0$) would lead to a biased estimate due to self-selection (e.g., more motivated individuals might be more likely to both sign up for the subsidy and find a job).
+
+    To overcome this, researchers use an instrumental variable. They randomly send an informational flyer and a pre-filled application form to a randomly selected group of eligible residents. This "encouragement" flyer serves as the instrument ($Z=1$ for those who received it, $Z=0$ for those who did not). After the study period, the researchers collect the following data:
+
+*   For the group that **received the encouragement flyer** ($Z=1$):
+    *   The employment rate is 65%. ($E[Y | Z=1] = 0.65$)
+    *   The subsidy take-up rate is 40%. ($E[X | Z=1] = 0.40$)
+*   For the group that **did not receive the flyer** ($Z=0$):
+    *   The employment rate is 55%. ($E[Y | Z=0] = 0.55$)
+    *   The subsidy take-up rate is 15%. ($E[X | Z=0] = 0.15$)
+
+a) Calculate the Wald estimate for the causal effect of the transit subsidy program on the employment rate. Show your work.
+b) Interpret the value you calculated for the **numerator** of the Wald estimator. What is the common name for this effect?
+c) Interpret the value you calculated for the **denominator** of the Wald estimator. In the context of the potential outcomes framework, what does this value represent?
+
+4. An economist is studying the market for avocados and wants to estimate the causal effect of price on the quantity demanded. They know that running a simple OLS regression of quantity on price will be biased due to simultaneity (i.e., unobserved demand shocks affect both price and quantity). To solve this problem, they use the amount of rainfall in the primary avocado-growing region as an instrumental variable ($Z$). The logic is that rainfall affects the avocado supply, which in turn affects the price, but rainfall does not directly affect consumer demand for avocados. The economist runs three regressions using data where:
+
+*   $Q_i$ is the quantity of avocados sold (in thousands of tons).
+*   $P_i$ is the average price of an avocado (in dollars).
+*   $Z_i$ is the seasonal rainfall (in mm).
+
+    The results are:
+
+1. **OLS Regression**: $\hat{Q}_i = 150 + 10.5 P_i$
+2. **First Stage Regression:** $\hat{P}_i = 2.50 - 0.05 Z_i$
+3. **Reduced Form Regression:** $\hat{Q}_i = 120 + 2.0 Z_i$
+
+a) Look at the coefficient on rainfall ($Z_i$) in the First Stage regression. What does this coefficient tell you about the relationship between rainfall and avocado prices? Does the sign of the coefficient make economic sense? Explain why this result supports the **relevance** condition for an instrument.
+b) Look at the coefficient on rainfall ($Z_i$) in the Reduced Form regression. What does this coefficient tell you about the overall relationship between rainfall and the quantity of avocados sold?
+c) Using the coefficients from the First Stage and Reduced Form regressions, calculate the Two-Stage Least Squares (2SLS) estimate for $\beta_1$ in the structural model $Q_i = \beta_0 + \beta_1 P_i + u_i$. Show your calculation. 
+
+5. A financial analyst is modeling the probability that a loan applicant will default on a personal loan. The key predictor variable is the applicant's debt-to-income ratio (`dti`). The outcome variable, `default`, is 1 if the person defaulted and 0 otherwise. The analyst estimates a Linear Probability Model (LPM). The estimated LPM equation is:
+
+$\hat{P}(\text{default}=1) = -0.15 + 0.70 \cdot \text{dti}$
+
+a) Using this equation, calculate the predicted probability of default for an applicant with a `dti` of 0.5.
+b) Now, calculate the predicted probability for an applicant with a `dti` of 2.0.
+c) Based on these two calculations, explain the primary weakness of the LPM and interpret the meaning of the 0.70 coefficient.
+
+## End of Exam

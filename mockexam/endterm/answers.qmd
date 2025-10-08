@@ -28,3 +28,112 @@ format: pdf
 
 
 ## Open Questions Answers
+
+1. 
+
+**a) First Difference (Treatment City):**
+
+The first difference for the treatment group is the change in the average outcome for this group before and after the treatment.
+
+$$ \Delta Y_{\text{Treatment}} = Y_{\text{Treatment, Post}} - Y_{\text{Treatment, Pre}} $$
+$$ \Delta Y_{\text{Treatment}} = 32 - 35 = -3 \text{ minutes} $$
+
+**b) First Difference (Control City):**
+
+This calculation shows the change in the average outcome for the control group over the same period.
+
+$$ \Delta Y_{\text{Control}} = Y_{\text{Control, Post}} - Y_{\text{Control, Pre}} $$
+$$ \Delta Y_{\text{Control}} = 34 - 33 = 1 \text{ minute} $$
+
+**c) Difference-in-Differences (DiD) Estimate:**
+
+The DiD estimate is the difference between the change in the treatment group and the change in the control group. It isolates the effect of the treatment by removing the underlying trend observed in the control group.
+
+$$ \text{DiD} = \Delta Y_{\text{Treatment}} - \Delta Y_{\text{Control}} $$
+$$ \text{DiD} = (-3) - (1) = -4 \text{ minutes} $$
+
+The DiD estimate suggests that the bike-sharing program caused a **4-minute reduction** in the average commute time.
+
+2. 
+
+**a) Simple Difference-in-Means:**
+
+This is the straightforward comparison of the average outcomes between the treated and untreated groups.
+
+$$ E[Y|T=1] - E[Y|T=0] = 85 - 70 = 15 $$
+
+**b) Selection Bias Calculation:**
+
+The simple difference in means can be broken down into the Average Treatment Effect on the Treated (ATT) and selection bias. By rearranging the provided formula, we can solve for the selection bias.
+
+$$ \text{Selection Bias} = (E[Y|T=1] - E[Y|T=0]) - \text{ATT} $$
+$$ \text{Selection Bias} = 15 - 10 = 5 $$
+
+**c) Interpretation of Selection Bias:**
+
+The selection bias is **positive** and has a magnitude of **5 points**. This indicates that the employees who chose to take the professional development course would have had a productivity score that was, on average, 5 points higher than those who did not take the course, even if they had not participated in the program. This suggests that the employees who enrolled in the course were already more motivated, skilled, or productive to begin with.
+
+
+3. 
+
+**a) Wald Estimate Calculation:**
+
+The Wald estimate is a way to calculate the causal effect of a treatment using an instrumental variable. It is the ratio of the change in the outcome associated with the instrument to the change in the treatment uptake associated with the instrument.
+
+$$ \text{Wald Estimate} = \frac{E[Y|Z=1] - E[Y|Z=0]}{E[X|Z=1] - E[X|Z=0]} $$
+$$ \text{Wald Estimate} = \frac{0.65 - 0.55}{0.40 - 0.15} = \frac{0.10}{0.25} = 0.40 $$
+
+The estimated causal effect of the transit subsidy on the employment rate is **0.40**, or a 40 percentage point increase.
+
+**b) Numerator Interpretation:**
+
+The numerator, $E[Y|Z=1] - E[Y|Z=0] = 0.10$, represents the **Intention-to-Treat (ITT) effect**. This is the effect of being encouraged (receiving the flyer) on the outcome (employment rate), regardless of whether the individual actually took up the subsidy.
+
+**c) Denominator Interpretation:**
+
+The denominator, $E[X|Z=1] - E[X|Z=0] = 0.25$, represents the effect of the instrument (encouragement) on the treatment take-up rate. In the context of potential outcomes, this value represents the proportion of **"compliers"**—individuals who only take up the subsidy if they receive the encouragement flyer.
+
+
+4. 
+
+**a) First Stage Regression Interpretation:**
+
+The coefficient on rainfall ($Z_i$) in the first stage regression is **-0.05**. This indicates that a 1 mm increase in seasonal rainfall is associated with a **$0.05 decrease** in the average price of an avocado. This makes economic sense, as more rainfall generally leads to a better avocado harvest (increased supply), which in turn lowers the price. This result supports the **relevance** condition for an instrumental variable because it shows that the instrument (rainfall) is correlated with the endogenous variable (price).
+
+**b) Reduced Form Regression Interpretation:**
+
+The coefficient on rainfall ($Z_i$) in the reduced form regression is **2.0**. This signifies that a 1 mm increase in seasonal rainfall is associated with an increase of **2,000 tons** in the quantity of avocados sold. This captures the total effect of the instrument on the outcome.
+
+**c) 2SLS Estimate Calculation:**
+
+The 2SLS estimate for the causal effect of price on quantity can be calculated by dividing the reduced-form coefficient by the first-stage coefficient.
+
+$$ \hat{\beta}_{2SLS} = \frac{\text{Reduced Form Coefficient}}{\text{First Stage Coefficient}} $$
+$$ \hat{\beta}_{2SLS} = \frac{2.0}{-0.05} = -40 $$
+
+The 2SLS estimate indicates that a $1 increase in the price of an avocado leads to a decrease in the quantity demanded by **40,000 tons**.
+
+
+5. 
+
+**a) Predicted Probability for dti = 0.5:**
+
+To find the predicted probability, we insert the `dti` value into the estimated equation.
+
+$$ \hat{P}(\text{default}=1) = -0.15 + 0.70 \cdot (0.5) $$
+$$ \hat{P}(\text{default}=1) = -0.15 + 0.35 = 0.20 $$
+
+The predicted probability of default is **20%**.
+
+**b) Predicted Probability for dti = 2.0:**
+
+$$ \hat{P}(\text{default}=1) = -0.15 + 0.70 \cdot (2.0) $$
+$$ \hat{P}(\text{default}=1) = -0.15 + 1.40 = 1.25 $$
+
+The predicted probability of default is **125%**.
+
+**c) Weakness of LPM and Coefficient Interpretation:**
+
+The calculation for a `dti` of 2.0, which results in a predicted probability of 125%, highlights the primary weakness of the Linear Probability Model: **it can produce predicted probabilities outside the logical 0 to 1 range**.
+
+The coefficient of **0.70** on `dti` is interpreted as the change in the probability of default for a one-unit increase in the debt-to-income ratio. Specifically, for every 1-unit increase in an applicant's `dti`, the probability of them defaulting on the loan is predicted to increase by **70 percentage points**.
