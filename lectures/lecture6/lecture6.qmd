@@ -224,7 +224,7 @@ ggplot(sim_data, aes(x = x, y = y)) +
 
 - **Formal Properties:**
 
-  1.  $f_Z(z) \ge 0$ for all $x$. The density is never negative.
+  1.  $f_Z(z) \ge 0$ for all $z$. The density is never negative.
   2.  $\int_{-\infty}^{\infty} f_Z(z) dz = 1$. The total area under the curve is one.
   3.  $Pr(a \le X \le b) = \int_{a}^{b} f_Z(z) dz$. The probability of $Z$ being between $a$ and $b$ is the area under the PDF from $a$ to $b$.
 
@@ -256,16 +256,16 @@ text(0.1, 0.2, "E[Z] = 0", col = "red", pos = 4)
 
 ## CDF 
 
-- The **CDF** $F(x)$ gives the probability that a random variable $X$ is *less than or equal to* a particular value $x$.
+- The **CDF** $F(z)$ gives the probability that a random variable $Z$ is *less than or equal to* a particular value $z$.
 
 - Think of the CDF as a "running total" of the probability. As you move from left to right along the x-axis, it accumulates all the probability up to that point. This is why its value always goes from 0 to 1.
 
 - **Formal Properties:**
 
-  1.  $F_X(x) = P(X \le x)$. This is the definition.
+  1.  $F_Z(z) = P(Z \le z)$. This is the definition.
   2.  The CDF is a non-decreasing function of $x$.
-  3.  $\lim_{x \to -\infty} F_X(x) = 0$ and $\lim_{x \to \infty} F_X(x) = 1$.
-  4.  For a continuous variable, $P(a < X \le b) = F_X(b) - F_X(a)$.
+  3.  $\lim_{z \to -\infty} F_Z(z) = 0$ and $\lim_{z \to \infty} F_Z(z) = 1$.
+  4.  For a continuous variable, $P(a < Z \le b) = F_Z(b) - F_Z(a)$.
 
 ## CDF Visualization
 
@@ -299,8 +299,8 @@ text(0.1, 0.45, "Φ(0) = 0.5", col = "red", pos = 4)
 - The PDF and CDF are intrinsically linked. This relationship is foundational for many econometric concepts, including **Maximum Likelihood Estimation**.
 
 - In particular, **the PDF is the derivative of the CDF.**
-    $$ f_X(x) = \frac{dF_X(x)}{dx} $$
-    - **Intuition:** The height of the PDF at a point $x$ represents the *slope* (or rate of change) of the CDF at that same point. Where the PDF is high (e.g., at the mean), the CDF is steepest, as probability is accumulating most rapidly.
+    $$ f_Z(z) = \frac{dF_Z(z)}{dz} $$
+    - **Intuition:** The height of the PDF at a point $z$ represents the *slope* (or rate of change) of the CDF at that same point. Where the PDF is high (e.g., at the mean), the CDF is steepest, as probability is accumulating most rapidly.
 
 - Less importantly here, **the CDF is the integral of the PDF.**
 
@@ -312,7 +312,7 @@ text(0.1, 0.45, "Φ(0) = 0.5", col = "red", pos = 4)
 
 - The choice of distribution (e.g., Normal for Probit, Logistic for Logit) determines the specific shape of this S-curve.
 
-- A important property of both the Normal and Logistic CDF: $1 - F(-x) = F(x)$
+- A important property of both the Normal and Logistic CDF: $1 - F(-z) = F(z)$
 
 ```{python}
 #| echo: false
@@ -334,7 +334,7 @@ y_pdf = norm.pdf(x_range, 0, 1)
 # --- Create the two subplots ---
 # fig is the whole figure, (ax1, ax2) are the two subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-fig.suptitle('Why Φ(x) = 1 - Φ(-x)', fontsize=16)
+fig.suptitle('Why Φ(z) = 1 - Φ(-z)', fontsize=16)
 
 # --- Plot 1: Illustrating Phi(x) ---
 ax1.plot(x_range, y_pdf, 'black')
@@ -509,8 +509,8 @@ curves_df <- data.frame(
   ) %>%
   # Make the model names prettier for the legend
   mutate(Model = recode(Model,
-    "Probability_A" = "Model A: p(y=1) = 1/(1+e^-(0.5 + 0.8x)",
-    "Probability_B" = "Model B: p(y=1) = 1/(1+e^-(4.0 + 2.5x)"
+    "Probability_A" = "Model A: p(y=1) = 1/(1+e^-(0.5 + 0.8x))",
+    "Probability_B" = "Model B: p(y=1) = 1/(1+e^-(4.0 + 2.5x))"
   ))
 
 ggplot() +
