@@ -1,0 +1,136 @@
+---
+title: "Questions Mock Endterm"
+format: pdf
+---
+
+## MC Questions
+
+
+1.  What is a primary drawback of using the Linear Probability Model (LPM) for binary outcome data?
+
+    a) The model's coefficients are difficult to interpret.
+    b) It requires Maximum Likelihood Estimation, which is computationally intensive.
+    c) Its predicted probabilities are not constrained to the interval.
+    d) It cannot incorporate fixed effects for panel data analysis.
+
+
+1.  The Probit and Logit models are derived from a latent variable framework where an unobserved variable $y_i^*$ determines the observed binary outcome $y_i$. What specific assumption about the error term ($\epsilon_i$) in the latent model ($y_i^* = X_i\beta + \epsilon_i$) distinguishes the Probit model?
+
+    a) The error term follows a Standard Logistic distribution.
+    b) The error term follows a Student's t-distribution.
+    c) The error term has a variance that depends on the independent variables ($X_i$).
+    d) The error term follows a Standard Normal distribution.
+
+
+1.  How are the $\beta$ coefficients in Logit and Probit models estimated?
+
+    a) By using Ordinary Least Squares (OLS) to minimize the sum of squared residuals.
+    b) By finding the parameters that maximize the joint probability of observing the actual data, a method known as Maximum Likelihood Estimation (MLE).
+    c) By calculating the percentage of correctly predicted outcomes and choosing the coefficients that maximize this percentage.
+    d) By using the F-test to determine the joint significance of the variables.
+
+
+1.  In a Logit or Probit model where the probability of an event is given by $P(y=1|X) = F(\beta x_i)$, what is the correct formula for the marginal effect of a continuous variable $x_k$ on this probability?
+
+    a) $\beta$
+    b) $F(X\beta) \cdot \beta$
+    c) $f(X\beta) \cdot \beta$
+    d) $\frac{1}{N}\sum_{i=1}^N \beta$
+
+
+1. When assessing the goodness-of-fit of a binary outcome model, which of the following statements about McFadden's Pseudo R-squared ($R^2_{McF}$) is correct?
+
+    a) It should be directly compared to the R-squared from an OLS model to determine which model is better.
+    b) It is calculated as $1 - \frac{\ln L_{full}}{\ln L_{null}}$ and typically has much lower values than a conventional OLS R-squared.
+    c) A value below 0.5 indicates a very poor model fit that should always be rejected.
+    d) It represents the percentage of the variance in the dependent variable that is explained by the model.
+
+
+1. The Tobit model is most appropriate for addressing which specific econometric issue?
+
+    a) Sample selection bias, where data on the dependent variable is missing for a non-random group.
+    b) Heteroskedasticity in the error term of a Linear Probability Model.
+    c) A censored dependent variable, where the variable is continuous but has a large number of observations at a limit value (e.g., zero).
+    d) Endogeneity caused by omitted variables.
+
+
+1. According to the latent variable framework, the probability of the observed outcome being 1 is derived from the probability that the latent variable $y_i^*$ is greater than zero. Given the model $y_i^* = \beta_0 + \beta_1 x_i + \epsilon_i$, this probability is expressed as:
+
+    a) $P(y_i^* \le 0)$
+    b) $P(\epsilon_i > -(\beta_0 + \beta_1 x_i))$
+    c) $P(\epsilon_i = \beta_0 + \beta_1 x_i)$
+    d) $1 - F(\beta_0 + \beta_1 x_i)$
+
+1. What is the "fundamental problem of causal inference" according to the potential outcomes framework?
+
+    a) It is difficult to find a large enough sample size for empirical analysis.
+    b) For any individual, we can only observe one potential outcome ($Y_i(1)$ or $Y_i(0)$), making the individual causal effect ($\tau_i$) directly unobservable.
+    c) The Average Treatment Effect (ATE) is always equal to zero.
+    d) Correlation and causation are interchangeable concepts.
+
+1. In the decomposition of the simple difference-in-means, $E[Y|T=1] - E[Y|T=0]$, the "selection bias" term is mathematically defined as:
+
+    a) $E[Y(1)|T=1] - E[Y(0)|T=1]$
+    b) $E[Y(1) - Y(0)]$
+    c) $E[Y(0)|T=1] - E[Y(0)|T=0]$
+    d) $\hat{Y}_{T,Post} - \hat{Y}_{T, Pre}$
+
+1. In the standard Difference-in-Differences (DiD) regression model, which coefficient represents the DiD estimate of the causal effect? $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$
+
+    a) $\beta_0$
+    b) $\beta_1$
+    c) $\beta_2$
+    d) $\beta_3$
+
+1. The validity of the Difference-in-Differences (DiD) estimator relies on the crucial "parallel trends" assumption. What does this assumption state?
+
+    a) The treatment and control groups must have identical average outcomes in the pre-treatment period.
+    b) In the absence of the treatment, the average outcome for the treated group would have evolved in the same way as the average outcome for the control group.
+    c) The outcome for the control group must remain constant over both the pre- and post-treatment periods.
+    d) The treatment must have a positive and statistically significant effect on the outcome.
+
+1. When using an event study design with multiple pre-treatment periods, how can researchers provide evidence for the parallel trends assumption?
+
+    a) By showing that the treatment effect is large and significant immediately at the time of the event ($k=0$).
+    b) By demonstrating that the average outcomes for the treatment and control groups were identical in the first pre-treatment period.
+    c) By testing whether the estimated coefficients for the pre-treatment periods ($\delta_k$ for $k < 0$) are statistically indistinguishable from zero.
+    d) By including as many control variables as possible in the regression model.
+
+1. In the regression model $Y_i = \beta_0 + \beta_1 X_i + u_i$, endogeneity is a problem because the Ordinary Least Squares (OLS) assumption $Cov(X_i, u_i) = 0$ is violated. A variable $Z$ is considered a valid instrument to solve this problem if it satisfies which two core conditions?
+
+    a) **Relevance** ($Cov(Z_i, Y_i) \neq 0$) and **Exclusion Restriction** ($Cov(Z_i, u_i) = 0$)
+    b) **Relevance** ($Cov(Z_i, X_i) \neq 0$) and **Exclusion Restriction** ($Cov(Z_i, u_i) = 0$)
+    c) **Irrelevance** ($Cov(Z_i, X_i) = 0$) and **Inclusion Restriction** ($Cov(Z_i, u_i) \neq 0$)
+    d) **Exogeneity of X** ($Cov(X_i, u_i) = 0$) and **Relevance** ($Cov(Z_i, X_i) \neq 0$)
+
+1. The Instrumental Variables (IV) estimator, under the necessary assumptions, does not estimate the Average Treatment Effect (ATE) for the whole population. Instead, it identifies the Local Average Treatment Effect (LATE). The LATE is the average causal effect for which specific subpopulation?
+
+    a) The "Always-Takers," who take the treatment regardless of the instrument.
+    b) The "Never-Takers," who do not take the treatment regardless of the instrument.
+    c) The "Compliers," whose treatment status is changed by the instrument.
+    d) The entire study population, including all subgroups.
+
+1. A critical issue in IV analysis is the problem of "weak instruments," where the instrument is only weakly correlated with the endogenous variable. What is the common diagnostic test and rule of thumb used to detect weak instruments?
+
+    a) A test of the exclusion restriction ($Cov(Z, u) = 0$), which should have a p-value less than 0.05.
+    b) A first-stage F-statistic for the joint significance of the instruments, which should be greater than 10.
+    c) The R-squared of the second-stage regression, which should be as high as possible.
+    d) The t-statistic of the IV estimate for $\beta_1$ in the second stage, which should be greater than 1.96.
+
+1. The Wald estimator is the simplest form of the IV estimator, used when both the instrument ($Z$) and the endogenous regressor ($X$) are binary. It is defined as a ratio of two effects. What is the correct formula?
+
+    a) $\hat{\beta}_{\text{Wald}} = \frac{E[Y | X=1] - E[Y | X=0]}{E[Z | X=1] - E[Z | X=0]}$
+    b) $\hat{\beta}_{\text{Wald}} = \frac{Cov(X, Y)}{Var(X)}$
+    c) $\hat{\beta}_{\text{Wald}} = \frac{E[X | Z=1] - E[X | Z=0]}{E[Y | Z=1] - E[Y | Z=0]}$
+    d) $\hat{\beta}_{\text{Wald}} = \frac{E[Y | Z=1] - E[Y | Z=0]}{E[X | Z=1] - E[X | Z=0]}$
+
+
+1. In the general case with multiple instruments or control variables, the IV estimate is calculated using Two-Stage Least Squares (2SLS). Which of the following statements correctly describes this procedure?
+
+    a) **Stage 1**: Regress the outcome $Y$ on the instruments $Z$. **Stage 2**: Regress $Y$ on the predicted values of $Y$ from Stage 1.
+    b) **Stage 1**: Regress the endogenous variable $X$ on the instruments $Z$ and exogenous controls $W$. **Stage 2**: Regress the outcome $Y$ on the *predicted values* $\hat{X}$ from Stage 1 and the exogenous controls $W$.
+    c) **Stage 1**: Regress the outcome $Y$ on the endogenous variable $X$ to get a biased estimate. **Stage 2**: Regress the residuals from Stage 1 on the instruments $Z$ to correct the bias.
+    d) **Stage 1**: Regress the instruments $Z$ on the endogenous variable $X$. **Stage 2**: Regress the outcome $Y$ on the residuals from Stage 1.
+
+
+## Open Questions

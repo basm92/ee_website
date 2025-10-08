@@ -1,0 +1,28 @@
+---
+title: "Answers Mock Endterm"
+format: pdf
+---
+
+## MC Answers
+
+1. a) Test answer. 
+1. c) The LPM can produce nonsensical predictions, such as probabilities less than 0 or greater than 1.
+2. d) The Probit model assumes the error term is distributed as $\epsilon_i \sim N(0,1)$, and its Cumulative Distribution Function ($\Phi$) is used to model the probability.
+3. b) MLE is the standard estimation technique for these models; it finds the parameter values that make the observed data "most likely".
+4. c) The marginal effect is the derivative of the probability with respect to $x_k$. By the chain rule, this is the derivative of the CDF, which is the PDF ($f(\cdot)$), multiplied by the coefficient $\beta_k$. The effect is not constant and depends on the values of all X variables.
+5. b) McFadden's $R^2$ compares the log-likelihood of the full model to a null model (intercept only). The lecture notes explicitly state that values are much lower than OLS R-squared and that a value of 0.2-0.4 can indicate a very good fit.
+6. c) The Tobit model is designed for censored data, such as hours worked or expenditure on a specific good, where many observations can be clustered at zero.
+7. b) The derivation is $P(y_i=1) = P(y_i^* > 0) = P(\beta_0 + \beta_1 x_i + \epsilon_i > 0)$, which rearranges to $P(\epsilon_i > -(\beta_0 + \beta_1 x_i))$.
+8. b) For any individual, we can only observe one potential outcome ($Y_i(1)$ or $Y_i(0)$), making the individual causal effect ($\tau_i$) directly unobservable.
+9. c) $E[Y(0)|T=1] - E[Y(0)|T=0]$
+10. d) $\beta_3$
+11. b) In the absence of the treatment, the average outcome for the treated group would have evolved in the same way as the average outcome for the control group.
+12. c) By testing whether the estimated coefficients for the pre-treatment periods ($\delta_k$ for $k < 0$) are statistically indistinguishable from zero.
+13. b) Relevance ($Cov(Z_i, X_i) \neq 0$) and Exclusion Restriction ($Cov(Z_i, u_i) = 0$). A valid instrument must be correlated with the endogenous variable it is instrumenting for (Relevance) and be uncorrelated with the error term of the main equation to ensure it only affects the outcome through the endogenous variable (Exclusion Restriction).
+14. c) The "Compliers," whose treatment status is changed by the instrument.
+15. b) A first-stage F-statistic for the joint significance of the instruments, which should be greater than 10.
+16. d) $\hat{\beta}_{\text{Wald}} = \frac{E[Y | Z=1] - E[Y | Z=0]}{E[X | Z=1] - E[X | Z=0]}$. The Wald estimator correctly identifies the causal effect by scaling the Intent-to-Treat effect (the effect of the instrument on the outcome, in the numerator) by the share of compliers (the effect of the instrument on treatment take-up, in the denominator).
+17. b) Stage 1: Regress the endogenous variable $X$ on the instruments $Z$ and exogenous controls $W$. Stage 2: Regress the outcome $Y$ on the *predicted values* $\hat{X}$ from Stage 1 and the exogenous controls $W$.
+
+
+## Open Questions Answers

@@ -4,10 +4,10 @@ title: "Mock Exam"
 
 ## Mid-term
 
-- [Questions](mockexam/questions.qmd)
-- [Answers](mockexam/answers.qmd)
+- [Questions](mockexam/midterm/questions.qmd)
+- [Answers](mockexam/midterm/answers.qmd)
 
 ## End-term
 
-- Questions
-- Answers
+- [Questions](mockexam/endterm/questions.qmd)
+- [Answers](mockexam/endterm/answers.qmd)
