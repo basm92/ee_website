@@ -37,6 +37,7 @@ use_python("/home/bas/anaconda3/bin/python")
 - Binary Outcome Data
 - Potential Outcomes and Difference-in-differences
 - Instrumental Variables
+- Material: Wooldridge Chapters 7.5, 17.
 
 ## What do we do today?
 

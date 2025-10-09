@@ -18,22 +18,118 @@ resources:
 
 # Tutorial 6
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
+## Linear Probability Model
 
-## Slide 2
+-  Why Special Models for Binary Outcomes?
+  - Many economic questions have a "Yes/No" or 0/1 answer. Our dependent variable, $y$, can only take two values.
+  - We want to model the probability of an event occurring, $P(y=1|X)$.
+
+- The simplest approach is to run OLS anyway: $$ y_i = \beta_0 + \beta_1 x_{1i} + \dots + \epsilon_i $$
+
+- The predicted value, $\hat{y}_i$, is interpreted as the predicted probability that $y_i=1$.
+  $$ E[y_i | X_i] = P(y_i=1 | X_i) = \beta_0 + \beta_1 x_{1i} + \dots $$
+- **Interpretation:** $\beta_k$ is the change in the *probability* that $y=1$ for a one-unit increase in $x_k$.
+
+:::{style="font-size: 0.7em;"}
+
+Pros: 
+
+  - **Simple Interpretation:** Coefficients are direct changes in probability (in percentage points).
+  - **Easy Estimation:** It's just OLS.
+  - **Works well with Fixed Effects** in panel data.
+
+
+Cons: 
+
+  - **Nonsensical Predictions:** Nothing prevents predicted probabilities from being < 0 or > 1.
+  - **Inherent Heteroskedasticity:** The error variance, $Var(\epsilon_i | X_i) = p_i(1-p_i)$, depends on X, violating a key OLS assumption and biasing standard errors (fixable with robust SEs).
+
+:::
+
+## Probit and Logit
+
+- To solve the LPM's issues, we need a model that constrains the predicted probability to the $[0,1]$ interval. This is achieved using a Cumulative Distribution Function (CDF), which naturally produces an S-shaped curve.
+
+- Latent variable framework: 
+
+  $$
+    P(y_i=1 | X_i) = P(y_i^* > 0) = P(\epsilon_i > -(\beta_0 + \beta_1 x_i)) = F(\beta_0 + \beta_1 x_i)
+  $$
+
+:::{style="font-size: 1.1em;"}
+
+- The choice of model depends on the assumed distribution for $\epsilon_i$:
+  - **Probit Model:** Assumes $\epsilon_i$ follows a **Standard Normal** distribution.
+  - $P(y=1 | X) = \Phi(\beta_0 + \beta_1 x_i)$, where $\Phi(\cdot)$ is the Normal CDF.
+  - **Logit Model:** Assumes $\epsilon_i$ follows a **Standard Logistic** distribution.
+  - $P(y=1 | X) = \Lambda(\beta_0 + \beta_1 x_i) = \frac{e^{\beta_0 + \beta_1 x_i}}{1 + e^{\beta_0 + \beta_1 x_i}}$.
+- **Estimation:** Both are estimated using **Maximum Likelihood Estimation (MLE)**, which finds the $\beta$ values that make our observed data most probable.
+
+:::
+
+## Interpretation & Evaluation
+
+:::{style="font-size: 1.1em;"}
+
+- In Probit/Logit, the estimated coefficients ($\hat{\beta}$) are **NOT** marginal effects. 
+- They represent the change in the latent variable $y^*$ for a one-unit change in an $x$ variable. 
+- The effect on the *probability* is non-linear and depends on the values of all X variables.
+$$ \frac{\partial P(y=1 | X)}{\partial x_k} = f(\beta X) \cdot \beta_k $$
+where $f(\cdot)$ is the Probability Density Function (PDF).
+
+- **Practical Solution: Average Marginal Effects (AMEs)**
+- This is the standard for interpretation.
+- First, calculate the marginal effect for *each observation* in the data using its specific X values. Then, take the average of all these individual marginal effects.
+- **Interpretation:** The AME of $x_k$ is the average change in the probability of success for a one-unit increase in $x_k$ across the sample.
+
+:::
+
+# Wooclap
+
+## Wooclap
+
+Wooclap Code: 
+
+[Wooclap Link](https://www.wooclap.com/join/)
 
 # Questions
 
 
 ## Interpreting Binary Outcome Models
 
+Abadie (2003) is interested in the effect of being eligible for a 401(k) plan on an individual's decision to save through an Individual Retirement Account (IRA). The idea is to see if eligibility for a workplace retirement plan "crowds out" other forms of retirement savings.^[The data is available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/k401ksubs.dta).]
+
 ```{r}
 #| echo: false
+#| message: false
+library(haven); library(dplyr); library(modelsummary); library(tinytable); library(fixest)
+abadie <- read_dta('https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/k401ksubs.dta')
+lpm <- feols(pira ~ p401k + inc + marr + male + age, data = abadie, vcov='hc1')
+logit <- femlm(pira ~ p401k + inc + marr + male + age, data = abadie, family = 'logit', vcov='hc1')
+probit <- femlm(pira ~ p401k + inc + marr + male + age, data = abadie, family = 'gaussian', vcov='hc1')
 
-
+modelsummary(list('LPM'=lpm, 'Logit'=logit, 'Probit'=probit), 
+  stars = c('*' = .1, '**' = .05, '***' = .01),
+  width=0.4,
+  title = "Estimates of 401k Eligibility on Saving through an IRA",
+  coef_map = c('p401k' = '401(k) Eligibility', 'inc' = 'Income (000s)', 'marr' = 'Married', 'male' = 'Male', 'age' = 'Age'),
+  gof_map = c('nobs', 'r.squared')) |>
+    theme_revealjs(fontsize=0.9)#)
+    #theme_latex(resize_direction='both', resize_width=0.7)
 ```
+
+## Interpreting Binary Outcome Models
+
+a) Compare the estimated coefficients on `p401k` across the three models. Do they agree on the direction and statistical significance of the effect of 401(k) eligibility on IRA participation?
+
+b) Compare the estimated coefficients on `inc` across the three models. Do they agree on the direction and statistical significance of the effect of income on IRA participation?
+
+c) Interpet the coefficient on `p401k` from the LPM. What does this coefficient tell you about the effect of 401(k) eligibility on the probability of IRA participation?
+
+d) Are the R-squared values comparable across the three models? Why or why not?
+
 
 ## Model Estimation
 
@@ -51,7 +147,7 @@ For each model, report the estimated coefficient on the `race` variable and its 
 
 The coefficients from Logit and Probit models are not directly interpretable as marginal effects.
 
-a) Calculate the **Average Marginal Effect (AME)** of the `race` variable from your Logit and Probit models in Question 4.
+a) Calculate the **Average Marginal Effect (AME)** of the `race` variable from your Logit and Probit models in the previous question.
 b) Interpret the AME from the Probit model. What does this number tell you about the difference in callback probabilities between resumes with white-sounding and black-sounding names?
 c) How do the AMEs from the Logit and Probit models compare to each other? How do they compare to the coefficient on `race` from the LPM in Question 4? Discuss your findings.
 
@@ -102,13 +198,13 @@ c) Explain why the **Tobit model** is designed to handle this specific type of d
 
 *This question uses the Mroz dataset, which contains data on the labor force participation of married women in 1975.*^[Available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/MROZ.DTA)]
 
-The primary variable of interest is hours, representing the number of hours the woman worked in 1975. A significant number of women in the sample did not work, resulting in hours = 0. We want to model the factors that determine hours worked.
+The primary variable of interest is `hours`, representing the number of hours the woman worked in 1975. A significant number of women in the sample did not work, resulting in hours = 0. We want to model the factors that determine hours worked.
 
 a) Load the Mroz dataset. Create a histogram or frequency table for the hours variable. Based on the distribution you observe, explain precisely why a Tobit model is a more appropriate choice than a standard OLS regression for this research question.
 
-b) Estimate a Tobit model where hours is the dependent variable. Use the following as independent variables: educ (years of education), exper (actual labor market experience), nwifeinc (non-wife household income, in thousands), and kidslt6 (number of children less than 6 years old). Report the estimated coefficients and their statistical significance.
+b) Estimate a Tobit model where hours is the dependent variable. Use the following as independent variables: `educ` (years of education), `exper` (actual labor market experience), `nwifeinc` (non-wife household income, in thousands), and `kidslt6 `(number of children less than 6 years old). Report the estimated coefficients and their statistical significance.
 
-c) Focus on the estimated coefficient for kidslt6. Provide a careful interpretation of this coefficient. What does this coefficient tell you about the relationship between having young children and the latent propensity or desired hours of work?
+c) Focus on the estimated coefficient for `kidslt6`. Provide a careful interpretation of this coefficient. What does this coefficient tell you about the relationship between having young children and the latent propensity or desired hours of work?
 
 :::
 
