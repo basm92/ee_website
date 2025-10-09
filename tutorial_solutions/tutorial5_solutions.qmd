@@ -193,19 +193,19 @@ use "../tutorials/datafiles/WAGEPAN.DTA", clear
 xtset nr  // declare panel structure with nr as ID variable
 
 * 1. Random Effects
-xtreg lwage exper expersq union, re
+xtreg lwage married union educ, re
 
 * Store the results for test
 estimates store re
 
 * 2. Estimate a Fixed Effects ("within") model
-xtreg lwage exper expersq union, fe
+xtreg lwage married union educ, fe
 
 * Store results
 estimates store fe
 
 * 3. Hausman test
-hausman fe, re
+hausman fe re 
 ```
 
 :::
