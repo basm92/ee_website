@@ -1,15 +1,16 @@
 ---
 title: "Empirical Economics"
 subtitle: "Lecture 7: Potential Outcomes and Difference-in-differences"
-revealjs: 
-  theme: [default, theme.scss]
-  slide-number: true
-  chalkboard: 
-    buttons: false
-  preview-links: auto
-  logo: logo.svg
-  css: styles.css
-  footer: 'Empirical Economics: Lecture 7 - Potential Outcomes and DiD'
+format:
+  revealjs: 
+    theme: [default, theme.scss]
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    logo: logo.svg
+    css: styles.css
+    footer: 'Empirical Economics: Lecture 7 - Potential Outcomes and DiD'
 ---
 
 
