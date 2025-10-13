@@ -26,6 +26,18 @@ library(reticulate)
 use_python("/home/bas/anaconda3/bin/python")
 ```
 
+# Course Evaluation
+
+## Course Evaluation
+
+- We would be very grateful if you could take 5-10 minutes to fill out the course evaluation form.
+
+- Your feedback is invaluable in helping us improve the course for future students.
+
+- The evaluation form can be found on [https://caracal.uu.nl/](https://caracal.uu.nl/) or through a link provided in your email (at Monday 20 October)
+
+- The evaluation is anonymous, so please feel free to be honest and constructive in your feedback.
+
 # Introduction
 
 ## Course Overview
