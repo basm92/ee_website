@@ -83,19 +83,33 @@ modelsummary(list('LPM' = lpm_race,
 ```{python probitlogitlpm}
 import pandas as pd
 import pyfixest as pf
+import statsmodels.formula.api as smf
+from statsmodels.iolib.summary2 import summary_col
 
 df = pd.read_stata('https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/lakisha_aer.dta')
 
 # Convert race to a categorical variable
 df['race'] = pd.Categorical(df['race'], categories=['w', 'b'], ordered=True)
+ 
 ## LPM
-lpm = pf.feols('call ~ race', data = df)
+lpm = smf.ols('call ~ race', data=df).fit()
+ 
 ## Logit
-logit = pf.feglm('call ~ race', family='logit', data = df)
-### Probit
-probit = pf.feglm('call ~ race', family='probit', data = df)
+logit = smf.logit('call ~ race', data=df).fit()
+ 
+## Probit
+probit = smf.probit('call ~ race', data=df).fit()
 
-pf.etable([lpm, logit, probit])
+### Alternatives using pyfixest are:
+# lpm = pf.feols('call ~ race', data = df)
+# logit = pf.feglm('call ~ race', family='logit', data = df)
+# probit = pf.feglm('call ~ race', family='probit', data = df)
+# pf.etable([lpm, logit, probit])
+ 
+# Display results in a table
+print(summary_col([lpm, logit, probit],
+            model_names=['LPM', 'Logit', 'Probit'],
+            stars=True, info_dict={'N': lambda x: f"{int(x.nobs)}"}))
 ```
 
 
@@ -156,9 +170,6 @@ avg_slopes(probit_race, variables='race')
 
 ```{python}
 from marginaleffects import *
-import statsmodels.formula.api as smf
-logit = smf.logit("call ~ race", data=df).fit()
-probit = smf.probit("call ~ race", data=df).fit()
 avg_slopes(logit, variables='race')
 avg_slopes(probit, variables='race')
 ```
@@ -291,6 +302,7 @@ a) Load the Mroz dataset. Create a histogram or frequency table for the `hours` 
 ### R
 
 ```{r}
+library(haven)
 # Load Mroz (1976) data
 mroz <- read_dta('https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/MROZ.DTA')
 
@@ -451,3 +463,45 @@ The estimated coefficient for `kidslt6` is -610.42.
 **Interpretation:** This coefficient represents the marginal effect on the **latent (unobserved) variable** for hours worked, not on the observed hours themselves. The interpretation is: for each additional child under the age of 6, a woman's underlying propensity or "desired" hours of work decreases by approximately 610 hours per year, holding education, experience, and other household income constant.
 
 It is crucial to note that this is *not* the effect on expected hours worked for a woman who is already working. It is the effect on the underlying continuous variable that governs both the decision to work at all and how many hours to work if one does. The large, negative, and highly significant coefficient indicates that having young children is a very strong factor in reducing a married woman's labor supply in this dataset.
+
+d) Now estimate an OLS model. Compare your results with the Tobit model. Is this a valid comparison?
+
+:::{.panel-tabset}
+
+### R
+
+```{r}
+# Estimate the Tobit model using the AER package
+ols_mroz <- lm(hours ~ educ + exper + nwifeinc + kidslt6, data = mroz)
+
+modelsummary(ols_mroz, 
+    stars = c('*' = .1, '**' = .05, '***' = .01),
+    coef_map = c('educ' = 'Education (Years)', 
+                 'exper' = 'Experience (Years)', 
+                 'nwifeinc' = 'Non-wife Income (1000s)', 
+                 'kidslt6' = 'Kids < 6',
+                 '(Intercept)' = 'Constant'))
+```
+
+
+### Python
+
+```{python}
+import statsmodels.formula.api as smf
+ols_mroz = smf.ols("hours ~ educ + exper + nwifeinc + kidslt6", data=mroz).fit()
+summary_col([ols_mroz], stars=True,info_dict={'N': lambda x: f"{int(x.nobs)}"})
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+reg hours educ exper nwifeinc kidslt6
+```
+
+:::
+
+A direct comparison of the coefficients from the Tobit and OLS models is not valid. The OLS estimates are biased towards zero due to the model's inability to correctly handle the censored nature of the hours variable. The OLS model incorrectly averages the zero and positive values of hours, which attenuates the estimated effects of the independent variables.
+
+As expected, the absolute values of the coefficients in the OLS model are smaller than those in the Tobit model. This illustrates the downward bias of OLS in the presence of censoring. Because the underlying assumptions of OLS are violated, the resulting coefficients do not provide a consistent estimate of the relationships between the independent variables and the hours worked. Therefore, the Tobit model provides a more theoretically sound and econometrically appropriate analysis for this dataset.
+

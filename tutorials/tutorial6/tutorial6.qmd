@@ -206,6 +206,8 @@ b) Estimate a Tobit model where hours is the dependent variable. Use the followi
 
 c) Focus on the estimated coefficient for `kidslt6`. Provide a careful interpretation of this coefficient. What does this coefficient tell you about the relationship between having young children and the latent propensity or desired hours of work?
 
+d) Now estimate an OLS model. Compare your results with the Tobit model. Is this a valid comparison?
+
 :::
 
 # The End
