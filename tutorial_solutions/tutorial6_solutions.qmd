@@ -108,22 +108,18 @@ set more off
 * 1. Load the dataset from the URL
 use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/lakisha_aer.dta", clear
 
-* Stata's factor variable notation handles categorical variables automatically.
-* To make "white" the reference category, we use the syntax `ib.w.race`.
-* The `ib.` prefix tells Stata to set the base level, and `w` is the value to be used as the base.
-* We also add the `, robust` option for heteroskedasticity-robust standard errors, which is good practice.
-
 * 2. Estimate the Linear Probability Model (LPM)
 * The `regress` command is Stata's OLS command.
-regress call ib.w.race, robust
+tabulate(race),generate(r)
+reg call r1, robust
 estimates store lpm
 
 * 3. Estimate the Logit model
-logit call ib.w.race, robust
+logit call r1, robust
 estimates store logit
 
 * 4. Estimate the Probit model
-probit call ib.w.race, robust
+probit call r1, robust
 estimates store probit
 
 * 5. Create a combined regression table
