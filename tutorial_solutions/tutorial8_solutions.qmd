@@ -6,9 +6,10 @@ format: html
 
 ```{r setup}
 #| echo: false
-
+library(here)
 library(reticulate)
-use_python("/home/bas/anaconda3/bin/python")
+python_path <- here::here(".venv", "bin", "python")
+use_python(python_path)
 ```
 
 ## Estimating the AJR Model
