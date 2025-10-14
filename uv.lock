@@ -181,6 +181,7 @@ dependencies = [
     { name = "networkx" },
     { name = "numpy" },
     { name = "polars" },
+    { name = "py4etrics" },
     { name = "pyarrow" },
     { name = "pyfixest" },
     { name = "requests" },
@@ -196,6 +197,7 @@ requires-dist = [
     { name = "networkx", specifier = ">=3.5" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "polars", specifier = ">=1.34.0" },
+    { name = "py4etrics", specifier = ">=0.1.9" },
     { name = "pyarrow", specifier = ">=21.0.0" },
     { name = "pyfixest", specifier = ">=0.30.2" },
     { name = "requests", specifier = ">=2.32.5" },
@@ -778,6 +780,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d8/25/77d12018c35489e19f7650b40679714a834effafc25d61e8dcee7c4fafce/polars_runtime_32-1.34.0-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:79e4d696392c6d8d51f4347f0b167c52eef303c9d87093c0c68e8651198735b7", size = 37049077, upload-time = "2025-10-02T18:30:11.162Z" },
     { url = "https://files.pythonhosted.org/packages/e2/75/c30049d45ea1365151f86f650ed5354124ff3209f0abe588664c8eb13a31/polars_runtime_32-1.34.0-cp39-abi3-win_amd64.whl", hash = "sha256:2501d6b29d9001ea5ea2fd9b598787e10ddf45d8c4a87c2bead75159e8a15711", size = 40105782, upload-time = "2025-10-02T18:30:14.597Z" },
     { url = "https://files.pythonhosted.org/packages/a3/31/84efa27aa3478c8670bac1a720c8b1aee5c58c9c657c980e5e5c47fde883/polars_runtime_32-1.34.0-cp39-abi3-win_arm64.whl", hash = "sha256:f9ed1765378dfe0bcd1ac5ec570dd9eab27ea728bbc980cc9a76eebc55586559", size = 35873216, upload-time = "2025-10-02T18:30:17.439Z" },
+]
+
+[[package]]
+name = "py4etrics"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c2/cf/505867ad47f789c18985e75f23f16863f4747c59eff989f2dd8f4c28a126/py4etrics-0.1.9.tar.gz", hash = "sha256:162bbc10ab9bd127edcb07391ca31128fc8979a3b350f49b1aa5f5a7035cc730", size = 17738, upload-time = "2024-01-06T11:57:58.398Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/18/eafc633759ffcd2cdb6dd076ae4b87ad8c68eb3869f569a9ef45154ddb67/py4etrics-0.1.9-py2.py3-none-any.whl", hash = "sha256:df35d806b3e0053c975fe87fd98fad2758c22907ec2bf2611aadc77fa9b34c0d", size = 19653, upload-time = "2024-01-06T11:57:56.941Z" },
 ]
 
 [[package]]

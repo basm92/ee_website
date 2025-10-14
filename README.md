@@ -5,6 +5,8 @@ Repository for the Empirical Economics course (UU 2025-2026). The website is bui
 
 ### How to install the necessary Python environment
 
+Prerequisite: you need to download and install the `uv` Python package manager: https://docs.astral.sh/uv/getting-started/installation/. 
+
 - Step 1: Get the Project Files
 
 ```
