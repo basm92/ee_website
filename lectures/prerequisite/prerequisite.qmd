@@ -23,8 +23,10 @@ resources:
 
 library(ggplot2)
 library(gridExtra)
+library(here)
 library(reticulate)
-use_python("/home/bas/anaconda3/bin/python")
+python_path <- here::here(".venv", "bin", "python")
+use_python(python_path)
 # Helper to create data
 create_norm_data <- function(mean = 0, sd = 1) {
   x <- seq(mean - 4 * sd, mean + 4 * sd, length.out = 400)
