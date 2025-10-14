@@ -20,8 +20,10 @@ format:
 
 library(ggplot2)
 library(gridExtra)
+library(here)
 library(reticulate)
-use_python("/home/bas/anaconda3/bin/python")
+python_path <- here::here(".venv", "bin", "python")
+use_python(python_path)
 
 library(ggplot2); library(modelsummary); library(tidyverse); library(ggpp)
 # Generate some plausible data for wage and education
