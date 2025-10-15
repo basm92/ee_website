@@ -355,6 +355,7 @@ webuse mroz, clear
 
 * 2. Generate the histogram with specified options
 histogram hours, ///
+    frequency ///
     width(100) ///
     fcolor(lightblue) ///
     lcolor(black) ///
