@@ -108,7 +108,7 @@ library(haven); library(dplyr); library(modelsummary); library(tinytable); libra
 abadie <- read_dta('https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/k401ksubs.dta')
 lpm <- feols(pira ~ p401k + inc + marr + male + age, data = abadie, vcov='hc1')
 logit <- femlm(pira ~ p401k + inc + marr + male + age, data = abadie, family = 'logit', vcov='hc1')
-probit <- femlm(pira ~ p401k + inc + marr + male + age, data = abadie, family = 'gaussian', vcov='hc1')
+probit <- feglm(pira ~ p401k + inc + marr + male + age, data = abadie, family = binomial(link = "probit"), vcov='hc1')
 
 modelsummary(list('LPM'=lpm, 'Logit'=logit, 'Probit'=probit), 
   stars = c('*' = .1, '**' = .05, '***' = .01),
