@@ -398,19 +398,17 @@ modelsummary(tobit_mroz,
 ### Python
 
 ```{python}
-import statsmodels.api as sm
-from py4etrics.tobit import Tobit
-# pip install py4etrics
-# Define censoring: set variable to -1
-left = 0
-censor = mroz['hours'].apply(lambda x: -1 if x==left else 0)
+ from py4etrics.tobit import Tobit # pip install py4etrics
 
-formula = 'hours ~ 1 + educ + exper + nwifeinc + kidslt6'
+# define a dummy for whether a value is 0
+mroz['is_zero'] = (mroz['hours'] == 0).astype(int)
 
-res_tobit = Tobit.from_formula(formula,
-                               cens=censor,
-                               left=0,
-                               data=mroz).fit()
+# the Tobit model from py4etrics needs an indication of which values are censored
+# -1 indicates a censored value so we make the ones of our dummy is_zero negative
+censor = - mroz['is_zero']
+
+formula = 'hours ~ educ + exper + nwifeinc + kidslt6'
+res_tobit = Tobit.from_formula(formula, cens=censor, left=0, data=mroz).fit()
 
 print(res_tobit.summary())
 ```
