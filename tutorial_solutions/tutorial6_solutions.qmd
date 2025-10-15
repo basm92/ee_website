@@ -397,8 +397,8 @@ modelsummary(tobit_mroz,
 
 ### Python
 
-```{python}
- from py4etrics.tobit import Tobit # pip install py4etrics
+```{python tobit_py}
+from py4etrics.tobit import Tobit # pip install py4etrics
 
 # define a dummy for whether a value is 0
 mroz['is_zero'] = (mroz['hours'] == 0).astype(int)
