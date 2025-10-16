@@ -1070,7 +1070,7 @@ phtest(re, fe)
 ## Conclusion (Cont.)
 
 *   **Decision Framework:**
-    *   The **Breusch-Pagan test** helps you choose between Pooled OLS and Random Effects by testing for the presence of significant individual effects.
+    *   The **Breusch-Godfrey test** helps you choose between Pooled OLS and Random Effects by testing for the presence of significant individual effects.
     *   The **Hausman test** is the crucial tool for deciding between the Fixed Effects and Random Effects models. It formally tests whether the individual effects are correlated with the regressors.
         *   A significant result (low p-value) favors the **Fixed Effects model**.
         *   An insignificant result favors the more efficient **Random Effects model**.
