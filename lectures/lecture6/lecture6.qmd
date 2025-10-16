@@ -1545,19 +1545,15 @@ restore
 
 # Limited Dependent Variable Models
 
-## Dealing with Truncated and Selected Data
+## Dealing with Truncated Data
 
-- In many situations, we might have a **biased sample**. 
-  - Standard Ordinary Least Squares (OLS) relies on the crucial assumption that the expected value of the error term, conditional on the explanatory variables, is zero: $E[u | X] = 0$. 
-  - This assumption is violated when our sample is not randomly drawn from the population of interest. 
-- This can happen in two common ways:
-  1.  **Censoring:** 
-    - The dependent variable has a "floor" or "ceiling." We observe the explanatory variables for everyone, but the dependent variable is clustered at a limit value (e.g., zero) for a part of the sample.
-  2.  **Sample Selection (or Incidental Truncation):** 
-    - We are missing data on the dependent variable for a non-random subset of our observations. We don't even see the "zero"—the data is simply not there.
-
-- In both cases, running OLS on the observed data leads to biased and inconsistent parameter estimates. 
-  - We need models that explicitly account for the non-random nature of the sample.
+- We use Probit and Logit when the outcome we care about is a simple "Yes/No" or "0/1" decision.
+- Our variable can also be bounded in other ways. 
+  - Consider annual household spending on a new car. Many households will spend $0.
+  - For those who do buy, spending will be a positive, continuous amount ($20,000, $35,000, etc.).
+This is called a censored dependent variable: we have a pile of observations at a specific value (zero) and a continuous distribution for the rest.
+- The Tobit model is designed for situations where the dependent variable is **censored**. 
+  - In this case, OLS would give biased results, and Probit/Logit can't handle the continuous positive values.
 
 ## Illustration: Censored Data
 
@@ -1858,6 +1854,8 @@ plt.show()
 - **Prediction**:
   - We talked about prediction on unseen data using different methods. 
 
+- **Censored data**:
+  - We talked about the Tobit model, which could deal with $[0, \infty]$ or otherwise **censored** data. 
 
 # The End
 
