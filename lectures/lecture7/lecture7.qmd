@@ -641,7 +641,11 @@ Let the treatment $D_i$ be a job training program. Let the outcome $Y_i$ be mont
 
 :::{.callout-note title="Definition: Parallel Trends"}
 
-  $$E[Y_{i1}(0) - Y_{i0}(0) | D_i=1] = E[Y_{i1}(0) - Y_{i0}(0) | D_i=0]$$ {#eq-pt}
+  $$
+    E[Y_{i1}(0) - Y_{i0}(0) | D_i=1] = E[Y_{i1}(0) - Y_{i0}(0) | D_i=0]
+  $$ {#eq-pt}
+
+
 :::
 
 - The left side is the counterfactual change for the treated group.
@@ -653,10 +657,12 @@ Let the treatment $D_i$ be a job training program. Let the outcome $Y_i$ be mont
 
 - We rearrange the parallel trends assumption from [@eq-pt] to solve for our unobserved counterfactual:
 
+$$
 \begin{align}
 \label{eq:cf}
 E[Y_{i1}(0) | D_i=1] = &\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-treatment}} + \\ &\underbrace{\left( E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Change in control group}}
 \end{align}
+$$
 
 - This equation shows how we construct the counterfactual: we take the treated group's initial level and add the change experienced by the control group.
 
@@ -668,7 +674,8 @@ E[Y_{i1}(0) | D_i=1] = &\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-tre
 $$
 \begin{align}
 \text{ATT} &= E[Y_{i1}(1) | D_i=1] - E[Y_{i1}(0) | D_i=1] \\
-    &= E[Y_{i1}(1) | D_i = 1] - \underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-treatment}} + \\ &\underbrace{\left( E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Change in control group}} \\
+    &= E[Y_{i1}(1) | D_i = 1] - \\
+    &\quad (\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-treatment}} + \underbrace{\left( E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Change in control group}}) \\
     &= E[Y_{i1}(1) | D_i=1] - \\
     &\quad \underbrace{\left( E[Y_{i0}(0) | D_i=1] + E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Expression for counterfactual}} \\
 \end{align}
@@ -699,7 +706,7 @@ $$
 - We can estimate the exact same 2x2 DiD using a simple OLS regression. This is more powerful and flexible.
 
 :::{.callout-note title="Definition: DiD in a Regression Framework"}
-$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i × Post_t) + \epsilon_{it}$
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i × Post_t) + u_{it}$
 
 -   $Y_{it}$: Outcome for unit *i* at time *t*.
 -   $D_i$: A dummy variable = 1 if unit *i* is in the treatment group, 0 otherwise.
@@ -711,7 +718,7 @@ $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i × Post_t) + \eps
 
 - Let's break down what each $\beta$ represents:
 
-$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + \epsilon_{it}$
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}$
 
 - **$\beta_0$:** The average outcome for the **Control Group**  in the **Pre-Period** ($\text{Post}_i=0, D_i=0$).
   - $E[Y_i | D_i=0, Post_i=0] = \beta_0$
@@ -723,7 +730,7 @@ $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + 
 ## Interpretation of Coefficients (2/2)
 
   $$
-    Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + \epsilon_{it}
+    Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}
   $$
 
 - **$\beta_2$:** The average change in the outcome for the **Control Group** from the pre- to the post-period. **This is the secular trend.**
@@ -789,7 +796,7 @@ Hey
 - We can add a vector of control variables, $X$, to the regression.
 
   $$
-    Y_{it} = \beta_0 + \beta_1Treat_i + \beta_2Post_t + \beta_3(Treat_i \times Post_t) + \gamma'X_{it} + \epsilon_{it}
+    Y_{it} = \beta_0 + \beta_1Treat_i + \beta_2Post_t + \beta_3(Treat_i \times Post_t) + \gamma'X_{it} + u_{it}
   $$
 
 -  The purpose is to control for observable characteristics that might differ between the groups and affect trends in the outcome.
@@ -869,15 +876,15 @@ ggplot(plot_data, aes(x = time, y = outcome, color = group, group = group)) +
 ## Statistical Tests for Parallel Trends
 
 - If you have multiple pre-treatment periods, you can run a "placebo" test.
-  - The idea is to run a DiD analysis using only pre-treatment data. For instance, define a fake "treatment" in period t-2 and use t-3 as the "pre" period.
+  - The idea is to run a DiD analysis using only pre-treatment data. For instance, define a fake "treatment" in period $t-2$ and use $t-3$ as the "pre" period.
 - **In a regression:** interact the treatment group dummy with time-period dummies for *each pre-treatment period*:
 
 :::{.callout-note title="DiD Placebo Test"}
 
 $$
 \begin{align}
-    Y_{it} = &\beta_0 + \beta_1 \text{Treat}_i + \beta_2 \text{Post}_t + \dots + \\ &\delta_{-2} (\text{Treat} \times \text{PrePeriod}_{-2}) + \delta_{-1} (\text{Treat} \times \text{PrePeriod}_{-1}) + \\
-    &\beta_3(\text{Treat}_i \times \text{Post}_t) + \epsilon_{it}
+    Y_{it} = &\beta_0 + \beta_1 \text{Treat}_i + \beta_2 \text{Post}_t + \dots + \\ &\delta_{-2} (\text{Treat}_i \times \text{PrePeriod}_{-2}) + \delta_{-1} (\text{Treat}_i \times \text{PrePeriod}_{-1}) + \\
+    &\beta_3(\text{Treat}_i \times \text{Post}_t) + u_{it}
 \end{align}
 $$
 
@@ -915,7 +922,7 @@ $$
 - The canonical event study model uses firm and time fixed effects and replaces the single interaction term with a series of dummies for time *relative to the event*.
 
 :::{.callout-note title="Definition: Panel Event Study Model (with Control Subjects)"}
-$$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it} $$
+$$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + u_{it} $$
 
 -   $\alpha_i$: **Firm Fixed Effects**. These absorb all time-invariant differences between firms.
 -   $\lambda_t$: **Time Fixed Effects**. These absorb all shocks or trends common to all firms in a given year `t`. 
@@ -955,9 +962,20 @@ $$ y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_
 ## Interpretation of the Results
 
 - After running the regression, you will get a set of coefficients $\delta_k$ which are typically plotted on a graph:
-- **Testing Pre-Trends (`k < 0`):** The coefficients $\delta_{-K}, \dots, \delta_{-2}$ test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.^[The parameter $\delta_{-1}$ serves as the reference category, the "normalized difference".]
-- **The Effect at Impact (`k = 0`):** $\delta_0$ shows the immediate effect of the treatment in the event period itself.
-- **Dynamic Post-Treatment Effects (`k > 0`):** $\delta_1, \delta_2, \dots, \delta_L$ show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+- **Testing Pre-Trends ($k < 0$):** The coefficients $\delta_{-K}, \dots, \delta_{-2}$ test the crucial parallel trends assumption. If the model is valid, these coefficients should be close to zero and not statistically significant.^[The parameter $\delta_{-1}$ serves as the reference category, the "normalized difference".]
+- **The Effect at Impact ($k = 0$):** $\delta_0$ shows the immediate effect of the treatment in the event period itself.
+- **Dynamic Post-Treatment Effects ($k > 0$):** $\delta_1, \delta_2, \dots, \delta_L$ show how the treatment effect evolves over time after the event. It might grow, shrink, or stay constant.
+
+## Normalizing Coefficients
+
+- The standard two-way fixed effects (TWFE) regression model for an event study, where the period immediately preceding the event ($t=-1$) is the normalized baseline, is given by:
+
+  $$
+    Y_{it} = \alpha_i + \lambda_t + \sum_{k=m, k \neq -1}^{M} \beta_k D_{it}^k + \varepsilon_{it}
+  $$
+
+- The condition $k \neq -1$ means that we include a dummy variable for every period in the window except for the period right before the event. The model implicitly sets $\beta_{-1} = 0$. 
+- Therefore, every other coefficient $\beta_k$ is interpreted as the effect in period $k$ relative to the effect in period $t=-1$.^[In code: R: `feols(Y ~ i(time_to_event, treat, ref = -1) | unit_id + time_id, data = data, cluster = ~unit_id)`, Python: `feols(fml = 'Y ~ i(time_to_event, treat, ref = -1) | unit_id + time_id', data = data, vcov = {'CRV1': 'unit_id'})`. In Stata: `reghdfe Y i.treat##ib(-1).time_to_event, absorb(unit_id time_id) cluster(unit_id)`.]
 
 ## Event Study Visualization
 
@@ -1084,8 +1102,8 @@ event_study_plot
   - Or was 2023 just a great year for everyone ($\lambda_{2023}$)?
 
 - Without the control group, the effect of being in the year 2023 ($\lambda_{2023}$) is perfectly collinear with the effect of being treated in 2023 ($\delta_0$).
-- The model cannot distinguish between them, and the regression will fail or produce meaningless results.
 
+- The model cannot distinguish between them, and the regression will fail or produce meaningless results.^[See [here](explain_collinearity.qmd) to see why mathematically.]
 
 # Event Studies Without Control Subjects
 
@@ -1106,7 +1124,7 @@ event_study_plot
 - The model you can estimate with only treated units is:
 
   $$
-    y_{it} = \alpha_i + \sum_{k=-K}^{L} \delta_k D_{it}^k + \epsilon_{it}
+    y_{it} = \alpha_i + \sum_{k=-K}^{L} \delta_k D_{it}^k + u_{it}
   $$
 
 -   $y_{it}$: The outcome for firm `i` at time `t`.
@@ -1269,9 +1287,9 @@ plot_event_study(estimation_results)
 ## Potential Pitfalls (1/3): Ashenfelter's Dip
 
 - A famous issue where the parallel trends assumption is violated in a specific way.
-- The Aschenfelter's dip is when there is a notable drop in the outcome for the treatment group *just before* treatment.
+- The Ashenfelter's dip is when there is a notable drop in the outcome for the treatment group *just before* treatment.
 
-:::{.callout-tip title="Example: Aschenfelter's Dip"}
+:::{.callout-tip title="Example: Ashenfelter's Dip"}
 Individuals' earnings often drop right before they enter a job training program (e.g., due to job loss).
 
 This makes it look like the program had a huge effect, but it's really just a recovery to a normal level.
