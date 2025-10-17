@@ -91,7 +91,7 @@ $Y_i(0)$: A person's earnings if they do not attend the program.
 
 ## The Individual Causal Effect
 
-- For any single individual *i*, the true causal effect of the treatment is the difference between their two potential outcomes:
+- For any single individual $i$, the true causal effect of the treatment is the difference between their two potential outcomes:
 
 :::{.callout-note title="Definition: Individual Causal Effect"}
 $$\tau_i = Y_i(1) - Y_i(0)$$
@@ -111,9 +111,9 @@ $$\tau_i = Y_i(1) - Y_i(0)$$
   - For future reference, consider also the **Average Treatment Effect** on the treated population: 
 
 :::{.callout-note title="Definition: Average Treatment Effect"}
-$$\text{ATE} = E[\tau_i] = E[Y(1) - Y(0)]$$
+$$\text{ATE} = E[\tau_i] = E[Y_i(1) - Y_i(0)]$$
 
-$$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
+$$\text{ATT} = E[\tau_i | T=1] = E[Y_i(1) - Y_i(0) | T_i=1]$$
 
 :::
   
@@ -136,10 +136,10 @@ $$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
 :::{style="font-size: 1.5em;"}
 | Unit (i) | Attends Program? | Observed Earnings | $Y_i(1)$ | $Y_i(0)$ |
 | :---: | :---: | :---: | :---: | :---: |
-| Alice | Yes (T=1) | $50,000 | $50,000 | **???** |
-| Bob | No (T=0) | $40,000 | **???** | $40,000 |
-| Carol | Yes (T=1) | $45,000 | $45,000 | **???** |
-| David | No (T=0) | $60,000 | **???** | $60,000 |
+| Philippe | Yes (T=1) | $50,000 | $50,000 | **???** |
+| Peter | No (T=0) | $40,000 | **???** | $40,000 |
+| Joel | Yes (T=1) | $45,000 | $45,000 | **???** |
+| Daron | No (T=0) | $60,000 | **???** | $60,000 |
 
 :::
 
@@ -152,14 +152,38 @@ $$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
 - A naive approach might be to just compare the average earnings of those who attended the program to those who didn't.
 
   $$
-    \text{Difference-in-means} = E[Y | T=1] - E[Y | T=0]
+    \text{Difference-in-means} = E[Y_i | T_i=1] - E[Y_i | T_i=0]
   $$
 
 - This is almost always **wrong**. Why?
 
 - Because the people who *choose* to get treatment might be different from those who don't in ways that also affect the outcome. 
-- This is referred to as **Selection Bias**
+- This is referred to as **selection bias**
 
+## Difference in Means Example
+
+- In this setting:
+
+
+:::{style="font-size: 1.5em;"}
+| Unit (i) | Attends Program? | Observed Earnings | $Y_i(1)$ | $Y_i(0)$ |
+| :---: | :---: | :---: | :---: | :---: |
+| Philippe | Yes (T=1) | $50,000 | $50,000 | **???** |
+| Peter | No (T=0) | $40,000 | **???** | $40,000 |
+| Joel | Yes (T=1) | $45,000 | $45,000 | **???** |
+| Daron | No (T=0) | $60,000 | **???** | $60,000 |
+
+:::
+
+- The difference-in-means is:
+
+  $$
+  \begin{align*}
+    \text{Difference-in-means} &= E[Y_i | T_i = 1] - E[Y_i | T_i = 0] \\
+    &= \frac{50,000 + 45,000}{2} - \frac{40,000 + 60,000}{2} \\
+    &= 47,500 - 50,000 = -2,500
+  \end{align*}
+  $$
 
 ## Selection Bias: The Hidden Difference
 
@@ -167,11 +191,11 @@ $$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
 
 :::{style="font-size: 0.7em;"}
 \begin{align*}
-    \text{Difference-in-means} &= E[Y|T=1] - E[Y|T=0] \\
-    &= E[Y(1)|T=1] - E[Y(0)|T=0] \\
-    &= E[Y(1)|T=1] - \overbrace{E[Y(0)|T=1] + E[Y(0)|T=1]}^{\text{Subtract and add the same term.}} - E[Y(0)|T=0] \\
-    &= \underbrace{\left( E[Y(1)|T=1] - E[Y(0)|T=1] \right)}_{\text{Average Treatment Effect on the Treated (ATT)}} \\
-     &\quad \quad \hspace{3em} + \underbrace{\left( E[Y(0)|T=1] - E[Y(0)|T=0] \right)}_{\text{Selection Bias}}
+    \text{Difference-in-means} &= E[Y_i|T_i=1] - E[Y_i|T_i=0] \\
+    &= E[Y_i(1)|T_i=1] - E[Y_i(0)|T_i=0] \\
+    &= E[Y_i(1)|T_i=1] - \overbrace{E[Y_i(0)|T_i=1] + E[Y_i(0)|T_i=1]}^{\text{Subtract and add the same term.}} - E[Y_i(0)|T_i=0] \\
+    &= \underbrace{\left( E[Y_i(1)|T_i=1] - E[Y_i(0)|T_i=1] \right)}_{\text{Average Treatment Effect on the Treated (ATT)}} \\
+     &\quad \quad \hspace{3em} + \underbrace{\left( E[Y_i(0)|T=1] - E[Y_i(0)|T=0] \right)}_{\text{Selection Bias}}
 \end{align*}
 :::
 
@@ -184,13 +208,13 @@ $$\text{ATT} = E[\tau_i | T=1] = E[Y(1) - Y(0) | T=1]$$
 
 :::{.callout-note title="Theorem: Decomposition of Sample Average"}
 
-$$E[Y|T=1] - E[Y|T=0] = ATT + \text{Selection Bias},$$
+$$E[Y_i|T_i=1] - E[Y_i|T_i=0] = ATT + \text{Selection Bias},$$
 
-where $\text{Selection Bias} = E[Y(0)|T=1] - E[Y(0)|T=0].$
+where $\text{Selection Bias} = E[Y_i(0)|T_i=1] - E[Y_i(0)|T_i=0].$
 :::
 
 - In words, selection bias is the difference in the **no-treatment outcome** between the treated and untreated groups.
-- *Job Program Example:* People who sign up for training ($T=1$) might be more motivated. Even without the program, their earnings $Y(0)$ might have been higher than the less motivated group ($T=0$).
+- *Job Program Example:* people who sign up for training ($T_i=1$) might be more motivated. Even without the program, their earnings $Y_i(0)$ might have been higher than the less motivated group ($T_i=0$).
 
 # Intro to DiD
 
@@ -579,19 +603,19 @@ p1+p2
 ## Example Interpretation 
 
 :::{.callout-tip title="Example: DiD Under Potential Outcomes"}
-Let the treatment $D$ be a job training program. Let the outcome $Y$ be monthly income. Let the treated group $D_i=1$ consist of Alice, and the control group $D_i=0$ consist of Bob. 
+Let the treatment $D_i$ be a job training program. Let the outcome $Y_i$ be monthly income. Let the treated group $D_i=1$ consist of Philippe, and the control group $D_i=0$ consist of Peter. 
 
 - For the treated group:
   - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
-  - Alice's observed income before training is her potential income without training.
+  - Philippe's observed income before training is her potential income without training.
   - Post-treatment ($t=1$): $Y_{i1} = Y_{i1} (1)$
-  - Alice's observed income after training is her potential income with training.
+  - Philippe's observed income after training is her potential income with training.
   
 - For the control group: 
   - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
-  - Bob's observed income is his potential income without training.
+  - Peter's observed income is his potential income without training.
   - Post-treatment ($t=1$): $Y_{i1} = Y_{i1} (0)$
-  -  Bob's observed income is his potential income without training, as he remains untreated.
+  - Peter's observed income is his potential income without training, as he remains untreated.
 
 :::
 
@@ -644,8 +668,9 @@ E[Y_{i1}(0) | D_i=1] = &\underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-tre
 $$
 \begin{align}
 \text{ATT} &= E[Y_{i1}(1) | D_i=1] - E[Y_{i1}(0) | D_i=1] \\
+    &= E[Y_{i1}(1) | D_i = 1] - \underbrace{E[Y_{i0}(0) | D_i=1]}_{\text{Treated pre-treatment}} + \\ &\underbrace{\left( E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Change in control group}} \\
     &= E[Y_{i1}(1) | D_i=1] - \\
-    &\quad \underbrace{\left( E[Y_{i0}(0) | D_i=1] + E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Expression for counterfactual}}
+    &\quad \underbrace{\left( E[Y_{i0}(0) | D_i=1] + E[Y_{i1}(0) | D_i=0] - E[Y_{i0}(0) | D_i=0] \right)}_{\text{Expression for counterfactual}} \\
 \end{align}
 $$
 
@@ -674,40 +699,40 @@ $$
 - We can estimate the exact same 2x2 DiD using a simple OLS regression. This is more powerful and flexible.
 
 :::{.callout-note title="Definition: DiD in a Regression Framework"}
-$Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i × Post_t) + \epsilon_{it}$
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i × Post_t) + \epsilon_{it}$
 
 -   $Y_{it}$: Outcome for unit *i* at time *t*.
--   $Treat_i$: A dummy variable = 1 if unit *i* is in the treatment group, 0 otherwise.
+-   $D_i$: A dummy variable = 1 if unit *i* is in the treatment group, 0 otherwise.
 -   $Post_t$: A dummy variable = 1 if the period is "Post", 0 otherwise.
--   $Treat_i \times Post_t$: An interaction term.
+-   $D_i \times Post_t$: An interaction term.
 :::
 
 ## Interpretation of Coefficients (1/2)
 
 - Let's break down what each $\beta$ represents:
 
-$Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + \epsilon_{it}$
 
-- **$\beta_0$ (Intercept):** The average outcome for the **Control Group** (`Treat=0`) in the **Pre-Period** (`Post=0`).
-  - $E[Y | Treat=0, Post=0] = \beta_0$
+- **$\beta_0$:** The average outcome for the **Control Group**  in the **Pre-Period** ($\text{Post}_i=0, D_i=0$).
+  - $E[Y_i | D_i=0, Post_i=0] = \beta_0$
 
 - **$\beta_1$:** The average *pre-existing difference* between the treatment and control groups in the pre-period. **This is the selection bias.**
-  - $E[Y | Treat=1, Post=0] = \beta_0 + \beta_1$
-  - So, $\beta_1 = E[Y | Treat=1, Post=0] - E[Y | Treat=0, Post=0]$
+  - $E[Y_i | D_i=1, Post_i=0] = \beta_0 + \beta_1$
+  - So, $\beta_1 = E[Y | D_i=1, Post_i=0] - E[Y_i | D_i=0, Post=0]$
 
 ## Interpretation of Coefficients (2/2)
 
   $$
-    Y_{it} = \beta_0 + \beta_1Treat_i + \beta_2Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}
+    Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + \epsilon_{it}
   $$
 
 - **$\beta_2$:** The average change in the outcome for the **Control Group** from the pre- to the post-period. **This is the secular trend.**
-  - $E[Y | Treat=0, Post=1] = \beta_0 + \beta_2$
-  - So, $\beta_2 = E[Y | Treat=0, Post=1] - E[Y | Treat=0, Post=0]$
+  - $E[Y_i | D_i=0, Post_i=1] = \beta_0 + \beta_2$
+  - So, $\beta_2 = E[Y_i | D_i=0, Post_i=1] - E[Y_i | D_i=0, Post_i=0]$
 
-- **$\beta_3$:** **This is the DiD estimator!** It's the additional change in the outcome for the Treatment Group, above and beyond the secular trend.
+- **$\beta_3$:** **This is the DiD estimator**. It's the additional change in the outcome for the treatment group, above and beyond the secular trend.
   - It is the causal effect of interest.
-  - $\beta_3 = (E[Y|T=1,P=1] - E[Y|T=1,P=0]) - (E[Y|T=0,P=1] - E[Y|T=0,P=0])$
+  - $\beta_3 = (E[Y_i|D_i=1,Post_i=1] - E[Y_i|D_i=1,Post_i=0]) - (E[Y_i|D_i=0,Post_i=1] - E[Y_i|D_i=0,Post_i=0])$
   - Hence $\beta_3$ is $\tau_{DID}$
 
 ## Example: DiD in a Regression Framework
