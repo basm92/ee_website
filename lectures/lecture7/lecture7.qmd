@@ -113,7 +113,7 @@ $$\tau_i = Y_i(1) - Y_i(0)$$
 :::{.callout-note title="Definition: Average Treatment Effect"}
 $$\text{ATE} = E[\tau_i] = E[Y_i(1) - Y_i(0)]$$
 
-$$\text{ATT} = E[\tau_i | T=1] = E[Y_i(1) - Y_i(0) | T_i=1]$$
+$$\text{ATT} = E[\tau_i | T_i=1] = E[Y_i(1) - Y_i(0) | T_i=1]$$
 
 :::
   
@@ -158,7 +158,7 @@ $$\text{ATT} = E[\tau_i | T=1] = E[Y_i(1) - Y_i(0) | T_i=1]$$
 - This is almost always **wrong**. Why?
 
 - Because the people who *choose* to get treatment might be different from those who don't in ways that also affect the outcome. 
-- This is referred to as **selection bias**
+- This is referred to as **selection bias**.
 
 ## Difference in Means Example
 
@@ -729,9 +729,9 @@ $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + 
 
 ## Interpretation of Coefficients (2/2)
 
-  $$
-    Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}
-  $$
+- Let's break down what each $\beta$ represents:
+
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}$
 
 - **$\beta_2$:** The average change in the outcome for the **Control Group** from the pre- to the post-period. **This is the secular trend.**
   - $E[Y_i | D_i=0, Post_i=1] = \beta_0 + \beta_2$
@@ -1160,7 +1160,7 @@ event_study_plot
 | **4 (Treated)** |    2024    |      **2024**      |               0               |       6.8        |      0       |            0             |      1      |      0      |
 | **4 (Treated)** |    2025    |      **2024**      |               1               |       7.2        |      0       |            0             |      0      |      1      |
 
-## Crucial Caveat: The Problem with This Approach
+## The Problem with This Approach
 
 - Estimating this model means your results for $\delta_k$ are highly susceptible to bias from confounding factors.
 
@@ -1177,7 +1177,8 @@ Let's say a major economic boom started in 2023.
 
 ## The Core Idea: Abnormal Returns
 
-- An event study with control firms works by isolating the "abnormal" part of an outcome's movement.
+- An event study without control group works by isolating the "abnormal" part of an outcome's movement over time.
+- In Finance, this is usually done in the context of firms and stock returns.
 
 :::{.callout-note title="Definition: Abnormal Return"}
 
@@ -1189,7 +1190,7 @@ $$ \text{Abnormal Return}_{it} = \text{Actual Return}_{it} - \text{Normal Return
 
 - We need a model to estimate the Normal Return.
 
-## Estimating "Normal" Returns
+## Estimating Normal Returns
 
 - The Normal Return is estimated using data from the **estimation window**.
 
@@ -1299,10 +1300,11 @@ This makes it look like the program had a huge effect, but it's really just a re
 ## Potential Pitfalls (2/3): Policy Anticipation & Spillovers
 
 - **Anticipation Effects:** If people know a policy is coming, they may change their behavior *before* it's officially implemented. This contaminates the "pre" period and violates parallel trends.
-    - *Example:* A firm hires fewer people in anticipation of a minimum wage hike.
+  - *Example:* A firm hires fewer people in anticipation of a minimum wage hike.
 
 - **Spillover Effects:** The treatment "spills over" and affects the control group.
-    -   *Example:* A job fair in one city (treatment) draws workers from a neighboring city (control), affecting the control city's labor market. Your control group is no longer a valid counterfactual.
+  - SUTVA (Stable Unit Treatment Value Assumption) states that the outcome of any unit depends only on its own treatment status.
+  -   *Example:* A job fair in one city (treatment) draws workers from a neighboring city (control), affecting the control city's labor market. Your control group is no longer a valid counterfactual.
 
 
 ## Potential Pitfalls (3/3): Other Limitations
