@@ -102,15 +102,19 @@ This question uses the classic `nlswork.dta` dataset, which contains panel data 
 
 ## Event Study and Parallel Trends
 
-:::{style="font-size: 0.8em;"}
+:::{style="font-size: 0.6em;"}
 
-Duflo (2001) analyses a major program to build over 61,000 new primary schools across Indonesia. The number of schools built in different regions depended on the number of school-aged children in that region in 1972. This created a "natural experiment": some regions got a lot of new schools, while others got very few. The study asks a simple question: Did children in regions that got more schools end up with more education and higher wages?
+Duflo (2001) analyses a major program to build over 61,000 new primary schools across Indonesia. The number of schools built in different regions depended on the number of school-aged children in that region in 1972. This created a "natural experiment": some regions got a lot of new schools, while others got very few. The study asks a simple question: Did children in regions that got more schools end up with more education and higher wages?^[The data is available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/duflo_did_data.dta).]
 
 One can conduct a difference-in-differences analysis comparing regions with high school construction to regions with low school construction, for cohorts that went to school before and after the program started in 1989.
 
+:::
+
+:::{style="font-size: 0.7em;"}
+
 1. Import the data into your statistical software of choice.
 
-2. Plot the average log wages for the high-construction and low-construction regions for the pre-treatment cohorts (-4 until -1). Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the cohorts leading up to the treatment.
+2. Plot the average educational attainment (`yeduc`) for the high-construction and low-construction regions for the pre-treatment cohorts (-4 until -1). Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the cohorts leading up to the treatment.
 
 3. Briefly explain what parallel trends means in this context and outline how you would formally test for pre-trends using a regression framework. What coefficients would you be looking at, and what would you hope to find?
 
