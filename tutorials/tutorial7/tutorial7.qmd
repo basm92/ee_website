@@ -18,13 +18,96 @@ resources:
 
 # Tutorial 7
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
+## Causal Inference
 
-## Slide 2
+A core challenge in economics is to isolate causal effects from mere correlations.
+
+**The Potential Outcomes Framework**
+To formalize causality, we use Potential Outcomes. For any individual $i$ and a treatment (e.g., a job training program), we define two potential outcomes:
+
+*   $Y_i(1)$: The outcome if individual $i$ receives the treatment.
+*   $Y_i(0)$: The outcome if individual $i$ does **not** receive the treatment.
+
+For any individual, we can only ever observe *one* of these potential outcomes. We see $Y_i(1)$ if they get treated or $Y_i(0)$ if they don't, but never both. 
+
+*   The unobserved outcome is called the **counterfactual**.
+
+## Difference-in-means Decomposition
+
+A simple comparison of average outcomes between treated and untreated groups, $E[Y_i | T_i=1] - E[Y_i | T_i=0]$, is misleading. 
+
+This is because it combines the true treatment effect with pre-existing differences between the groups. 
+
+This can be formally shown as:
+
+  $$
+  \begin{align*}
+    E[Y_i|T_i=1] - E[Y_i|T_i=0] = &\underbrace{E[Y_i(1) - Y_i(0) | T_i=1]}_{\text{ATT}} +\\ &\underbrace{E[Y_i(0)|T_i=1] - E[Y_i(0)|T_i=0]}_{\text{Selection Bias}}
+  \end{align*}
+  $$
+
+## Difference-in-Differences
+
+Difference-in-Differences (DiD) is a powerful method to eliminate selection bias by using data from two groups (Treatment and Control) across two time periods (Pre and Post).
+
+The logic is to:
+
+1.  Calculate the change in the outcome for the treatment group before and after the treatment ($\Delta_T$).
+2.  Calculate the change in the outcome for the control group over the same period ($\Delta_C$). This represents the trend that would have happened without the treatment.
+3.  The DiD estimator is the difference between these two changes:
+
+  $$
+    \tau_{DiD} = \Delta_T - \Delta_C = (\hat{Y}_{T,Post} - \hat{Y}_{T, Pre}) - (\hat{Y}_{C, Post} - \hat{Y}_{C, Pre})
+  $$
+
+## DiD In Practice
+
+The DiD estimate can be obtained by estimating the coefficient $\beta_3$ in the following OLS regression:
+
+$Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}$
+
+*   $D_i$: A dummy for the treatment group.
+*   $Post_t$: A dummy for the post-treatment period.
+*   $\beta_3$: The interaction term, which captures the DiD estimate.
+
+This framework is advantageous as it provides standard errors for inference and allows for the inclusion of control variables ($X_{it}$) to strengthen the parallel trends assumption.
+
+When data is available for multiple time periods, the DiD model can be extended into an **event study** to analyze dynamic effects over time. The typical model is:
+
+$y_{it} = \alpha_i + \lambda_t + \sum_{k=-K}^{L} \delta_k D_{it}^k + u_{it}$
+
+# Wooclap
+
+## Wooclap
+
+[Link to Wooclap](https://app.wooclap.com/OFZFSD/questionnaires/68f61c984ecd5df76bc75764)
+
+Wooclap Code: OFZFSD
 
 # Questions
+
+## The Effect of Union Membership on Wages
+
+This question uses the classic `nlswork.dta` dataset, which contains panel data on young working women. We want to estimate the causal effect of joining a union on wages.^[This is a classic example of selection bias, as women who join unions may be systematically different from those who don't. You can load the data in Stata using `webuse nlswork`. A similar dataset is available for R and Python. The key variables are `ln_wage` (log wage), `union` (a dummy for union membership), `year`, and `idcode` (the individual identifier).]
+
+1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
+
+2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
+
+3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
+
+## Event Study and Parallel Trends
+
+This question uses the `cigar.dta` dataset (available via `webuse cigar` in Stata), which contains data on cigarette sales (`sales`), prices, and taxes for 48 states from 1963-1992. In 1989, California (statecode 5) passed Proposition 99, a large tobacco tax increase.
+
+a) Create a variable for per-capita cigarette sales.
+
+b) Plot the average per-capita cigarette sales over time for California and for all other states combined. Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the years leading up to 1989.
+
+c) Briefly outline how you would formally test for pre-trends using a regression framework, as described in the lecture. What coefficients would you be looking at, and what would you hope to find?
+
 
 ## Decomposing the Naive Estimator
 
@@ -34,16 +117,6 @@ The lecture shows that the simple difference-in-means estimator, $E[Y|T=1] - E[Y
 
 2. Provide an intuitive explanation of the selection bias term, $E[Y(0)|T=1] - E[Y(0)|T=0]$, using the lecture's example of a job training program. What would a positive selection bias imply in this context?
 
-
-## Applying Potential Outcomes
-
-Consider a study on the effect of a new irrigation system (the treatment) on the crop yield of farms. Let $Y_i$ be the crop yield for farm $i$.
-
-1. Define the potential outcomes, $Y_i(1)$ and $Y_i(0)$, in the context of this specific example.
-
-2. What is the individual causal effect ($\tau_i$) for a single farm $i$?
-
-3. Explain the "fundamental problem of causal inference" using this irrigation example. Why can't we directly calculate $\tau_i$ for any farm?
 
 ## The 2x2 Calculation
 
@@ -59,6 +132,16 @@ A researcher evaluates the impact of a new subway line on local house prices. Sh
 2. What is the "secular trend" in house prices according to this data?
 
 3. Based on your result, what is your conclusion about the causal effect of the new subway line?
+
+## Applying Potential Outcomes
+
+Consider a study on the effect of a new irrigation system (the treatment) on the crop yield of farms. Let $Y_i$ be the crop yield for farm $i$.
+
+1. Define the potential outcomes, $Y_i(1)$ and $Y_i(0)$, in the context of this specific example.
+
+2. What is the individual causal effect ($\tau_i$) for a single farm $i$?
+
+3. Explain the "fundamental problem of causal inference" using this irrigation example. Why can't we directly calculate $\tau_i$ for any farm?
 
 
 ## The Parallel Trends Assumption
@@ -91,16 +174,6 @@ $\widehat{\text{AirQuality}}_{it} = 75.2 + 5.5 \cdot Treat_i - 8.1 \cdot Post_t 
 4. What is the DiD estimate of the policy's effect? Interpret this coefficient ($\beta_3 = -4.3$) in the context of the study.
 
 
-## The Effect of Union Membership on Wages
-
-This question uses the classic `nlswork.dta` dataset, which contains panel data on young working women. We want to estimate the causal effect of joining a union on wages.^[This is a classic example of selection bias, as women who join unions may be systematically different from those who don't. You can load the data in Stata using `webuse nlswork`. A similar dataset is available for R and Python. The key variables are `ln_wage` (log wage), `union` (a dummy for union membership), `year`, and `idcode` (the individual identifier).]
-
-1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
-
-2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
-
-3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
-
 ## Threats to Identification
 
 Imagine you are designing a study to evaluate the impact of a scholarship program (awarded to students in City A) on university enrollment rates. City B, which has no such program, serves as your control.
@@ -110,17 +183,6 @@ Imagine you are designing a study to evaluate the impact of a scholarship progra
 **(b) Spillovers:** How might spillover effects contaminate your control group? Give a concrete example.
 
 **(c) Ashenfelter's Dip:** Describe what Ashenfelter's dip would look like in this context and why it would lead to a biased estimate of the program's effect.
-
-
-## Event Study and Parallel Trends
-
-This question uses the `cigar.dta` dataset (available via `webuse cigar` in Stata), which contains data on cigarette sales (`sales`), prices, and taxes for 48 states from 1963-1992. In 1989, California (statecode 5) passed Proposition 99, a large tobacco tax increase.
-
-a) Create a variable for per-capita cigarette sales.
-
-b) Plot the average per-capita cigarette sales over time for California and for all other states combined. Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the years leading up to 1989.
-
-c) Briefly outline how you would formally test for pre-trends using a regression framework, as described in the lecture. What coefficients would you be looking at, and what would you hope to find?
 
 ##  Direction of Bias
 

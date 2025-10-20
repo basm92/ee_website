@@ -1,0 +1,18 @@
+---
+title: "Solutions Tutorial 7"
+format: html
+---
+
+```{r setup}
+#| warning: false
+#| message: false
+#| echo: false
+
+library(ggplot2)
+library(gridExtra)
+library(here)
+library(reticulate)
+python_path <- here::here(".venv", "bin", "python")
+use_python(python_path)
+```
+
