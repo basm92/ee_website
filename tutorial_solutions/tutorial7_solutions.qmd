@@ -131,6 +131,11 @@ The model shows that the estimated effect of union membership on wages for women
 
 2. Plot the average educational attainment (`yeduc`) for the high-construction and low-construction regions for the pre-treatment cohorts (-4 until -1). Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the cohorts leading up to the treatment.
 
+:::{.panel-tabset}
+
+
+### Python
+
 ```{python}
 #| echo: true
 import pandas as pd
@@ -150,15 +155,87 @@ plt.legend(title='Treated')
 plt.show()
 ```
 
+### R
+
+```{r}
+#| echo: true
+#| message: false
+# 1. Install and load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(haven)
+
+# 2. Define the URL and read the Stata data file
+url <- "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/duflo_did_data.dta"
+did_data <- read_dta(url)
+
+# 3. Create the plot
+# We first filter out the 'Post' cohort and convert 'treated' to a factor
+# for better plotting and legend generation.
+plot_data <- did_data |>
+  mutate(cohort = as.factor(cohort)) |>
+  filter(cohort != "4") |>
+  group_by(cohort, treated) |>
+  summarise(
+    mean_yeduc = mean(yeduc, na.rm = TRUE)
+  ) |>
+  ungroup() # Ungrouping is a good practice after summarising
+
+# You can print plot_data to see the summarized table
+# print(plot_data)
+
+# 4. Now, plot the aggregated data
+ggplot(plot_data, aes(x = cohort, y = mean_yeduc, group = factor(treated), color = factor(treated))) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  labs(
+    title = "Average Educational Attainment by Cohort and Treatment Status",
+    x = "Cohort",
+    y = "Average Educational Attainment",
+    color = "Treated" # Sets the legend title
+  ) +
+  theme_minimal()
+```
+
+
+### Stata
+
+```{stata}
+#| eval: false
+* 1. Clear Stata's memory and load the data from the URL
+clear all
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/duflo_did_data.dta", clear
+
+* 2. Aggregate the data to create the plot points
+collapse (mean) yeduc, by(cohort treated)
+
+* 3. Generate the plot
+* We use the 'twoway' command to overlay two separate line plots on one graph:
+* one for the control group (treated==0) and one for the treatment group (treated==1).
+twoway (line yeduc cohort if treated==0, lcolor(blue) msymbol(circle_outline)) ///
+       (line yeduc cohort if treated==1, lcolor(orange) msymbol(circle)), ///
+       title("Average Educational Attainment by Cohort and Treatment Status", size(medium)) ///
+       xtitle("Cohort") ///
+       ytitle("Average Educational Attainment") ///
+       legend(order(1 "Control" 2 "Treated") title("Treated")) ///
+       scheme(s1color) // A clean, modern plot scheme
+```
+
+:::
+
 Even though visually, the trends for high-construction and low-construction regions appear to be similar in the pre-treatment cohorts (-4 to -1), there are some fluctuations that could raise concerns about the strict validity of the parallel trends assumption. For example, in cohort -2, there seems to be a noticeable divergence between the two groups. While the overall trend appears roughly parallel, these deviations suggest that a more formal statistical test is warranted to confirm the assumption.
 
 3. Briefly explain what parallel trends means in this context and outline how you would formally test for pre-trends using a regression framework. What coefficients would you be looking at, and what would you hope to find?
 
-The parallel trends test asks: "Between cohorts of children who were all too old to be affected by the program, was the trend in educational attainment similar between high-construction and low-construction regions?" You would formally test for pre-trends by estimating a regression of the following form:$Y_{ic} = \alpha + \sum_{k=-4}^{-1} \beta_k D_{k} \times Treated_c + \beta Treated_c + \sum_{k=-1}^{-1} \gamma_k D_k + u_{ic}$
+The parallel trends test asks: "Between cohorts of children who were all too old to be affected by the program, was the trend in educational attainment similar between high-construction and low-construction regions?" You would formally test for pre-trends by estimating a regression of the following form:$Y_{ic} = \alpha + \sum_{c=-4}^{-1} \beta_c D_{c} \times Treated_i + \beta Treated_i + \sum_{c=-4}^{-1} \gamma_c D_c + u_{ic}$
 
-Where: $c$ is the cohort, $i$ is the individual, $D_k$ is a dummy variable equal to 1 if the individual belongs to cohort $k$, and $Treated_c$ is a dummy variable equal to 1 if the individual belongs to a high-construction region. You would be looking at the coefficients $\beta_k$ for $k = -4, -3, -2, -1$. If the parallel trends assumption holds, you would hope to find that these coefficients are statistically indistinguishable from zero, indicating that there were no differential trends in educational attainment between high-construction and low-construction regions prior to the treatment period. You could also conduct an F-test to jointly test the null hypothesis that all $\beta_k = 0$ for $k = -4, -3, -2, -1$.
+Where: $c$ is the cohort, $i$ is the individual, $D_k$ is a dummy variable equal to 1 if the individual belongs to cohort $k$, and $Treated_i$ is a dummy variable equal to 1 if the individual comes from a high-construction region. You would be looking at the coefficients $\beta_k$ for $k = -4, -3, -2, -1$. If the parallel trends assumption holds, you would hope to find that these coefficients are statistically indistinguishable from zero, indicating that there were no differential trends in educational attainment between high-construction and low-construction regions prior to the treatment period. You could also conduct an F-test to jointly test the null hypothesis that all $\beta_k = 0$ for $k = -4, -3, -2, -1$.
 
 4. Conduct this test. Report and interpret your findings.
+
+:::{.panel-tabset}
+
+### Python
 
 ```{python}
 import statsmodels.formula.api as smf
@@ -192,6 +269,57 @@ f_test_results = parallel_trends_model.f_test(interaction_terms)
 print(f_test_results)
 ```
 
+### R
+
+```{r}
+library(fixest)
+# Analyze the pre-treatment data 
+pre_treatment_data <- did_data |>
+    mutate(cohort = factor(cohort, labels = c("-4", "-3", "-2", "-1", "Post"))) |>
+    filter(cohort != "Post") 
+
+parallel_trends <- feols(yeduc ~ i(cohort, treated, ref = "-1") + treated + i(cohort, ref="-1"), data = pre_treatment_data)
+
+etable(parallel_trends)
+
+# Conduct an F-test for the joint significance of the interaction terms
+joint_hypothesis <- c("cohort::-4:treated", "cohort::-3:treated", "cohort::-2:treated")
+wald_result <- wald(parallel_trends, joint_hypothesis)
+
+# Print the result
+print(wald_result$stat)
+print(wald_result$p)
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+* 1. Load the data from the URL, clearing memory first
+clear all
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/duflo_did_data.dta", clear
+
+keep if cohort <= -1
+
+* 2. Run the OLS regression with interaction terms
+regress yeduc ib-1.cohort##i.treated
+
+* 3. Perform a joint F-test on the interaction coefficients
+* The goal is to test the null hypothesis that all pre-treatment interaction
+* coefficients are jointly equal to zero.
+*
+* The `testparm` command is the most robust way to do this. It automatically
+* finds all coefficients matching the specified term(s) and tests them jointly.
+* This is the exact equivalent of the Python f_test() on the selected interaction terms.
+
+display ""
+display "--- Performing Joint F-test on Pre-Treatment Interaction Terms ---"
+testparm i.cohort#i.treated
+
+```
+
+:::
+
 The F-test decisively rejects the null hypothesis that all pre-treatment interaction terms are equal to zero (p-value < 0.01). This indicates that there are significant differences in the trends of educational attainment between high-construction and low-construction regions in the pre-treatment cohorts. Therefore, the parallel trends assumption does not hold in this context, suggesting that a simple DiD analysis may yield biased estimates of the treatment effect.
 
 
@@ -207,11 +335,15 @@ $E[Y|T=1] - E[Y|T=0] = E[Y(1)|T=1] - E[Y(0)|T=0]$
 
 To isolate the ATT, we need to introduce the counterfactual outcome for the treated group, which is what their outcome would have been had they not received the treatment, represented as $E[Y(0)|T=1]$. We do this by adding and subtracting this term from the right-hand side of the equation. This is a common algebraic trick that does not change the value of the expression.
 
-$E[Y|T=1] - E[Y|T=0] = E[Y(1)|T=1] - E[Y(0)|T=0] + E[Y(0)|T=1] - E[Y(0)|T=1]$
+$$
+    E[Y|T=1] - E[Y|T=0] = E[Y(1)|T=1] - E[Y(0)|T=0] + E[Y(0)|T=1] - E[Y(0)|T=1]
+$$
 
 Next, we rearrange the terms to group the components that form the ATT and the selection bias.
 
-$E[Y|T=1] - E[Y|T=0] = (E[Y(1)|T=1] - E[Y(0)|T=1]) + (E[Y(0)|T=1] - E[Y(0)|T=0])$
+$$
+    E[Y|T=1] - E[Y|T=0] = (E[Y(1)|T=1] - E[Y(0)|T=1]) + (E[Y(0)|T=1] - E[Y(0)|T=0])
+$$
 
 The rearranged expression now clearly shows the two components:
 
