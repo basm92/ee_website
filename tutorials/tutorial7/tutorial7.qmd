@@ -102,14 +102,21 @@ This question uses the classic `nlswork.dta` dataset, which contains panel data 
 
 ## Event Study and Parallel Trends
 
-This question uses the `cigar.dta` dataset (available via `webuse cigar` in Stata), which contains data on cigarette sales (`sales`), prices, and taxes for 48 states from 1963-1992. In 1989, California (statecode 5) passed Proposition 99, a large tobacco tax increase.
+:::{style="font-size: 0.8em;"}
 
-a) Create a variable for per-capita cigarette sales.
+Duflo (2001) analyses a major program to build over 61,000 new primary schools across Indonesia. The number of schools built in different regions depended on the number of school-aged children in that region in 1972. This created a "natural experiment": some regions got a lot of new schools, while others got very few. The study asks a simple question: Did children in regions that got more schools end up with more education and higher wages?
 
-b) Plot the average per-capita cigarette sales over time for California and for all other states combined. Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the years leading up to 1989.
+One can conduct a difference-in-differences analysis comparing regions with high school construction to regions with low school construction, for cohorts that went to school before and after the program started in 1989.
 
-c) Briefly outline how you would formally test for pre-trends using a regression framework, as described in the lecture. What coefficients would you be looking at, and what would you hope to find?
+1. Import the data into your statistical software of choice.
 
+2. Plot the average log wages for the high-construction and low-construction regions for the pre-treatment cohorts (-4 until -1). Does this visual evidence support the parallel trends assumption for a simple DiD analysis around 1989? Discuss what you see in the cohorts leading up to the treatment.
+
+3. Briefly explain what parallel trends means in this context and outline how you would formally test for pre-trends using a regression framework. What coefficients would you be looking at, and what would you hope to find?
+
+4. Conduct this test. Report and interpret your findings.
+
+:::
 
 ## Decomposing the Naive Estimator
 
@@ -159,7 +166,7 @@ The validity of the DiD estimator hinges on the parallel trends assumption.
 
 ## Interpreting DiD Regression Output
 
-A researcher estimates the effect of a state-level environmental policy on air quality using the following regression model, where `AirQuality` is an index, `Treat` is a dummy for states that adopted the policy, and `Post` is a dummy for the period after the policy was adopted.
+A researcher estimates the effect of a province-level environmental policy on air quality using the following regression model, where `AirQuality` is an index, `Treat` is a dummy for provinces that adopted the policy, and `Post` is a dummy for the period after the policy was adopted.
 
 $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$
 
