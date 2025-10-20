@@ -16,3 +16,38 @@ python_path <- here::here(".venv", "bin", "python")
 use_python(python_path)
 ```
 
+## The Effect of Union Membership on Wages
+
+1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
+
+```{python}
+#| echo: true
+import pandas as pd
+url = "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta"
+nlswork = pd.read_stata(url).query("year == 77 or year == 78")
+nlswork['post'] = (nlswork['year'] == 78).astype(int)
+treated_ids = nlswork.loc[(nlswork['union'] == 1) & (nlswork['post'] == 1), 'idcode'].unique()
+nlswork['treated'] = nlswork['idcode'].isin(treated_ids).astype(int)
+```
+
+2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
+
+```{python}
+nlswork.groupby(['treated', 'post'])['ln_wage'].mean().reset_index()
+
+tau_did = (
+    nlswork.loc[(nlswork['treated'] == 1) & (nlswork['post'] == 1), 'ln_wage'].mean() -
+    nlswork.loc[(nlswork['treated'] == 1) & (nlswork['post'] == 0), 'ln_wage'].mean() -
+    (nlswork.loc[(nlswork['treated'] == 0) & (nlswork['post'] == 1), 'ln_wage'].mean() -
+    nlswork.loc[(nlswork['treated'] == 0) & (nlswork['post'] == 0), 'ln_wage'].mean())
+)
+
+print(tau_did)
+```
+
+3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
+
+```{python}
+import statsmodels.formula.api as smf
+
+```

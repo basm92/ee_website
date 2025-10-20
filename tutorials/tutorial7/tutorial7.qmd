@@ -90,13 +90,15 @@ Wooclap Code: OFZFSD
 
 ## The Effect of Union Membership on Wages
 
-This question uses the classic `nlswork.dta` dataset, which contains panel data on young working women. We want to estimate the causal effect of joining a union on wages.^[This is a classic example of selection bias, as women who join unions may be systematically different from those who don't. You can load the data in Stata using `webuse nlswork`. A similar dataset is available for R and Python. The key variables are `ln_wage` (log wage), `union` (a dummy for union membership), `year`, and `idcode` (the individual identifier).]
+This question uses the classic `nlswork.dta` dataset, which contains panel data on young working women. We want to estimate the causal effect of joining a union on wages.^[The data is available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta). You can load the data in Stata using `webuse nlswork`. A similar dataset is available for R and Python. The key variables are `ln_wage` (log wage), `union` (a dummy for union membership), `year`, and `idcode` (the individual identifier).]
 
+:::{style="font-size: 0.8em;"}
 1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
 
 2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
 
 3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
+:::
 
 ## Event Study and Parallel Trends
 
