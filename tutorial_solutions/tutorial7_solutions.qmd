@@ -20,6 +20,10 @@ use_python(python_path)
 
 1. For this exercise, define the "treatment group" as women who were non-union in `year` 77 but became union members by `year` 78. The "control group" will be women who were non-union in both `year` 77 and `year` 78. Create the relevant dummy variables (`Treat` and `Post`) for this 2x2 setup (Pre = 77, Post = 78).
 
+:::{.panel-tabset}
+
+### Python
+
 ```{python}
 #| echo: true
 import pandas as pd
@@ -30,7 +34,29 @@ treated_ids = nlswork.loc[(nlswork['union'] == 1) & (nlswork['post'] == 1), 'idc
 nlswork['treated'] = nlswork['idcode'].isin(treated_ids).astype(int)
 ```
 
+### R
+
+```{r}
+#| echo: true
+#| message: false
+library(haven); library(dplyr)
+url <- "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta"
+nlswork <- read_dta(url)
+nlswork <- nlswork |>
+    filter(year == 77 | year == 78) |>
+    mutate(post = ifelse(year == 78, 1, 0)) |>
+    mutate(treated = ifelse(is.element(idcode, unique(idcode[union == 1 & post == 1])), 1, 0))
+```
+
+### Stata
+
+:::
+
 2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
+
+:::{.panel-tabset}
+
+### Python
 
 ```{python}
 nlswork.groupby(['treated', 'post'])['ln_wage'].mean().reset_index()
@@ -45,9 +71,59 @@ tau_did = (
 print(tau_did)
 ```
 
+### R
+
+```{r}
+#| echo: true
+summary_tab <- nlswork |>
+    group_by(treated, post) |>
+    summarize(mean_ln_wage = mean(ln_wage, na.rm = TRUE))
+
+print(summary_tab)
+
+tau_did <- (
+    summary_tab$mean_ln_wage[summary_tab$treated == 1 & summary_tab$post == 1] -
+    summary_tab$mean_ln_wage[summary_tab$treated == 1 & summary_tab$post == 0] -
+    (summary_tab$mean_ln_wage[summary_tab$treated == 0 & summary_tab$post == 1] -
+    summary_tab$mean_ln_wage[summary_tab$treated == 0 & summary_tab$post == 0])
+)
+
+print(tau_did)
+```
+
+
+### Stata
+
+:::
+
 3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
 
-```{python}
-import statsmodels.formula.api as smf
+:::{.panel-tabset}
 
+### Python
+
+```{python}
+#| echo: true
+import statsmodels.formula.api as smf
+from statsmodels.iolib.summary2 import summary_col
+did_model = smf.ols("ln_wage ~ treated + post + treated:post", data=nlswork).fit()
+print(summary_col([did_model], stars=True, model_names=["DiD Model"]))
 ```
+
+### R
+
+```{r}
+#| echo: true
+library(fixest)
+did_model <- feols(ln_wage ~ treated + post + treated:post, data = nlswork)
+etable(did_model)
+```
+
+### Stata
+
+:::
+
+The model shows that the estimated effect of union membership on wages for women who joined a union between 1977 and 1978 is equal to the manually calculated DiD estimate. This indicates that joining a union is associated with an increase in 0.0175 in log wages. However, the estimate is not statistically significant, suggesting that union membership has no significant effect on wages. 
+
+## Event Study and Parallel Trends
+
