@@ -277,9 +277,9 @@ Even though visually, the trends for high-construction and low-construction regi
 
 The parallel trends test asks: "Between cohorts of children who were all too old to be affected by the program, was the trend in educational attainment similar between high-construction and low-construction regions?" You would formally test for pre-trends by estimating a regression of the following form:$Y_{ic} = \alpha + \sum_{c=-4}^{-1} \beta_c D_{c} \times Treated_i + \beta Treated_i + \sum_{c=-4}^{-1} \gamma_c D_c + u_{ic}$
 
-Where: $c$ is the cohort, $i$ is the individual, $D_k$ is a dummy variable equal to 1 if the individual belongs to cohort $k$, and $Treated_i$ is a dummy variable equal to 1 if the individual comes from a high-construction region. You would be looking at the coefficients $\beta_k$ for $k = -4, -3, -2, -1$. If the parallel trends assumption holds, you would hope to find that these coefficients are statistically indistinguishable from zero, indicating that there were no differential trends in educational attainment between high-construction and low-construction regions prior to the treatment period. You could also conduct an F-test to jointly test the null hypothesis that all $\beta_k = 0$ for $k = -4, -3, -2, -1$.
+Where: $c$ is the cohort, $i$ is the individual, $D_c$ is a dummy variable equal to 1 if the individual belongs to cohort $c$, and $Treated_i$ is a dummy variable equal to 1 if the individual comes from a high-construction region. You would be looking at the coefficients $\beta_c$ for $c = \{ -4, -3, -2, -1\}$. If the parallel trends assumption holds, you would hope to find that these coefficients are statistically indistinguishable from zero, indicating that there were no differential trends in educational attainment between high-construction and low-construction regions prior to the treatment period. You could also conduct an F-test to jointly test the null hypothesis that all $\beta_c = 0$ for $c = \{-4, -3, -2, -1\}$.
 
-4. Conduct this test. Report and interpret your findings.
+4. Conduct this test. You can normalize $\beta_{-1}=0$. Report and interpret your findings.
 
 :::{.panel-tabset}
 
@@ -531,16 +531,46 @@ The DiD estimate of the policy's effect is given by the coefficient on the inter
 
 ## Direction of Bias
 
-**(a) Violation of the Parallel Trends Assumption**
+**(a) Violation of the Parallel Trends Assumption**: The observation that the yields of the "treatment" farms were already declining in the years leading up to the adoption, while the yields of the "control" farms were stable, **violates** the parallel trends assumption. The pre-treatment trends are not parallel.
 
-The observation that the yields of the "treatment" farms were already declining in the years leading up to the adoption, while the yields of the "control" farms were stable, **violates** the parallel trends assumption. The pre-treatment trends are not parallel.
+**(b) Direction of Bias**: A positive Difference-in-Differences (DiD) estimate likely underestimates the true causal effect of the fertilizer.
 
-**(b) Direction of Bias**
+The fundamental assumption of the DiD design is the "parallel trends" assumption. This assumes that, in the absence of the treatment, the outcome in the treatment group would have changed at the same rate as the outcome in the control group.
 
-Assuming the researcher found a positive DiD estimate, this estimate is likely an **overestimate** of the true causal effect.
+The DiD calculation is as follows:
 
-**Reasoning:**
+$\tau_{DiD} = (Treated_{post} - Treated_{pre}) - (Control_{post} - Control_{pre})$
 
-The parallel trends assumption allows us to use the trend of the control group to construct the counterfactual trend for the treatment group. In this case, the control group's trend is stable. Therefore, the DiD calculation would assume that, in the absence of the fertilizer, the treatment group's yields would have also remained stable.
+We can decompose the change in the treated group's outcome as:
 
-However, the pre-treatment data suggests that the treatment group's yields were already on a downward trajectory. Therefore, a more plausible counterfactual is that their yields would have *continued to decline* had they not adopted the new fertilizer. Because the DiD estimate is calculated relative to a counterfactual of stable yields (a higher baseline), the observed post-treatment yields of the treatment group will appear artificially high, leading to an overestimation of the fertilizer's true positive effect.
+$Treated_{post} - Treated_{pre} = ATT + Trend_{treated}$
+
+And the change in the control group's outcome is simply its trend:
+
+$Control_{post} - Control_{pre} = Trend_{control}$
+
+Substituting these into the DiD formula, we get:
+
+$\tau_{DiD} = (ATT + Trend_{treated}) - Trend_{control}$
+
+Rearranging this gives us the relationship between the DiD estimate, the true effect, and the trends:
+
+$\tau_{DiD} = ATT + (Trend_{treated} - Trend_{control})$
+
+The term $(Trend_{treated} - Trend_{control})$ represents the bias in the DiD estimate. When the parallel trends assumption holds, $Trend_{treated} = Trend_{control}$, and the bias term is zero, leaving $\tau_{DiD} = ATT$.
+
+However, in the scenario described, the parallel trends assumption is violated. The pre-treatment data indicates:
+
+*   $Trend_{control} = 0$ (stable yields)
+*   $Trend_{treated} < 0$ (declining yields)
+
+Plugging these into the equation for the DiD estimate:
+
+$\tau_{DiD} = ATT + Trend_{treated} - 0$
+$\tau_{DiD} = ATT + Trend_{treated}$
+
+Since $Trend_{treated}$ is a negative value (representing the underlying downward trend), the DiD estimate $\tau_{DiD}$ will be less than the true Average Treatment Effect on the Treated ($ATT$).
+
+$\tau_{DiD} < ATT$
+
+Therefore, the positive DiD estimate is an **underestimate** of the true causal effect of the fertilizer.
