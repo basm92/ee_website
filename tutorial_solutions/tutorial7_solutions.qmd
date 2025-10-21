@@ -50,6 +50,29 @@ nlswork <- nlswork |>
 
 ### Stata
 
+```{stata}
+#| eval: false
+#| echo: true
+// Load the dataset from the URL, clearing any existing data
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta", clear
+
+// Keep only the observations for the years 77 and 78
+keep if year == 77 | year == 78
+
+// Create a binary variable 'post' which is 1 for year 78 and 0 otherwise
+generate post = (year == 78)
+
+// Create a 'treated' variable for individuals in a union in 1978
+// First, create a temporary variable to mark the treated individuals in 1978
+bysort idcode: generate byte treated_temp = 1 if union == 1 & post == 1
+
+// Then, for each individual, carry that treated status across all their observations
+bysort idcode (treated_temp): egen treated = max(treated_temp)
+
+// Drop the temporary variable
+drop treated_temp
+```
+
 :::
 
 2. Manually calculate the four means for the 2x2 DiD table ($\hat{Y}_{T, Pre}$, $\hat{Y}_{T, Post}$, $\hat{Y}_{C, Pre}$, $\hat{Y}_{C, Post}$) and compute the DiD estimate.
@@ -94,6 +117,25 @@ print(tau_did)
 
 ### Stata
 
+```{stata}
+#| eval: false
+#| echo: true
+// Calculate the mean of ln_wage over the different groups
+mean ln_wage, over(treated post)
+
+// Manually calculate the DiD estimator using the stored results
+// The means are stored in the matrix e(b)
+// _b[ln_wage@1.treated 0.post] is the mean for the treated group before the change
+// _b[ln_wage@1.treated 1.post] is the mean for the treated group after the change
+// _b[ln_wage@0.treated 0.post] is the mean for the control group before the change
+// _b[ln_wage@0.treated 1.post] is the mean for the control group after the change
+scalar tau_did = (_b[ln_wage@1.treated 1.post] - _b[ln_wage@1.treated 0.post]) - ///
+                  (_b[ln_wage@0.treated 1.post] - _b[ln_wage@0.treated 0.post])
+
+// Display the result
+display tau_did
+```
+
 :::
 
 3. Estimate the DiD effect by running the regression $Y_{it} = \beta_0 + \beta_1 Treat_i + \beta_2 Post_t + \beta_3(Treat_i \times Post_t) + \epsilon_{it}$. Confirm that the coefficient $\hat{\beta}_3$ matches your manual calculation. Report and interpret the result.
@@ -120,6 +162,12 @@ etable(did_model)
 ```
 
 ### Stata
+
+```{stata}
+#| eval: false
+#| echo: true
+regress ln_wage treated post c.treated#c.post
+```
 
 :::
 
