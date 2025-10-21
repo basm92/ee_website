@@ -607,9 +607,9 @@ Let the treatment $D_i$ be a job training program. Let the outcome $Y_i$ be mont
 
 - For the treated group:
   - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
-  - Philippe's observed income before training is her potential income without training.
+  - Philippe's observed income before training is his potential income without training.
   - Post-treatment ($t=1$): $Y_{i1} = Y_{i1} (1)$
-  - Philippe's observed income after training is her potential income with training.
+  - Philippe's observed income after training is his potential income with training.
   
 - For the control group: 
   - Pre-treatment ($t=0$): $Y_{i0} = Y_{i0} (0)$
@@ -721,11 +721,11 @@ $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i × Post_t) + u_{i
 $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}$
 
 - **$\beta_0$:** The average outcome for the **Control Group**  in the **Pre-Period** ($\text{Post}_i=0, D_i=0$).
-  - $E[Y_i | D_i=0, Post_i=0] = \beta_0$
+  - $E[Y_i | D_i=0, Post_t=0] = \beta_0$
 
 - **$\beta_1$:** The average *pre-existing difference* between the treatment and control groups in the pre-period. **This is the selection bias.**
-  - $E[Y_i | D_i=1, Post_i=0] = \beta_0 + \beta_1$
-  - So, $\beta_1 = E[Y | D_i=1, Post_i=0] - E[Y_i | D_i=0, Post=0]$
+  - $E[Y_i | D_i=1, Post_t=0] = \beta_0 + \beta_1$
+  - So, $\beta_1 = E[Y | D_i=1, Post_t=0] - E[Y_i | D_i=0, Post_t=0]$
 
 ## Interpretation of Coefficients (2/2)
 
@@ -734,12 +734,12 @@ $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + 
 $Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 Post_t + \beta_3(D_i \times Post_t) + u_{it}$
 
 - **$\beta_2$:** The average change in the outcome for the **Control Group** from the pre- to the post-period. **This is the secular trend.**
-  - $E[Y_i | D_i=0, Post_i=1] = \beta_0 + \beta_2$
-  - So, $\beta_2 = E[Y_i | D_i=0, Post_i=1] - E[Y_i | D_i=0, Post_i=0]$
+  - $E[Y_i | D_i=0, Post_t=1] = \beta_0 + \beta_2$
+  - So, $\beta_2 = E[Y_i | D_i=0, Post_t=1] - E[Y_i | D_i=0, Post_t=0]$
 
 - **$\beta_3$:** **This is the DiD estimator**. It's the additional change in the outcome for the treatment group, above and beyond the secular trend.
   - It is the causal effect of interest.
-  - $\beta_3 = (E[Y_i|D_i=1,Post_i=1] - E[Y_i|D_i=1,Post_i=0]) - (E[Y_i|D_i=0,Post_i=1] - E[Y_i|D_i=0,Post_i=0])$
+  - $\beta_3 = (E[Y_i|D_i=1,Post_t=1] - E[Y_i|D_i=1,Post_t=0]) - (E[Y_i|D_i=0,Post_t=1] - E[Y_i|D_i=0,Post_t=0])$
   - Hence $\beta_3$ is $\tau_{DID}$
 
 ## Example: DiD in a Regression Framework
@@ -775,7 +775,10 @@ model.summary()
 
 ### Stata
 
-Hey
+```{stata}
+#| eval: false
+regress employment i.time##i.state, robust
+```
 
 :::
 
