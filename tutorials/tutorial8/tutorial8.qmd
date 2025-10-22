@@ -31,6 +31,17 @@ use_python(python_path)
 
 # Tutorial 8
 
+# Course Evaluations
+
+## Course Evaluations
+
+We would really like you to take the time to fill out the course evaluation form. Your feedback is very important to us and helps us improve the course for future students.
+
+You can fill it in on [https://entry.caracal.uu.nl/44007](https://entry.caracal.uu.nl/44007) under "Course Evaluations" or scan the QR code:
+
+![](course_eval.png){fig-align="center"}
+
+
 ## Recapitulation of the Lecture
 
 ## Slide 1

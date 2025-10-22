@@ -69,6 +69,9 @@ bysort idcode: generate byte treated_temp = 1 if union == 1 & post == 1
 // Then, for each individual, carry that treated status across all their observations
 bysort idcode (treated_temp): egen treated = max(treated_temp)
 
+// Fill in 0s for those not treated
+replace treated=0 if treated!=1
+
 // Drop the temporary variable
 drop treated_temp
 ```
@@ -350,7 +353,7 @@ use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafi
 keep if cohort <= -1
 
 * 2. Run the OLS regression with interaction terms
-regress yeduc ib-1.cohort##i.treated
+regress yeduc ib(1).cohort##i.treated
 
 * 3. Perform a joint F-test on the interaction coefficients
 * The goal is to test the null hypothesis that all pre-treatment interaction
