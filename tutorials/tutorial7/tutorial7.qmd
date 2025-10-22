@@ -129,7 +129,7 @@ One can conduct a difference-in-differences analysis comparing regions with high
 
 3. Briefly explain what parallel trends means in this context and outline how you would formally test for pre-trends using a regression framework. What coefficients would you be looking at, and what would you hope to find?
 
-4. Conduct this test. You can normalize $\beta_{-1}=0$. Report and interpret your findings.
+4. Conduct this test. You must normalize $\beta_{-1}=0$. Report and interpret your findings.
 
 :::
 

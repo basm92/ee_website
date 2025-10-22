@@ -70,7 +70,8 @@ bysort idcode: generate byte treated_temp = 1 if union == 1 & post == 1
 bysort idcode (treated_temp): egen treated = max(treated_temp)
 
 // Fill in 0s for those not treated
-replace treated=0 if treated!=1
+replace treated=0 if treated==.
+tab treated
 
 // Drop the temporary variable
 drop treated_temp
@@ -124,7 +125,10 @@ print(tau_did)
 #| eval: false
 #| echo: true
 // Calculate the mean of ln_wage over the different groups
-mean ln_wage, over(treated post)
+mean ln_wage if treated==1 & post==0
+mean ln_wage if treated==1 & post==1
+mean ln_wage if treated==. & post==0
+mean ln_wage if treated==. & post==1
 
 // Manually calculate the DiD estimator using the stored results
 // The means are stored in the matrix e(b)
@@ -282,7 +286,7 @@ The parallel trends test asks: "Between cohorts of children who were all too old
 
 Where: $c$ is the cohort, $i$ is the individual, $D_c$ is a dummy variable equal to 1 if the individual belongs to cohort $c$, and $Treated_i$ is a dummy variable equal to 1 if the individual comes from a high-construction region. You would be looking at the coefficients $\beta_c$ for $c = \{ -4, -3, -2, -1\}$. If the parallel trends assumption holds, you would hope to find that these coefficients are statistically indistinguishable from zero, indicating that there were no differential trends in educational attainment between high-construction and low-construction regions prior to the treatment period. You could also conduct an F-test to jointly test the null hypothesis that all $\beta_c = 0$ for $c = \{-4, -3, -2, -1\}$.
 
-4. Conduct this test. You can normalize $\beta_{-1}=0$. Report and interpret your findings.
+4. Conduct this test. You must normalize $\beta_{-1}=0$. Report and interpret your findings.
 
 :::{.panel-tabset}
 
@@ -350,10 +354,17 @@ print(wald_result$p)
 clear all
 use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/duflo_did_data.dta", clear
 
-keep if cohort <= -1
+tabulate cohort, generate(c)
+generate cohort1=4 if c1==1
+replace cohort1=3 if c2==1
+replace cohort1=2 if c3==1
+replace cohort1=1 if c4==1
+replace cohort1=0 if c5==1
+
+keep if cohort1>=1
 
 * 2. Run the OLS regression with interaction terms
-regress yeduc ib(1).cohort##i.treated
+regress yeduc ib(1).cohort1##i.treated
 
 * 3. Perform a joint F-test on the interaction coefficients
 * The goal is to test the null hypothesis that all pre-treatment interaction
@@ -365,7 +376,7 @@ regress yeduc ib(1).cohort##i.treated
 
 display ""
 display "--- Performing Joint F-test on Pre-Treatment Interaction Terms ---"
-testparm i.cohort#i.treated
+testparm i.cohort1#i.treated
 
 ```
 
