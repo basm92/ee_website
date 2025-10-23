@@ -27,11 +27,27 @@ use_python(python_path)
 ```{python}
 #| echo: true
 import pandas as pd
+import numpy as np
+# Load the data for the year 77 and 78
 url = "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta"
 nlswork = pd.read_stata(url).query("year == 77 or year == 78")
+ 
+#create the post dummy
 nlswork['post'] = (nlswork['year'] == 78).astype(int)
-treated_ids = nlswork.loc[(nlswork['union'] == 1) & (nlswork['post'] == 1), 'idcode'].unique()
+ 
+# Create separate dummies for treated and control
+ids_union0_post0 = nlswork.loc[(nlswork['union'] == 0) & (nlswork['post'] == 0), 'idcode'].unique()
+ids_union1_post1 = nlswork.loc[(nlswork['union'] == 1) & (nlswork['post'] == 1), 'idcode'].unique()
+ids_union0_post1 = nlswork.loc[(nlswork['union'] == 0) & (nlswork['post'] == 1), 'idcode'].unique()
+ 
+treated_ids = np.intersect1d(ids_union0_post0, ids_union1_post1)
+control_ids = np.intersect1d(ids_union0_post0, ids_union0_post1)
+ 
 nlswork['treated'] = nlswork['idcode'].isin(treated_ids).astype(int)
+nlswork['control'] = nlswork['idcode'].isin(control_ids).astype(int)
+ 
+#Keep only observations that meet either the conditions for treated or control
+nlswork = nlswork[(nlswork.treated+nlswork.control) == 1]
 ```
 
 ### R
@@ -39,13 +55,52 @@ nlswork['treated'] = nlswork['idcode'].isin(treated_ids).astype(int)
 ```{r}
 #| echo: true
 #| message: false
-library(haven); library(dplyr)
+# Load the packages
+library(haven)
+library(dplyr)
+
+# 1. Load the data from the URL
 url <- "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta"
 nlswork <- read_dta(url)
+
+# 2. Filter for years 77 and 78
 nlswork <- nlswork |>
-    filter(year == 77 | year == 78) |>
-    mutate(post = ifelse(year == 78, 1, 0)) |>
-    mutate(treated = ifelse(is.element(idcode, unique(idcode[union == 1 & post == 1])), 1, 0))
+  filter(year == 77 | year == 78)
+
+# 3. Create the 'post' dummy variable
+nlswork <- nlswork |>
+  mutate(post = as.integer(year == 78))
+
+# 4. Identify the treated and control group IDs
+ids_union0_post0 <- nlswork |>
+  filter(union == 0, post == 0) |>
+  distinct(idcode) |>
+  pull(idcode)
+
+ids_union1_post1 <- nlswork |>
+  filter(union == 1, post == 1) |>
+  distinct(idcode) |>
+  pull(idcode)
+
+ids_union0_post1 <- nlswork |>
+  filter(union == 0, post == 1) |>
+  distinct(idcode) |>
+  pull(idcode)
+
+treated_ids <- intersect(ids_union0_post0, ids_union1_post1)
+control_ids <- intersect(ids_union0_post0, ids_union0_post1)
+
+# 5. Create 'treated' and 'control' dummy variables
+nlswork <- nlswork |>
+  mutate(
+    treated = as.integer(idcode %in% treated_ids),
+    control = as.integer(idcode %in% control_ids)
+  )
+
+# 6. Keep only observations that are in either the treated or control group
+nlswork <- nlswork |>
+  filter(treated + control == 1)
+
 ```
 
 ### Stata
@@ -55,26 +110,33 @@ nlswork <- nlswork |>
 #| echo: true
 // Load the dataset from the URL, clearing any existing data
 use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/nlswork.dta", clear
-
+ 
 // Keep only the observations for the years 77 and 78
 keep if year == 77 | year == 78
-
+ 
 // Create a binary variable 'post' which is 1 for year 78 and 0 otherwise
 generate post = (year == 78)
-
-// Create a 'treated' variable for individuals in a union in 1978
-// First, create a temporary variable to mark the treated individuals in 1978
-bysort idcode: generate byte treated_temp = 1 if union == 1 & post == 1
-
-// Then, for each individual, carry that treated status across all their observations
-bysort idcode (treated_temp): egen treated = max(treated_temp)
-
-// Fill in 0s for those not treated
-replace treated=0 if treated==.
-tab treated
-
-// Drop the temporary variable
-drop treated_temp
+ 
+* Tag IDs with union==0 when post==0
+bysort idcode: egen has_union0_post0 = max(union == 0 & post == 0)
+ 
+* Tag IDs with union==1 when post==1
+bysort idcode: egen has_union1_post1 = max(union == 1 & post == 1)
+ 
+* Tag IDs with union==0 when post==1
+bysort idcode: egen has_union0_post1 = max(union == 0 & post == 1)
+ 
+* Create treated variable (1 if both conditions met, 0 otherwise)
+gen treated = (has_union0_post0 == 1 & has_union1_post1 == 1)
+ 
+* Create control variable (1 if both conditions met, 0 otherwise)
+gen control = (has_union0_post0 == 1 & has_union0_post1 == 1)
+ 
+* Get rid of units that are always treated or has missing values
+keep if treated + control == 1
+ 
+* Clean up temporary variables 
+drop has_union0_post0 has_union1_post1 has_union0_post1 control
 ```
 
 :::
@@ -86,7 +148,15 @@ drop treated_temp
 ### Python
 
 ```{python}
-nlswork.groupby(['treated', 'post'])['ln_wage'].mean().reset_index()
+# Calculate group means, reset index, and sort to ensure correct order
+did_table = nlswork.groupby(['treated', 'post'])['ln_wage'].mean().reset_index()
+did_table = did_table.sort_values(['treated', 'post'])
+ 
+# Assign descriptive labels
+did_table.index = ['Control_Pre', 'Control_Post', 'Treated_Pre', 'Treated_Post']
+ 
+print(did_table)
+ 
 
 tau_did = (
     nlswork.loc[(nlswork['treated'] == 1) & (nlswork['post'] == 1), 'ln_wage'].mean() -
@@ -127,20 +197,8 @@ print(tau_did)
 // Calculate the mean of ln_wage over the different groups
 mean ln_wage if treated==1 & post==0
 mean ln_wage if treated==1 & post==1
-mean ln_wage if treated==. & post==0
-mean ln_wage if treated==. & post==1
-
-// Manually calculate the DiD estimator using the stored results
-// The means are stored in the matrix e(b)
-// _b[ln_wage@1.treated 0.post] is the mean for the treated group before the change
-// _b[ln_wage@1.treated 1.post] is the mean for the treated group after the change
-// _b[ln_wage@0.treated 0.post] is the mean for the control group before the change
-// _b[ln_wage@0.treated 1.post] is the mean for the control group after the change
-scalar tau_did = (_b[ln_wage@1.treated 1.post] - _b[ln_wage@1.treated 0.post]) - ///
-                  (_b[ln_wage@0.treated 1.post] - _b[ln_wage@0.treated 0.post])
-
-// Display the result
-display tau_did
+mean ln_wage if treated==0 & post==0
+mean ln_wage if treated==0 & post==1
 ```
 
 :::
@@ -155,8 +213,13 @@ display tau_did
 #| echo: true
 import statsmodels.formula.api as smf
 from statsmodels.iolib.summary2 import summary_col
-did_model = smf.ols("ln_wage ~ treated + post + treated:post", data=nlswork).fit()
+
+# tau_did can be estimated as the interaction of treated and post
+# with treated*post statsmodels includes the main effects (treated and post)
+# as well as the interaction term denoted as treated:post in the output
+did_model = smf.ols("ln_wage ~ treated*post", data=nlswork).fit()
 print(summary_col([did_model], stars=True, model_names=["DiD Model"]))
+
 ```
 
 ### R
@@ -173,12 +236,12 @@ etable(did_model)
 ```{stata}
 #| eval: false
 #| echo: true
-regress ln_wage treated post c.treated#c.post
+reg ln_wage c.post##c.treated
 ```
 
 :::
 
-The model shows that the estimated effect of union membership on wages for women who joined a union between 1977 and 1978 is equal to the manually calculated DiD estimate. This indicates that joining a union is associated with an increase in 0.0175 in log wages. However, the estimate is not statistically significant, suggesting that union membership has no significant effect on wages. 
+The model shows that the estimated effect of union membership on wages for women who joined a union between 1977 and 1978 is equal to the manually calculated DiD estimate. This indicates that joining a union is associated with an increase in 0.0368 in log wages. However, the estimate is not statistically significant, suggesting that union membership has no significant effect on wages. 
 
 ## Event Study and Parallel Trends
 
