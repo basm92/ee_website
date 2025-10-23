@@ -286,25 +286,31 @@ visualize_iv_dag()
 - Like potential outcomes, we never know for sure which group an individual belongs to.
 - The two core assumptions have precise meanings in this framework, plus we need two more.
 
+:::{.callout-note title="Assumption: Treatment Assignment in IV"}
+
 - **Independence**: $Z_i \indep \{ Y_i(1), Y_i(0), X_i(1), X_i(0) \}$
   - The instrument is "as-if" randomly assigned. It's independent of all potential outcomes and potential treatment decisions.
 - **Exclusion Restriction**: $Y_i(x, z) = Y_i(x) \quad \text{for all } x, z$
   - The instrument $Z$ does not have a direct effect on the outcome $Y$. It only works through $X$. 
-
 - **Relevance (First Stage)**: $\E[X_i | Z_i=1] - \E[X_i | Z_i=0] \neq 0$
   - The instrument must affect the treatment status for some individuals. This means there must be some Compliers.
 - **Monotonicity**: $X_i(1) \geq X_i(0) \quad \text{for all } i$
   - The instrument encourages (or discourages) everyone weakly in the same direction. This assumption rules out the existence of _Defiers_
+:::
 
 ## IV Estimator
 
 - With these four assumptions, IV does _not_ estimate the Average Treatment Effect ($ATE = E[Y_i(1) - Y_i(0)]$) for the whole population.
 
-- Instead, IV estimates the **Local Average Treatment Effect (LATE)** (Imbens & Angrist, 1994).
+- Instead, IV estimates the **Local Average Treatment Effect (LATE)** 
+
+:::{.callout-note title="Theorem: LATE (Imbens & Angrist, 1994)"}
 
   $$
     \beta_{IV} = E[Y_i(1) - Y_i(0) \mid X_i(1) > X_i(0)]
   $$
+
+:::
 
 - This is the average treatment effect **only for the subpopulation of compliers**. 
 
@@ -436,6 +442,21 @@ visualize_iv_dag()
 
 - This shows that the simple ratio of the reduced form effect to the first-stage effect precisely isolates the average causal effect for the specific subpopulation whose treatment status is actually manipulated by the instrument.
 
+## Estimating Complier Shares
+
+- Being a complier, never-taker or always-taker is a latent characteristic of an individual $i$.
+- Given our assumptions of monotonicity and no defiers, if we observe $X_i (1) = 1$ or $X_i (0)=0$, we will never know whether $i$ is a complier or an always taker (never taker). 
+  - However, if we observe $X(0)=1$ ($X(1)=0$), we know an individual is an always-taker (never-taker). 
+
+- You can infer the _proportions_ of compliers, always takers and never-takers in the population as follows:
+  - Since $Z \indep X$, proportions are preserved by conditioning on the instrument.
+  - **Group that was encouraged**:  $E[X|Z=0] = P(A)$. 
+  - **Group that was not encouraged**: $E[X|Z=1] = P(A) + P(C)$
+  - **Collective exhaustedness**: $P(A) + P(C) + P(N)=1$
+
+- This is why, even though we can't identify every single individual's type, we can identify the proportions of each type at the population level by looking at the sample averages.
+
+# General IV Estimator
 
 ## General IV Estimator
 
