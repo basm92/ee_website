@@ -21,7 +21,7 @@ Welcome to the Empirical Economics (Utrecht University) website. On this website
   - [Vincent Kunst](mailto:v.e.kunst@uu.nl)
   - [Mads Nielsen](mailto:m.b.b.nielsen@uu.nl)
   
-## Tutorial Schedule (Preliminary)
+## Tutorial Schedule
 
 ```{=html}
 <details>
