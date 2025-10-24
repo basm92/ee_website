@@ -180,7 +180,7 @@ Because both $\beta_2$ and the covariance term are positive, our OLS estimate $\
 
 - The idea in IV is to find a third variable $Z$, the _instrument_, that can isolate the "good" part of the variation in $X$.
 
-- An instrument is a variable that is correlated with the endogenous regressor $X$, but is \textit{not} correlated with the error term $\epsilon$.
+- An instrument is a variable that is correlated with the endogenous regressor $X$, but is _not_ correlated with the error term $\epsilon$.
 
   - It creates "as-if random" variation in $X$.
   - It only affects $Y$ \textit{through} its effect on $X$.
