@@ -96,15 +96,18 @@ $$
 - **Omitted Variable Bias (OVB)**
 
   - A variable $W$ affects $Y$ and is also correlated with $X$, but $W$ is not included in the model.
-  - _Example_: Effect of education ($X$) on wages ($Y$). Omitted "ability" ($W$) affects wages and is correlated with education.
+    - _Example_: Effect of education ($X$) on wages ($Y$). Omitted "ability" ($W$) affects wages and is correlated with education.
+    - Direction of bias can be predicted.
 
 - **Simultaneity / Reverse Causality**
   - $X$ causes $Y$, but $Y$ also causes $X$.
-  - _Example_:Effect of police presence ($X$) on crime rates ($Y$). More police may reduce crime, but higher crime rates lead to more police being hired.
+    - _Example_:Effect of police presence ($X$) on crime rates ($Y$). More police may reduce crime, but higher crime rates lead to more police being hired.
+    - Direction of bias unclear.
 
 - **Measurement Error**
   - The variable $X$ is measured with error.
-  - _Example_: Effect of household income ($X$) on consumption ($Y$). Income reported in surveys ($X$) is often an imperfect measure of true income.
+    - _Example_: Effect of household income ($X$) on consumption ($Y$). Income reported in surveys ($X$) is often an imperfect measure of true income.
+    - Attenuation bias toward 0.
 
 ## Illustrating Omitted Variable Bias
 
@@ -455,6 +458,51 @@ visualize_iv_dag()
   - **Collective exhaustedness**: $P(A) + P(C) + P(N)=1$
 
 - This is why, even though we can't identify every single individual's type, we can identify the proportions of each type at the population level by looking at the sample averages.
+
+# Example
+
+## Example: Acemoglu, Johnson and Robinson (2000)
+
+
+:::{.callout-tip title="Example: AJR (2001)"}
+
+- A central question in development economics is whether strong institutions (secure property rights, rule of law) are a fundamental cause of economic growth.
+  - $Y$: Economic growth (Log GDP per capita)
+  - $X$: Institutional quality (average protection against expropriation risk)
+  - $Z$: Log of Settler Mortality Rates
+
+  - Endogeneity: A simple OLS regression of Log GDP per capita on a measure of Institutional Quality is likely biased.
+    - Reverse Causality: Rich countries may be able to afford better institutions.
+    - Omitted Variable Bias: Other factors, like geography or culture, could determine both institutional and economic outcomes.
+
+:::
+
+## Example: AJR (2001)
+
+- Their theory: Settler Mortality $\rightarrow$ European Settlements $\rightarrow$ Early Institutions $\rightarrow$ Current Institutions $\rightarrow$ Current Economic Performance
+
+  - Different Colonization Strategies: Europeans established different types of colonies.
+  - "Neo-Europes" (Inclusive Institutions): In places with low settler mortality (e.g., USA, Australia), Europeans settled in large numbers and replicated institutions that protected private property and constrained government power.
+  - "Extractive States": In places with high settler mortality due to diseases like malaria and yellow fever (e.g., Congo, Nigeria), Europeans established authoritarian and extractive institutions with the sole purpose of transferring resources back to the colonizer.
+
+- Persistence of Institutions: these initial institutions, whether inclusive or extractive, have persisted to the present day.
+
+## Example: AJR (2001)
+
+- Main Result: The 2SLS estimates show a large and statistically significant effect of institutions on economic development. The results suggest that differences in institutions explain the majority of the income disparity across former colonies.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(modelsummary); library(dplyr, quietly=T); library(ivdoctr); library(fixest); library(tinytable)
+colonial <- ivdoctr::colonial
+model1 <- feols(logpgp95 ~ avexpr, data = colonial)
+model2 <- feols(logpgp95 ~ 1 | avexpr ~ logem4, data = colonial)
+
+modelsummary(list("OLS"=model1, "IV"=model2), stars=c("*"=0.1, "**"=0.05, "***"=0.01), gof_map=c("nobs", "adj.r.squared"), coef_map=c("avexpr"="Institutional Quality", "fit_avexpr"="Institutional Quality", "(Intercept)" = "Constant"), title="Impact of Institutions on Log GDP per Capita (1995)", width=c(0.2, 0.1, 0.1)) |>
+  theme_revealjs(fontsize=1.2)
+```
 
 # General IV Estimator
 
