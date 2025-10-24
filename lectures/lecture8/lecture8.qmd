@@ -453,8 +453,8 @@ visualize_iv_dag()
 
 - You can infer the _proportions_ of compliers, always takers and never-takers in the population as follows:
   - Since $Z \indep X$, proportions are preserved by conditioning on the instrument.
-  - **Group that was encouraged**:  $E[X|Z=0] = P(A)$. 
-  - **Group that was not encouraged**: $E[X|Z=1] = P(A) + P(C)$
+  - **Group that was not encouraged**:  $E[X|Z=0] = P(A)$. 
+  - **Group that was encouraged**: $E[X|Z=1] = P(A) + P(C)$
   - **Collective exhaustedness**: $P(A) + P(C) + P(N)=1$
 
 - This is why, even though we can't identify every single individual's type, we can identify the proportions of each type at the population level by looking at the sample averages.
