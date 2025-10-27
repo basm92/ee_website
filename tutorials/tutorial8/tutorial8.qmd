@@ -183,7 +183,7 @@ print("First Stage F Stat:", iv_model.first_stage.diagnostics['f.stat'])
 #| eval: false
 #| code-fold: true
 
-use https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv, decimal(,)
+import delimited https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv, delimiter(";") dpcomma clear
 
 * Model 1: OLS
 reg log_gdp_95 avg_exprop lat
