@@ -6,6 +6,8 @@ format: html
 
 ```{r setup}
 #| echo: false
+#| warning: false
+#| message: false
 library(here)
 library(reticulate)
 python_path <- here::here(".venv", "bin", "python")
@@ -17,14 +19,14 @@ use_python(python_path)
 The results:
 
 ```{python}
-#| echo: false
+#| code-fold: true
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 from statsmodels.iolib.summary2 import summary_col
 from statsmodels.sandbox.regression.gmm import IV2SLS
 import pandas as pd
 
-colonial_data = pd.read_csv('./tutorials/datafiles/colonial_origins.csv', decimal=',', sep=";")
+colonial_data = pd.read_csv('../tutorials/datafiles/colonial_origins.csv', decimal=',', sep=";")
 # Model 1: OLS
 ols_model = smf.ols('logpgp95 ~ avexpr + africa', data=colonial_data).fit()
 
@@ -85,6 +87,179 @@ b) **Argument to Challenge (Violation):** A plausible channel that violates the 
 
 ## Estimating and Interpreting 2SLS Results
 
+:::{.panel-tabset}
+
+### Python
+
+```{python}
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+from statsmodels.iolib.summary2 import summary_col
+from statsmodels.sandbox.regression.gmm import IV2SLS
+url = 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/CARD.DTA'
+data = pd.read_stata(url)
+# 1. Dummy for education > 12
+data['treated'] = np.where(data['educ']>12, 1, 0)
+
+# 2. Wald estimator
+numerator = data.query('nearc4 == 1').wage.mean() - data.query('nearc4 == 0').wage.mean()
+denominator = data.query('nearc4 == 1').treated.mean() - data.query('nearc4 == 0').treated.mean()
+wald = numerator/denominator
+
+# 3. Estimate 2SLS
+iv_model = IV2SLS(
+  endog=data['wage'],
+  exog=sm.add_constant(data['treated']),
+  instrument=sm.add_constant(data['nearc4'])
+  ).fit()
+
+print(summary_col([iv_model], stars=True))
+
+# 4. Estimate the First Stage
+first_stage = ols("treated ~ nearc4", data=data).fit()
+print(summary_col([first_stage], stars=True))
+
+# 6. Check and Verify Estimate of the Reduced Form
+iv = iv_model.params['treated']
+fs = first_stage.params['nearc4']
+## According to the theory, IV=Reduced Form/First Stage
+print("IV * First Stage =", iv*fs)
+rf = ols("wage ~ nearc4", data=data).fit()
+print("Reduced Form = ", rf.params['nearc4'])
+```
+
+### R
+
+```{r}
+#| warning: false
+#| message: false
+library(haven); library(fixest); library(dplyr)
+url <- 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/CARD.DTA'
+data <- read_stata(url)
+
+# 1. Dummy for education > 12
+data <- data |>
+  mutate(treated = if_else(educ > 12, 1, 0))
+
+# 2. Wald Estimator
+numerator <- mean(data$wage[data$nearc4 == 1]) - mean(data$wage[data$nearc4 == 0])
+denominator <- mean(data$treated[data$nearc4==1]) - mean(data$treated[data$nearc4 == 0])
+wald <- numerator / denominator
+
+# 3. Estimate 2SLS
+iv_model <- feols(wage ~ 1 | treated ~ nearc4, data = data)
+iv_model
+# 4. Estimate the First Stage
+first_stage <- feols(treated ~ nearc4, data = data)
+first_stage
+# 6. Check and Verify Estimate of the Reduced Form
+coef(iv_model)[2] * coef(first_stage)[2]
+rf <- feols(wage ~ nearc4, data = data)
+coef(rf)[2]
+```
+
+### Stata
+
+```{stata}
+#| eval: false
+* 1. Load data and create a dummy variable for education > 12
+* Load data from the URL
+use "https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/CARD.DTA", clear
+
+* Generate the 'treated' dummy variable where education is greater than 12
+gen treated = (educ > 12)
+
+* 2. Calculate the Wald estimator
+* Calculate the mean wage for individuals near a 4-year college
+quietly summarize wage if nearc4 == 1
+scalar mean_wage_nearc4 = r(mean)
+
+* Calculate the mean wage for individuals not near a 4-year college
+quietly summarize wage if nearc4 == 0
+scalar mean_wage_not_nearc4 = r(mean)
+
+* Calculate the mean of the 'treated' variable for individuals near a 4-year college
+quietly summarize treated if nearc4 == 1
+scalar mean_treated_nearc4 = r(mean)
+
+* Calculate the mean of the 'treated' variable for individuals not near a 4-year college
+quietly summarize treated if nearc4 == 0
+scalar mean_treated_not_nearc4 = r(mean)
+
+* Calculate the numerator and denominator for the Wald estimator
+scalar numerator = mean_wage_nearc4 - mean_wage_not_nearc4
+scalar denominator = mean_treated_nearc4 - mean_treated_not_nearc4
+
+* Calculate and display the Wald estimator
+scalar wald = numerator / denominator
+display "Wald Estimator: " wald
+
+* 3. Estimate 2SLS (Two-Stage Least Squares)
+* The endogenous variable is 'treated', and the instrument is 'nearc4'
+ivregress 2sls wage (treated = nearc4)
+estimates store iv_model
+
+* Display the 2SLS regression results
+estimates table iv_model, stars
+
+* 4. Estimate the First Stage regression
+regress treated nearc4
+estimates store first_stage
+
+* Display the first stage regression results
+estimates table first_stage, stars
+
+* 5. Check and Verify the Estimate of the Reduced Form
+* Extract the IV coefficient for 'treated'
+scalar iv_coef = _b[treated]
+
+* Extract the first-stage coefficient for 'nearc4'
+scalar fs_coef = _b[nearc4]
+
+* According to the theory, IV = Reduced Form / First Stage
+display "IV * First Stage = " iv_coef * fs_coef
+
+* Estimate the reduced form regression
+regress wage nearc4
+display "Reduced Form = " _b[nearc4]
+
+```
+
+:::
+
+**Estimate and Interpret the First Stage**: The first stage of the 2SLS estimation isolates the relationship between the instrument (`nearc4`) and the endogenous treatment (`treated`). It answers the question: "Does growing up near a college actually make people more likely to get more than a high school education?"
+
+**The first-stage regression is:** $\text{treated} = \beta_0 + \beta_1 \text{nearc4} + u$
+
+**Estimation and Interpretation:** Running this simple regression reveals that the coefficient ($\beta_1$) on `nearc4` is approximately 0.12. 
+
+This coefficient is positive and statistically significant. The interpretation is as follows: Growing up near a four-year college increases the probability of obtaining more than a high school education by about 12 percentage points, on average.
+
+This result confirms that the instrument is "relevant"—it has a meaningful impact on the treatment decision.
+
+**Interpret the 2SLS Estimate**: The 2SLS estimate provides the causal effect of the treatment on the outcome. For this analysis, it is the Wald Estimator. The regression of `wage` on `treated` using `nearc4` as an instrument yields a coefficient of approximately **731**. 
+
+**Interpretation:** This 2SLS coefficient is a **Local Average Treatment Effect (LATE)**. It estimates the causal return to education for a specific subgroup of the population known as "compliers." In this context, compliers are the individuals who pursued more than 12 years of education *because* they grew up near a college, and would not have done so otherwise.
+
+The interpretation is:
+
+> For the group of people who were induced to get more than a high school education by having a college nearby, doing so caused their wages to increase by approximately 731 dollar on average.
+
+This is a causal estimate because the IV strategy isolates the variation in education that is random (due to college proximity) rather than driven by confounding factors like innate ability.
+
+**Calculate and Interpret the Reduced Form Coefficient**: The reduced form equation directly relates the outcome variable to the instrumental variable, showing the instrument's total effect on the outcome.
+
+**The reduced form equation is:** $\text{wage} = \pi_0 + \pi_1 \text{nearc4} + v$. 
+
+The Wald estimator has a precise relationship with the first stage and the reduced form: 2SLS Estimate = (Reduced Form Coefficient) / (First Stage Coefficient)
+
+Therefore, we can calculate the reduced form coefficient by rearranging the formula: Reduced Form Coefficient = 2SLS Estimate * First Stage Coefficient.
+
+**Interpretation:** This calculated coefficient ($\pi_1$ of **89** is the estimate you would get if you directly regressed `wage` on `nearc4`. The interpretation is:
+
+> On average, individuals who grew up near a four-year college earn approximately 89$ higher wages than those who did not. This effect captures the entire causal chain of events: growing up near a college makes people more likely to get more education, which in turn leads to higher wages.
 
 ## Designing an Alternative IV Study
 

@@ -236,19 +236,19 @@ The credibility of the Acemoglu et al. (2001) paper rests on the validity of the
 
 ## Estimating and Interpreting 2SLS Results
 
-Card (1995) estimates the causal effect of education (`educ`) on earnings (`wage`). A simple OLS regression of wages on education is likely biased because unobserved factors, like innate ability or family background, can affect both how much education a person gets and how much they earn. Card's ingenious solution was to use proximity to a college as an instrument (`nearc4`).
+Card (1995) estimates the causal effect of education (`educ`) on earnings (`wage`). A simple OLS regression of wages on education is likely biased because unobserved factors, like innate ability or family background, can affect both how much education a person gets and how much they earn. Card's ingenious solution was to use proximity to a college as an instrument (`nearc4`).^[The data is available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/CARD.DTA).]
 
 
-a) Create a dummy variable indicating whether `educ`>12. 
-a) Manually compute the Wald estimator. 
-a) Recreate the table in R/Python/Stata.
-b) Interpret the first stage.
+a) Create a dummy variable, `treated`, indicating whether `educ`>12. 
+a) Manually compute the Wald estimator using `nearc4` as an instrument for `treated`. 
+a) Estimate the Wald Estimator through 2SLS in R/Python/Stata.
+b) Estimate and interpret the first stage.
 c) Interpret the 2SLS estimate.
 d) Based on the first stage and the 2SLS estimate, what would the coefficient on the instrument in the reduced form equation equal? Interpret this coefficient.
 
 ## Designing an Alternative IV Study
 
-Imagine a researcher is unconvinced by the settler mortality instrument. She wants to re-test the Acemoglu et al. (2001) hypothesis using a different IV strategy for the effect of institutions on development.
+Imagine someone is unconvinced by the settler mortality instrument of AJR (2001). She wants to re-test the Acemoglu et al. (2001) hypothesis using a different IV strategy for the effect of institutions on development.
 
 Propose a new, potential instrumental variable for "quality of institutions". Justify your choice by carefully explaining:
 
