@@ -42,26 +42,85 @@ You can fill it in on [https://entry.caracal.uu.nl/44007](https://entry.caracal.
 ![](course_eval.png){fig-align="center"}
 
 
-## Recapitulation of the Lecture
+# Recapitulation of the Lecture
 
-## Slide 1
 
-## Slide 2
+## Endogeneity
+
+Our goal is to estimate the causal effect of a variable $X$ on an outcome $Y$ using a linear model: $Y_i = \beta_0 + \beta_1 X_i + u_i$
+
+For the Ordinary Least Squares (OLS) estimate of $\beta_1$ to be unbiased, we must assume that $X$ is uncorrelated with the error term $u_i$, a condition known as exogeneity ($Cov(X_i, u_i) = 0$).
+
+**Endogeneity** occurs when this assumption is violated ($Cov(X_i, u_i) \neq 0$), making OLS estimates biased and inconsistent. The main sources of endogeneity are:
+
+*   **Omitted Variable Bias (OVB):** An unobserved variable (e.g., "ability") affects both the outcome (wages) and the regressor (education).
+*   **Simultaneity / Reverse Causality:** While $X$ causes $Y$, $Y$ also causes $X$ (e.g., police presence and crime rates).
+*   **Measurement Error:** The variable $X$ is measured with error, which can attenuate the estimated effect towards zero.
+
+## A Solution: Instrumental Variables (IV)
+
+The IV strategy uses a third variable, the **instrument ($Z$)**, to isolate the part of the variation in $X$ that is not correlated with the error term $u_i$. A valid instrument must satisfy two core conditions:
+
+1.  **Relevance:** The instrument must be correlated with the endogenous variable $X$: $Cov(Z_i, X_i) \neq 0$
+
+    This is a testable condition, often assessed in the "first stage" of the analysis.
+
+2.  **Exclusion Restriction:** The instrument must be uncorrelated with the error term $u_i$. This means $Z$ can only affect the outcome $Y$ *through* its effect on $X$: $Cov(Z_i, u_i) = 0$
+
+    This is a theoretical assumption that cannot be proven with data and requires a strong justification.
+
+
+## IV Estimation and Interpretation
+
+Unlike OLS, which aims to estimate an average effect for the entire population, IV provides a more specific estimate. With a binary instrument, the population can be divided into four groups based on their response to the instrument: **Compliers**, **Always-Takers**, **Never-Takers**, and **Defiers**.
+
+Assuming monotonicity (ruling out "defiers"), the IV estimator does not recover the Average Treatment Effect (ATE) for the whole population. 
+
+Instead, it identifies the **Local Average Treatment Effect (LATE)**, which is the average causal effect specifically for the subpopulation of **compliers**—those individuals whose treatment status is actually changed by the instrument.
+$$ \beta_{IV} = E[Y_i(1) - Y_i(0) \mid \text{Compliers}] $$
+
+## Wald and 2SLS
+
+The IV estimate can be calculated in several ways:
+
+*   **Wald Estimator:** Used when both the instrument $Z$ and treatment $X$ are binary. It is the ratio of the reduced-form effect (the effect of $Z$ on $Y$) to the first-stage effect (the effect of $Z$ on $X$).
+    $$ \hat{\beta}_{\text{Wald}} = \frac{E[Y | Z=1] - E[Y | Z=0]}{E[X | Z=1] - E[X | Z=0]} $$
+
+*   **Two-Stage Least Squares (2SLS):** The general method, especially with multiple instruments or control variables.
+    1.  **First Stage:** Regress the endogenous variable $X$ on the instrument(s) $Z$ and any other exogenous controls. Obtain the predicted values, $\hat{X}$.
+        $$ X_i = \pi_0 + \pi_1 Z_{1i} + ... + \delta' W_i + \nu_i \rightarrow \text{get } \hat{X}_i $$
+    2.  **Second Stage:** Regress the outcome $Y$ on the predicted values $\hat{X}$ and the other controls. The coefficient on $\hat{X}$ is the consistent IV estimate of $\beta_1$.
+        $$ Y_i = \beta_0 + \beta_1 \hat{X}_i + \gamma' W_i + \zeta_i $$
+
+
+Practical challenges: 
+
+*   **Finding a Valid Instrument:** The credibility of IV analysis depends entirely on the quality of the instrument. A strong defense of the exclusion restriction is paramount.
+*   **Weak Instruments:** If the instrument is only weakly correlated with the endogenous variable (the relevance condition is barely met), the IV estimate can be heavily biased and have a large variance.
+    *   **Diagnosis:** Always check the **first-stage F-statistic**. A common rule of thumb is that an F-statistic below 10 is a sign of a weak instrument and a serious concern.
+
+# Wooclap
+
+## Wooclap
+
+[Wooclap Link](https://app.wooclap.com/OFZFSD/questionnaires/68ff5b611161a9aef13b9a99)
+
+Wooclap code: OFZFSD (Tutorial 8)
 
 # Questions
 
 ## Estimating the AJR Model
 
-A researcher has obtained a simplified version of the dataset used by Acemoglu, Johnson, and Robinson (2001). The dataset, colonial_data, contains the following key variables for a sample of former colonies:
+For this question, we use the dataset by Acemoglu, Johnson, and Robinson (2001). The dataset, `colonial_origins`, contains the following key variables for a sample of former colonies:^[The dataset is available [here](https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv).]
 
-  - `log_gdp_95`: Log of GDP per capita in 1995 (the outcome variable, Y).
-  - `avg_exprop`: An index of "protection against expropriation risk" averaged from 1985-1995. This measures the quality of institutions (the endogenous variable, X).
-  - `log_settler_mortality`: The log of the mortality rate for European settlers in the 19th century (the instrumental variable, Z).
+  - `logpgp95`: Log of GDP per capita in 1995 (the outcome variable, Y).
+  - `avexpr`: An index of "protection against expropriation risk" averaged from 1985-1995. This measures the quality of institutions (the endogenous variable, X).
+  - `logem4`: The log of the mortality rate for European settlers in the 19th century (the instrumental variable, Z).
   - `africa`: A dummy whether a country is in Africa, a control variable.
 
 ## Estimating the AJR Model (Cont.)
 
-The researcher runs four different regressions to analyze the relationship between institutions and economic development. The code and simplified outputs are provided below.
+We run four different regressions to analyze the relationship between institutions and economic development. The code and simplified outputs are provided below.
 
 ::: {.panel-tabset}
 
@@ -72,7 +131,8 @@ The researcher runs four different regressions to analyze the relationship betwe
 #| code-fold: true
 #| collapse: true
 library(AER)
-colonial_data <- readr::read_csv2("../datafiles/colonial_origins.csv")
+url <- 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv'
+colonial_data <- readr::read_csv2(url)
 # Model 1: OLS
 ols_model <- lm(logpgp95 ~ avexpr + africa, data = colonial_data)
 
@@ -97,7 +157,9 @@ import statsmodels.formula.api as smf
 from linearmodels.iv import IV2SLS
 import pandas as pd
 
-colonial_data = pd.read_csv('../datafiles/colonial_origins.csv', decimal=',', sep=";")
+url = 'https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv'
+
+colonial_data = pd.read_csv(url, decimal=',', sep=";")
 # Model 1: OLS
 ols_model = smf.ols('logpgp95 ~ avexpr + africa', data=colonial_data).fit()
 
@@ -110,6 +172,8 @@ first_stage = smf.ols('avexpr ~ logem4 + africa', data=colonial_data).fit()
 # Model 4: 2SLS / IV
 iv_model = IV2SLS.from_formula('logpgp95 ~ 1 + africa + [avexpr ~ logem4]', data=colonial_data).fit()
 print(iv_model)
+
+print("First Stage F Stat:", iv_model.first_stage.diagnostics['f.stat'])
 ```
 
 ### Stata
@@ -118,6 +182,9 @@ print(iv_model)
 #| echo: true
 #| eval: false
 #| code-fold: true
+
+use https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv, decimal(,)
+
 * Model 1: OLS
 reg log_gdp_95 avg_exprop lat
 
@@ -137,9 +204,9 @@ estat firststage
 
 :::{style="font-size: 0.7em;"}
 
-a) Verify the IV Estimate: The lecture shows that the IV estimator can be calculated as the ratio of the Reduced Form effect to the First Stage effect. Using the coefficients from columns (2) and (3), manually calculate this ratio. Does your result match the coefficient for avg_exprop in the 2SLS model in column (4)?
+a) Verify the IV Estimate: The lecture shows that the IV estimator can be calculated as the ratio of the Reduced Form effect to the First Stage effect. Using the coefficients from the reduced form and first stage, manually calculate this ratio. Does your result match the coefficient for avg_exprop in the 2SLS model?
 
-b) Compare OLS and 2SLS: The 2SLS estimate for the effect of institutions (0.96) is significantly larger than the OLS estimate (0.52). What does this suggest about the direction of the omitted variable bias in the OLS model? Provide a brief economic explanation for why this might be the case.
+b) Compare OLS and 2SLS: The 2SLS estimate for the effect of institutions (0.80) is significantly larger than the OLS estimate (0.42). What does this suggest about the direction of the omitted variable bias in the OLS model? Provide a brief economic explanation for why this might be the case.
 
 c) Assess Instrument Strength: Based on the results provided in the table, is settler mortality a weak instrument for institutions? Justify your answer using the relevant statistic.
 
@@ -167,29 +234,17 @@ The credibility of the Acemoglu et al. (2001) paper rests on the validity of the
   b) Provide a plausible counterargument that could **violate** the exclusion restriction. Propose a specific channel through which early settler mortality might affect current GDP that does *not* run through political institutions. (For example, think about the disease environment or human capital).
 
 
-## Interpreting 2SLS Results
+## Estimating and Interpreting 2SLS Results
 
-Below is a simplified table of results from the Acemoglu et al. (2001) paper. "Protection Against Expropriation" is the measure for institutions.
+Card (1995) estimates the causal effect of education (`educ`) on earnings (`wage`). A simple OLS regression of wages on education is likely biased because unobserved factors, like innate ability or family background, can affect both how much education a person gets and how much they earn. Card's ingenious solution was to use proximity to a college as an instrument (`nearc4`).
 
-| **Panel A: First Stage** |  |
-| :--- |:--- |
-| Dependent Variable: | Protection Against Expropriation |
-| Log Settler Mortality | -0.61*** |
-| (Constant) | 9.32*** |
-| *Observations* | *64* |
-| *F-statistic on excluded instrument* | *14.9* |
 
-| **Panel B: 2SLS** |  |
-| :--- | :--- |
-| Dependent Variable: | Log GDP per capita, 1995 |
-| Protection Against Expropriation | 0.94*** |
-| (Constant) | 1.91 |
-
-  a) Interpret the coefficient on "Log Settler Mortality" in the First Stage (Panel A). Does this result support the relevance condition? How does the F-statistic inform your answer?
-  
-  b) Interpret the coefficient on "Protection Against Expropriation" in the 2SLS regression (Panel B). What is the economic significance of this estimate?
-  
-  c) Based on the signs of the coefficients in both panels, what must be the sign of the "Reduced Form" relationship (the regression of Log GDP per capita on Log Settler Mortality)? Explain your reasoning.
+a) Create a dummy variable indicating whether `educ`>12. 
+a) Manually compute the Wald estimator. 
+a) Recreate the table in R/Python/Stata.
+b) Interpret the first stage.
+c) Interpret the 2SLS estimate.
+d) Based on the first stage and the 2SLS estimate, what would the coefficient on the instrument in the reduced form equation equal? Interpret this coefficient.
 
 ## Designing an Alternative IV Study
 

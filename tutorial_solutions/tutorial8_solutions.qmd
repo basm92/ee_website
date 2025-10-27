@@ -19,10 +19,12 @@ The results:
 ```{python}
 #| echo: false
 import statsmodels.formula.api as smf
-from linearmodels.iv import IV2SLS
+import statsmodels.api as sm
+from statsmodels.iolib.summary2 import summary_col
+from statsmodels.sandbox.regression.gmm import IV2SLS
 import pandas as pd
 
-colonial_data = pd.read_csv('../tutorials/datafiles/colonial_origins.csv', decimal=',', sep=";")
+colonial_data = pd.read_csv('./tutorials/datafiles/colonial_origins.csv', decimal=',', sep=";")
 # Model 1: OLS
 ols_model = smf.ols('logpgp95 ~ avexpr + africa', data=colonial_data).fit()
 
@@ -33,11 +35,14 @@ reduced_form = smf.ols('logpgp95 ~ logem4 + africa', data=colonial_data).fit()
 first_stage = smf.ols('avexpr ~ logem4 + africa', data=colonial_data).fit()
 
 # Model 4: 2SLS / IV
-iv_model = IV2SLS.from_formula('logpgp95 ~ 1 + africa + [avexpr ~ logem4]', data=colonial_data).fit()
-print(iv_model)
+iv_model = IV2SLS(
+  endog=colonial_data['logpgp95'],
+  exog=sm.add_constant(colonial_data[['africa', 'avexpr']]),
+  instrument=sm.add_constant(colonial_data[['africa', 'logem4']])).fit()
 
+print(summary_col([ols_model, reduced_form, first_stage, iv_model], stars=True, model_names=['OLS', 'Reduced Form', 'First Stage (DV=avexpr)', 'IV']))
 
-print("Partial F Stat.:", iv_model.first_stage.diagnostics['f.stat'], "\n")
+print("First Stage F Stat: 10.270")
 ```
 
 a) **Verify the IV Estimate:**
@@ -47,7 +52,7 @@ The IV estimate is the ratio of the reduced form coefficient to the first stage 
 
 $$ \text{Calculated IV Estimate} = \frac{\text{Reduced Form}}{\text{First Stage}} = \frac{-0.43}{-0.53} \approx 0.81 $$
 
-This calculated value of **0.81** is indeed very close to the 2SLS coefficient for `avexpr` reported in column (4), which is **0.80**. The minor difference is due to rounding in the table and the presence of the control variable (`africa`).
+This calculated value of **0.81** is indeed very close to the 2SLS coefficient for `avexpr` reported in column (4), which is **0.80**. The minor difference is due to rounding in the table.
 
 b) **Compare OLS and 2SLS:**
 The 2SLS estimate (0.80) is almost double the OLS estimate (0.42). This implies that the OLS estimate is biased downwards. According to the omitted variable bias formula, this would happen if the omitted factors (captured in the error term) that negatively affect GDP are also negatively correlated with the quality of institutions. For example, a country's geography or historical disease environment might be unfavorable to long-term growth (negative effect on GDP) and might have also led colonial powers to establish extractive institutions (negative correlation with `avexpr`). This would cause OLS to underestimate the true positive effect of institutions.
@@ -78,20 +83,12 @@ a) **Argument to Defend:** The most compelling defense is that the diseases that
 b) **Argument to Challenge (Violation):** A plausible channel that violates the exclusion restriction is the **persistence of the disease environment itself**. If the factors that led to high settler mortality historically (e.g., a tropical climate suitable for malaria-carrying mosquitoes) are also responsible for a high disease burden today, then settler mortality could be affecting current GDP through both institutions and current public health. A high contemporary disease burden directly reduces labor productivity and human capital, meaning the instrument would have an effect on the outcome that is *not* channeled through institutions, thus violating the exclusion restriction.
 
 
-## Interpreting 2SLS Results
+## Estimating and Interpreting 2SLS Results
 
-a) **Interpret First Stage:** The coefficient of **-0.53*** on Log Settler Mortality is statistically significant and negative. It means that a 1% increase in historical settler mortality rates is associated with a 0.53-point decrease in the modern-day index of "Protection Against Expropriation". This supports the **relevance condition** by showing a strong, statistically significant relationship between the instrument and the endogenous variable. The **F-statistic of 10.27** is slightly above the conventional threshold of 10, further confirming that the instrument is not weak.
-
-b) **Interpret 2SLS:** The coefficient of **0.80*** on Protection Against Expropriation is the 2SLS estimate. It implies that a one-point increase in the institutional quality index is estimated to **cause** a 80% increase in GDP per capita. This is a very large and statistically significant causal effect, suggesting that strong institutions are a fundamental cause of long-run economic prosperity.
-
-c) **Sign of Reduced Form:** The IV estimator is the ratio of the Reduced Form (RF) effect to the First Stage (FS) effect: `IV ≈ RF / FS`.
--   We know the IV estimate is positive (`+0.80`).
--   We know the First Stage estimate is negative (`-0.53`).
-So, `(+) = RF / (-)`. For this equation to hold, the Reduced Form coefficient **must be negative**. This makes intuitive sense: a higher settler mortality rate (the instrument) should be associated with lower GDP per capita today (the outcome).
 
 ## Designing an Alternative IV Study
 
-A potential alternative instrument for the quality of institutions is **Legal Origin**.
+A potential alternative instrument for the quality of institutions is **Legal Origin**.^[Porta, R. L., Lopez-de-Silanes, F., Shleifer, A., & Vishny, R. W. (1998). Law and finance. Journal of political economy, 106(6), 1113-1155.]
 
 1.  **Relevance:** The legal system a country inherited from its colonizer (e.g., British Common Law vs. French Civil Law) is a fundamental component of its modern institutional framework. Different legal traditions have different approaches to protecting property rights and limiting state power. Therefore, a country's legal origin is likely to be strongly correlated with its score on "protection against expropriation risk".
 2.  **Validity (Exclusion Restriction):** The argument for validity is that the identity of a country's colonizer was, from the perspective of the colonized country, a historical accident. Whether a country was colonized by Britain versus France should not affect its long-run economic development today through any channel *other than* the persistent legal and political institutions that were established.
