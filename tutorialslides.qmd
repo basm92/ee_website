@@ -12,3 +12,4 @@ The tutorial slides can be found below:
 - [Tutorial 5](tutorials/tutorial5/tutorial5.qmd)
 - [Tutorial 6](tutorials/tutorial6/tutorial6.qmd)
 - [Tutorial 7](tutorials/tutorial7/tutorial7.qmd)
+- [Tutorial 8](tutorials/tutorial8/tutorial8.qmd)
