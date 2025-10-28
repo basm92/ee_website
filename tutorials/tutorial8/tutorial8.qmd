@@ -210,8 +210,6 @@ b) Compare OLS and 2SLS: The 2SLS estimate for the effect of institutions (0.80)
 
 c) Assess Instrument Strength: Based on the results provided in the table, is settler mortality a weak instrument for institutions? Justify your answer using the relevant statistic.
 
-d) Interpret the LATE: The 2SLS estimate is a Local Average Treatment Effect (LATE). Describe, in the context of this study, the specific subgroup of countries for which this estimate represents the causal effect of institutions on economic development.
-
 :::
 
 

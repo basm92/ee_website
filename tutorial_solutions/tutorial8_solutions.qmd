@@ -62,8 +62,6 @@ The 2SLS estimate (0.80) is almost double the OLS estimate (0.42). This implies 
 c) **Assess Instrument Strength:**
 The instrument, settler mortality (`logem4`), is **not weak**. The rule of thumb is that the first-stage F-statistic on the excluded instrument should be greater than 10. Here, the F-statistic is **10.27**, which is above this threshold, indicating a sufficiently strong relationship between settler mortality and the quality of institutions.
 
-d) **Interpret the LATE:**
-The 2SLS estimate is a Local Average Treatment Effect (LATE). In this context, it represents the average causal effect of institutions on GDP **only for the subgroup of "complier" countries**. These are the countries whose colonial-era institutional development was directly influenced by the settler mortality rates. In other words, they are the countries where low mortality *caused* the establishment of better institutions, and high mortality *caused* the establishment of worse institutions. The estimate does not necessarily apply to countries whose institutions were determined by other factors, regardless of settler mortality.
 
 ## Colonial Origins IV Strategy
 
