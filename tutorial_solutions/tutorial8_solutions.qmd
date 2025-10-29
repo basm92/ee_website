@@ -200,7 +200,7 @@ ivregress 2sls wage (treated = nearc4)
 estimates store iv_model
 
 * Display the 2SLS regression results
-estimates table iv_model, stars
+estimates table iv_model, star 
 
 * 4. Estimate the First Stage regression
 regress treated nearc4
