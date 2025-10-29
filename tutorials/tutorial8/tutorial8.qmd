@@ -183,19 +183,22 @@ print("First Stage F Stat:", iv_model.first_stage.diagnostics['f.stat'])
 #| eval: false
 #| code-fold: true
 
-import delimited https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv, delimiter(";") dpcomma clear
-
+import delimited https://github.com/basm92/ee_website/raw/refs/heads/master/tutorials/datafiles/colonial_origins.csv, delimiters(";") clear
+ 
+destring logpgp95 avexpr logem4 lat_abst, dpcomma replace
+ 
 * Model 1: OLS
-reg log_gdp_95 avg_exprop lat
-
+reg logpgp95 avexpr africa
+ 
 * Model 2: Reduced Form
-reg log_gdp_95 log_settler_mortality lat
-
+reg logpgp95 logem4 africa
+ 
 * Model 3: First Stage
-reg avg_exprop log_settler_mortality lat
-
+reg avexpr logem4 africa
+ 
 * Model 4: 2SLS / IV
-ivregress 2sls log_gdp_95 lat (avg_exprop = log_settler_mortality)
+ivregress 2sls logpgp95 africa (avexpr = logem4), small first
+ 
 * To get the first-stage F-statistic
 estat firststage
 ```
