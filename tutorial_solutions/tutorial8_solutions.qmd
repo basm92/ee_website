@@ -202,17 +202,18 @@ estimates store iv_model
 * Display the 2SLS regression results
 estimates table iv_model, star 
 
+* Extract the IV coefficient for 'treated'
+scalar iv_coef = _b[treated]
+display iv_coef
+
 * 4. Estimate the First Stage regression
 regress treated nearc4
 estimates store first_stage
 
 * Display the first stage regression results
-estimates table first_stage, stars
+estimates table first_stage, star
 
 * 5. Check and Verify the Estimate of the Reduced Form
-* Extract the IV coefficient for 'treated'
-scalar iv_coef = _b[treated]
-
 * Extract the first-stage coefficient for 'nearc4'
 scalar fs_coef = _b[nearc4]
 
