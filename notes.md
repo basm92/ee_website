@@ -19,51 +19,42 @@
 - What about IV?
     - Thoroughly understand IV/Late Not realistic
 
-## New Concept Syllabus
 
-- Stats 1 
-- Stats 2
-- LM 3
-- TS 4 
-  - model selection?
-  - forecasting?
-- Panel Data (FE) / Controls 5
-- Binary Outcomes 6
-- PO / Diff-in-diff 7
-- Econometrics Hands-On 8
+## Next Year
 
-Bigger picture:
-    - What after next year?
+Set-up:
 
--Redesign last year:
-
-- Also: fix a lot of stuff in lec6 binary outcomes
-
-
-## Notes Next Year
-
-Preliminary set-up:
-
-Probability & Statistics
+Introduction to Statistics with Python/R (Data Wrangling)
 Linear Model I
 Linear Model II
-Panel Data Theory
-Causality, Endogeneity, Potential Outcomes, Propensity Scoring
-Difference in differences (mss samen)
-Data Collection & Data Wrangling
-Applied Econometrics
+Panel Data Theory, FE, Pooled OLS, RE (Solution to problem of no variation in dimension), Clustering SEs
+Potential Outcomes, Difference-in-Differences,
+Propensity Scoring, Event Studies/Synthetic Control Methods
 
-- Interpretatie 
-- LPM in Linear Model II
-- Uitleg waarom je het moet doen
-- Assumption in PSM
+### Last Two Weeks:
+
+Applied/Econ:
+    ....
+    Applications in Economics
+
+Finance: 
+    Asset Pricing
+    Applications in Finance
+
+Entrepreneurship:
+    Clustering observations/Factor analysis
+    Applications in Business
+
 - Data Collection & Data Wrangling:
     - Lijst met data wrangling dingen die we moeten weten
     - .gifjes met demonstratie in Excel
     - Tutorial van de laatste 2 weken wel apart
     
-- Exam: eindigen met 1/2 open vragen die specifiek zijn voor de laatste week en track
-    - Anoniem: andere vraag beantwoorden - ook prima!
+- Jacob, Niels: R or Python
+    - IT team: 
 
-- Feedback: data wrangling code naar de tutorial slides (is nog te moeilijk voor studenten om uit de losse pols te doen)
-
+- Exam structure:
+    - Midterm and endterm
+    - Remindo team
+    - Assignment of questions to students according to their track
+    - Core exercises and practice questions
